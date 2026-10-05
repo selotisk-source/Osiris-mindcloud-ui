@@ -5,6 +5,7 @@ export const toolingCatalog=[
 {id:"pdf-redaction-auditor",source:"phishdestroy/taylor-wessing-data-breach-toolkit",layer:"EvidenceIntegrity",priority:2},
 {id:"quant-terminal",source:"Fincept-Corporation/FinceptTerminal",layer:"MarketResearch",priority:2},
 {id:"systematic-trading-research",source:"paperswithbacktest/awesome-systematic-trading",layer:"MarketResearch",priority:2},
+{id:"chronos-forecasting",source:"amazon-science/chronos-forecasting",layer:"ForecastingEngine",priority:2},
 {id:"ml-research-agent",source:"huggingface/ml-intern",layer:"ResearchAgent",priority:2},
 {id:"tutor",source:"HKUDS/DeepTutor",layer:"KnowledgeAgent",priority:3},
 {id:"video-pipeline",source:"AIDC-AI/Pixelle-Video",layer:"MediaPipeline",priority:3},
