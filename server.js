@@ -18,10 +18,28 @@ const html = `<!doctype html>
 </body>
 </html>`;
 
+function cctvResponse() {
+  const source = process.env.CCTV_SOURCE_URL || null;
+  return {
+    status: source ? "configured" : "not_configured",
+    service: "osiris-mindcloud-ui",
+    endpoint: "/api/cctv",
+    source: source ? "configured" : null,
+    streamStatus: source ? "configured" : "unconfigured",
+    proxyStatus: "not_implemented"
+  };
+}
+
 const server = http.createServer((req, res) => {
   if (req.url === "/health") {
     res.writeHead(200, { "content-type": "application/json; charset=utf-8" });
     res.end(JSON.stringify({ status: "ok", service: "osiris-mindcloud-ui" }));
+    return;
+  }
+
+  if (req.url === "/api/cctv") {
+    res.writeHead(200, { "content-type": "application/json; charset=utf-8" });
+    res.end(JSON.stringify(cctvResponse()));
     return;
   }
 
