@@ -6,3 +6,5 @@ export * from "./adapters";
 export * from "./catalog";
 export * from "./systematic-trading";
 export * from "./document-forensics";
+
+export * from "./blackbird";
