@@ -1,0 +1,11 @@
+{
+  "name": "osiris-mindcloud-ui",
+  "private": true,
+  "version": "0.1.0",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
