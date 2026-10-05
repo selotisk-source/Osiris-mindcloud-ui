@@ -7,15 +7,117 @@
     "security": "External credentials, browser sessions, and computer-use environments stay isolated behind explicit capability gates."
   },
   "modules": [
-    {"id":"model_gateway","source":"Alishahryar1/free-claude-code","role":"multi-provider model gateway","mindcloud_layer":"ModelRouter","priority":1,"integration":"Anthropic-compatible gateway contract; provider/model catalog; fallback routing; health and quota telemetry","status":"planned-adapter"},
-    {"id":"ml_research_agent","source":"huggingface/ml-intern","role":"autonomous ML research workflow reference","mindcloud_layer":"ResearchAgent","priority":2,"integration":"paper -> dataset -> experiment -> result -> evidence graph pipeline","status":"reference-only","note":"Upstream repository is archived; reuse architecture ideas rather than depend on it."},
-    {"id":"quant_terminal","source":"Fincept-Corporation/FinceptTerminal","role":"market data and quantitative research","mindcloud_layer":"MarketResearch","priority":2,"integration":"market/economic data adapters, research workspace, portfolio/watchlist evidence feeds","status":"planned-adapter"},
-    {"id":"deepseek_api_bridge","source":"CJackHwang/ds2api","role":"API compatibility bridge","mindcloud_layer":"ProviderAdapter","priority":4,"integration":"OpenAI/Claude-compatible request normalization only where an authorized provider endpoint exists","status":"reference-only","note":"Upstream repository is archived; do not build account scraping or credential rotation into MindCloud."},
-    {"id":"video_pipeline","source":"AIDC-AI/Pixelle-Video","role":"end-to-end video generation","mindcloud_layer":"MediaPipeline","priority":3,"integration":"topic -> script -> visual assets -> voice -> edit -> artifact/evidence record","status":"planned-adapter"},
-    {"id":"computer_use","source":"trycua/cua","role":"computer interaction runtime","mindcloud_layer":"ComputerAgent","priority":1,"integration":"sandboxed click/type/app-launch capability with explicit action policy and audit trail","status":"planned-adapter"},
-    {"id":"tutor","source":"HKUDS/DeepTutor","role":"document-grounded tutoring and research","mindcloud_layer":"KnowledgeAgent","priority":3,"integration":"document ingestion, question answering, quizzes, visual explanations, deep research tasks","status":"planned-adapter"},
-    {"id":"screen_recording","source":"siddharthvaddem/openscreen","role":"screen capture and polished demo output","mindcloud_layer":"EvidenceCapture","priority":3,"integration":"capture -> annotate -> export -> attach artifact to run/evidence graph","status":"reference-only","note":"Upstream repository is archived; use the maintained successor or treat the original as an implementation reference."},
-    {"id":"edge_llm","source":"google-ai-edge/LiteRT-LM","role":"on-device LLM inference","mindcloud_layer":"EdgeRuntime","priority":1,"integration":"local inference provider with Android/desktop capability discovery and model lifecycle telemetry","status":"planned-adapter"}
+    {
+      "id": "computer_use",
+      "source": "trycua/cua",
+      "role": "computer interaction runtime",
+      "mindcloud_layer": "ComputerAgent",
+      "priority": 1,
+      "integration": "sandboxed click/type/app-launch capability with explicit action policy and audit trail",
+      "status": "planned-adapter"
+    },
+    {
+      "id": "edge_llm",
+      "source": "google-ai-edge/LiteRT-LM",
+      "role": "on-device LLM inference",
+      "mindcloud_layer": "EdgeRuntime",
+      "priority": 1,
+      "integration": "local inference provider with Android/desktop capability discovery and model lifecycle telemetry",
+      "status": "planned-adapter"
+    },
+    {
+      "id": "model_gateway",
+      "source": "Alishahryar1/free-claude-code",
+      "role": "multi-provider model gateway",
+      "mindcloud_layer": "ModelRouter",
+      "priority": 1,
+      "integration": "Anthropic-compatible gateway contract; provider/model catalog; fallback routing; health and quota telemetry",
+      "status": "planned-adapter"
+    },
+    {
+      "id": "ml_research_agent",
+      "source": "huggingface/ml-intern",
+      "role": "autonomous ML research workflow reference",
+      "mindcloud_layer": "ResearchAgent",
+      "priority": 2,
+      "integration": "paper -> dataset -> experiment -> result -> evidence graph pipeline",
+      "status": "reference-only",
+      "note": "Upstream repository is archived; reuse architecture ideas rather than depend on it."
+    },
+    {
+      "id": "pdf-redaction-auditor",
+      "source": "phishdestroy/taylor-wessing-data-breach-toolkit",
+      "role": "PDF redaction forensic auditor",
+      "mindcloud_layer": "EvidenceIntegrity",
+      "priority": 2,
+      "integration": "offline inspection of rendered pages and underlying text layers; produce evidence artifacts for redaction-integrity checks",
+      "status": "planned-adapter",
+      "security": "read-only audit by default; never mutate source documents"
+    },
+    {
+      "id": "quant_terminal",
+      "source": "Fincept-Corporation/FinceptTerminal",
+      "role": "market data and quantitative research",
+      "mindcloud_layer": "MarketResearch",
+      "priority": 2,
+      "integration": "market/economic data adapters, research workspace, portfolio/watchlist evidence feeds",
+      "status": "planned-adapter"
+    },
+    {
+      "id": "systematic-trading-research",
+      "source": "paperswithbacktest/awesome-systematic-trading",
+      "role": "systematic trading research index",
+      "mindcloud_layer": "MarketResearch",
+      "priority": 2,
+      "integration": "strategy/library registry feeding research discovery, backtest candidates, risk/metrics/tool selection and evidence-linked experiments",
+      "status": "research-index"
+    },
+    {
+      "id": "screen_recording",
+      "source": "siddharthvaddem/openscreen",
+      "role": "screen capture and polished demo output",
+      "mindcloud_layer": "EvidenceCapture",
+      "priority": 3,
+      "integration": "capture -> annotate -> export -> attach artifact to run/evidence graph",
+      "status": "reference-only",
+      "note": "Upstream repository is archived; use the maintained successor or treat the original as an implementation reference."
+    },
+    {
+      "id": "tutor",
+      "source": "HKUDS/DeepTutor",
+      "role": "document-grounded tutoring and research",
+      "mindcloud_layer": "KnowledgeAgent",
+      "priority": 3,
+      "integration": "document ingestion, question answering, quizzes, visual explanations, deep research tasks",
+      "status": "planned-adapter"
+    },
+    {
+      "id": "video_pipeline",
+      "source": "AIDC-AI/Pixelle-Video",
+      "role": "end-to-end video generation",
+      "mindcloud_layer": "MediaPipeline",
+      "priority": 3,
+      "integration": "topic -> script -> visual assets -> voice -> edit -> artifact/evidence record",
+      "status": "planned-adapter"
+    },
+    {
+      "id": "deepseek_api_bridge",
+      "source": "CJackHwang/ds2api",
+      "role": "API compatibility bridge",
+      "mindcloud_layer": "ProviderAdapter",
+      "priority": 4,
+      "integration": "OpenAI/Claude-compatible request normalization only where an authorized provider endpoint exists",
+      "status": "reference-only",
+      "note": "Upstream repository is archived; do not build account scraping or credential rotation into MindCloud."
+    }
   ],
-  "shared_contracts":["ModelProvider","AgentCapability","TaskEnvelope","EvidenceArtifact","RunEvent","HealthStatus","ApprovalGate"]
+  "shared_contracts": [
+    "ModelProvider",
+    "AgentCapability",
+    "TaskEnvelope",
+    "EvidenceArtifact",
+    "RunEvent",
+    "HealthStatus",
+    "ApprovalGate"
+  ]
 }
