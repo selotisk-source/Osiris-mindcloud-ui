@@ -10,5 +10,6 @@ export const toolingCatalog=[
 {id:"tutor",source:"HKUDS/DeepTutor",layer:"KnowledgeAgent",priority:3},
 {id:"video-pipeline",source:"AIDC-AI/Pixelle-Video",layer:"MediaPipeline",priority:3},
 {id:"screen-recording",source:"siddharthvaddem/openscreen",layer:"EvidenceCapture",priority:3},
-{id:"deepseek-api-bridge",source:"CJackHwang/ds2api",layer:"ProviderAdapter",priority:4}
+{id:"deepseek-api-bridge",source:"CJackHwang/ds2api",layer:"ProviderAdapter",priority:4},
+{id:"blackbird-osint",source:"p1ngul1n0/blackbird",layer:"OSINT",priority:2}
 ] as const;
