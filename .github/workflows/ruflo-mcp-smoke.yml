@@ -13,6 +13,8 @@ jobs:
   ruflo-mcp-smoke:
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    env:
+      RUFLO_MCP_TIMEOUT_MS: 120000
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
