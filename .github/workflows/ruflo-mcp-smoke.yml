@@ -6,6 +6,9 @@ on:
       - "mindcloud/unified-ruflo-osiris-v5"
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   ruflo-mcp-smoke:
     runs-on: ubuntu-latest
