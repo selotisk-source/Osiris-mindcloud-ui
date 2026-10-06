@@ -1,4 +1,7 @@
 const { createGRPO } = require("./grpo");
+const { createMonteCarlo } = require("./monte-carlo");
+const { createBestOfN } = require("./best-of-n");
+const { createProcessRewardModel } = require("./process-reward-model");
 
 const STATIONS = [
   { id: "station-1", name: "Coordinator", role: "MindCore", accepts: ["orchestration","routing","general"] },
@@ -10,6 +13,9 @@ const STATIONS = [
 function createRouterNetwork() {
   const routes = new Map();
   const grpo = createGRPO();
+  const monteCarlo = createMonteCarlo();
+  const bestOfN = createBestOfN();
+  const processRewardModel = createProcessRewardModel();
   for (const station of STATIONS) routes.set(station.id, new Set(STATIONS.filter(s => s.id !== station.id).map(s => s.id)));
 
   function route(task = {}) {
@@ -33,7 +39,7 @@ function createRouterNetwork() {
     };
   }
 
-  return { route, snapshot, grpo };
+  return { route, snapshot, grpo, monteCarlo, bestOfN, processRewardModel };
 }
 
 module.exports = { createRouterNetwork };
