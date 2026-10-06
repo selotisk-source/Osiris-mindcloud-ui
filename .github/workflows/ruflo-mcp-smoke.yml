@@ -4,6 +4,13 @@ on:
   push:
     branches:
       - "mindcloud/unified-ruflo-osiris-v5"
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+    branches:
+      - "mindcloud/unified-ruflo-osiris-v5"
   workflow_dispatch:
 
 permissions:
