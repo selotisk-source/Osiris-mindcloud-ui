@@ -1,3 +1,5 @@
+const { createGRPO } = require("./grpo");
+
 const STATIONS = [
   { id: "station-1", name: "Coordinator", role: "MindCore", accepts: ["orchestration","routing","general"] },
   { id: "station-2", name: "GEO / Heritage", role: "Geo", accepts: ["geo","heritage","map","evidence"] },
@@ -7,6 +9,7 @@ const STATIONS = [
 
 function createRouterNetwork() {
   const routes = new Map();
+  const grpo = createGRPO();
   for (const station of STATIONS) routes.set(station.id, new Set(STATIONS.filter(s => s.id !== station.id).map(s => s.id)));
 
   function route(task = {}) {
@@ -30,7 +33,7 @@ function createRouterNetwork() {
     };
   }
 
-  return { route, snapshot };
+  return { route, snapshot, grpo };
 }
 
 module.exports = { createRouterNetwork };
