@@ -9,13 +9,15 @@ const html = fs.readFileSync(path.join(__dirname, "index.html"), "utf8");
 
 function cctvResponse() {
   const source = process.env.CCTV_SOURCE_URL || null;
+  const publicAccess = process.env.CCTV_PUBLIC_ACCESS === "true";
   return {
     status: source ? "configured" : "not_configured",
     service: "osiris-mindcloud-ui",
     endpoint: "/api/cctv",
     source: source ? "configured" : null,
     streamStatus: source ? "configured" : "unconfigured",
-    proxyStatus: "not_implemented"
+    proxyStatus: "not_implemented",
+    access: source ? (publicAccess ? "public" : "osiris-controlled") : "unconfigured"
   };
 }
 
