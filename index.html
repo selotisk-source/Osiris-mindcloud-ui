@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>OSIRIS MindCloud — Split Screen</title>
+<title>MindCloud — Split Screen</title>
 <style>
 :root{--bg:#070a0f;--panel:#0d131c;--panel2:#111925;--line:#253142;--text:#e7edf5;--muted:#8290a3;--accent:#79b8ff;--good:#6ee7b7;--warn:#f7c873}
 *{box-sizing:border-box}html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font:14px/1.4 Inter,ui-sans-serif,system-ui,sans-serif}
@@ -25,23 +25,23 @@ body{overflow:hidden}.app{height:100%;display:flex;flex-direction:column}
 .drawer{height:0;overflow:hidden;border-top:1px solid transparent;transition:.18s}.drawer.open{height:45px;border-top-color:var(--line)}.drawer-inner{height:44px;display:flex;align-items:center;gap:7px;padding:0 12px;overflow-x:auto}.tab{white-space:nowrap;padding:6px 9px;border:1px solid #2a3748;border-radius:6px;background:#0d141e;cursor:grab}.tab.dragging{opacity:.45}
 .station.drop-target{outline:2px solid var(--accent);outline-offset:-2px}.footer{position:absolute;right:10px;bottom:8px;color:#526277;font-size:10px}
 @media(max-width:800px){.workspace{grid-template-columns:1fr;grid-template-rows:repeat(4,minmax(220px,1fr));overflow:auto}.station{min-height:220px}.topbar{height:auto;min-height:54px;flex-wrap:wrap}}
-.media-wrap{position:relative;height:230px;border:1px solid #1e2a3a;border-radius:8px;background:#05080c;overflow:hidden}.live-media{width:100%;height:100%;object-fit:cover;background:#05080c}.media-empty{position:absolute;inset:0;display:grid;place-items:center;text-align:center;color:#6f8095;font-weight:700;letter-spacing:.08em}.media-empty small{font-weight:400;letter-spacing:0}.media-state{position:absolute;left:8px;bottom:8px;background:#05080ccc;border:1px solid #263445;border-radius:5px;padding:4px 7px;color:#9aabc0;font-size:10px}.media-controls{display:flex;gap:6px;margin:8px 0}.source-input{flex:1;min-width:0;border:1px solid #253142;background:#0b1118;color:#e7edf5;border-radius:7px;padding:7px 9px}.godview{height:230px;position:relative;border:1px solid #1e2a3a;border-radius:8px;background:radial-gradient(circle,#142337 0 1px,transparent 2px);background-size:22px 22px;overflow:hidden}.gv-core,.gv-node{position:absolute;display:grid;place-items:center;border:1px solid #42678e;background:#0d1825;border-radius:50%;font-size:10px}.gv-core{width:70px;height:70px;left:calc(50% - 35px);top:calc(50% - 35px)}.gv-node{width:58px;height:58px}.gv-a{left:12%;top:18%}.gv-b{right:12%;top:18%}.gv-c{left:12%;bottom:16%}.gv-d{right:12%;bottom:16%}</style>
+.media-wrap{position:relative;height:230px;border:1px solid #1e2a3a;border-radius:8px;background:#05080c;overflow:hidden}.live-media{width:100%;height:100%;object-fit:cover;background:#05080c}.media-empty{position:absolute;inset:0;display:grid;place-items:center;text-align:center;color:#6f8095;font-weight:700;letter-spacing:.08em}.media-empty small{font-weight:400;letter-spacing:0}.media-state{position:absolute;left:8px;bottom:8px;background:#05080ccc;border:1px solid #263445;border-radius:5px;padding:4px 7px;color:#9aabc0;font-size:10px}.media-controls{display:flex;gap:6px;margin:8px 0}.source-input{flex:1;min-width:0;border:1px solid #253142;background:#0b1118;color:#e7edf5;border-radius:7px;padding:7px 9px}.godview{height:230px;position:relative;border:1px solid #1e2a3a;border-radius:8px;background:radial-gradient(circle,#142337 0 1px,transparent 2px);background-size:22px 22px;overflow:hidden}.gv-core,.gv-node{position:absolute;display:grid;place-items:center;border:1px solid #42678e;background:#0d1825;border-radius:50%;font-size:10px}.gv-core{width:70px;height:70px;left:calc(50% - 35px);top:calc(50% - 35px)}.gv-node{width:58px;height:58px}.gv-a{left:12%;top:18%}.gv-b{right:12%;top:18%}.gv-c{left:12%;bottom:16%}.gv-d{right:12%;bottom:16%}.gemini-card{border-color:#35506f}.gemini-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:9px}.gemini-pane{background:#0a1018;border:1px solid #24364b;border-radius:7px;padding:9px;display:flex;flex-direction:column;gap:6px}.gemini-pane b{font-size:12px}.gemini-pane span{color:var(--muted);font-size:11px;min-height:31px}.gemini-pane .btn{align-self:flex-start}.gemini-panel{margin-top:9px;border-top:1px solid #24364b;padding-top:9px}.gemini-list{display:grid;gap:6px}.gemini-row{display:flex;justify-content:space-between;gap:8px;padding:8px;border:1px solid #1e2a3a;border-radius:7px;background:#0a1018}@media(max-width:800px){.gemini-grid{grid-template-columns:1fr}}</style>
 </head>
 <body>
 <div class="app">
 <header class="topbar">
-  <div class="brand">OSIRIS <span>MINDCLOUD</span></div>
+  <div class="brand">MIND<span>CLOUD</span></div>
   <div class="status"><i class="dot"></i> four-station workspace</div>
   <div class="actions">
     <button class="btn active" data-layout="4">4</button>
     <button class="btn" data-layout="2">2</button>
     <button class="btn" data-layout="3">3</button>
     <button class="btn" id="drawerBtn">TOOLS</button>
-    <button class="btn" id="godBtn">GOD'S EYE VIEW</button>
+    <button class="btn" id="geminiBtn">GEMINI</button><button class="btn" id="godBtn">GOD'S EYE VIEW</button>
   </div>
 </header>
 <div class="drawer" id="drawer"><div class="drawer-inner">
-  <div class="tab" draggable="true" data-title="MiroFish">MiroFish</div>
+  <div class="tab" draggable="true" data-title="Gemini Split Screen">Gemini Split Screen</div><div class="tab" draggable="true" data-title="Gemini Integrations">Gemini Integrations</div><div class="tab" draggable="true" data-title="Gemini List">Gemini List</div><div class="tab" draggable="true" data-title="MiroFish">MiroFish</div>
   <div class="tab" draggable="true" data-title="Heritage Map">Heritage Map</div>
   <div class="tab" draggable="true" data-title="MINDCORE">MindCore</div>
   <div class="tab" draggable="true" data-title="Sensor Fabric">Sensor Fabric</div>
@@ -49,7 +49,7 @@ body{overflow:hidden}.app{height:100%;display:flex;flex-direction:column}
 </div></div>
 <main class="workspace" id="workspace">
 <section class="station coordinator" data-station="1"><div class="station-head"><span class="handle">⠿</span><span class="station-title">MindCore</span><span class="station-role">Coordinator</span></div><div class="content">
-  <div class="metrics"><div class="metric"><b>4</b><small>stations</small></div><div class="metric"><b>12</b><small>active nodes</small></div><div class="metric"><b class="ok">OK</b><small>fabric</small></div></div>
+  <div class="metrics"><div class="metric"><b>4</b><small>stations</small></div><div class="metric"><b>12</b><small>active nodes</small></div><div class="metric"><b class="ok">OK</b><small>fabric</small></div></div><div class="card gemini-card"><h3>Gemini Command Center</h3><p>Split screen, integrations and model list.</p><div class="gemini-grid"><div class="gemini-pane"><b>Split Screen</b><span>Research · Vision · Reasoning · Review</span><button class="btn" data-gemini="split">OPEN</button></div><div class="gemini-pane"><b>Integrations</b><span>API · Vision · Grounding · Live</span><button class="btn" data-gemini="integrations">OPEN</button></div><div class="gemini-pane"><b>Model List</b><span>Gemini family · routing</span><button class="btn" data-gemini="models">OPEN</button></div></div><div id="geminiPanel" class="gemini-panel" hidden></div></div>
   <div class="card"><h3>Orchestration</h3><p>Shared context, routing and task state across the four live stations.</p></div>
   <div class="graph"><div class="node" style="left:46%;top:42%">CORE</div><div class="node" style="left:17%;top:22%">GEO</div><div class="node" style="left:72%;top:23%">OSIRIS</div><div class="node" style="left:68%;top:70%">GOV</div><div class="node" style="left:18%;top:68%">R&amp;D</div><div class="edge" style="left:28%;top:35%;width:19%;transform:rotate(18deg)"></div><div class="edge" style="left:58%;top:36%;width:18%;transform:rotate(-17deg)"></div><div class="edge" style="left:57%;top:60%;width:17%;transform:rotate(24deg)"></div><div class="edge" style="left:29%;top:60%;width:19%;transform:rotate(-22deg)"></div></div>
 </div><span class="footer">drag modules here</span></section>
@@ -77,7 +77,13 @@ document.getElementById('connectBtn').onclick=()=>connectMedia(input.value);
 document.getElementById('stopBtn').onclick=stopMedia;
 document.getElementById('drawerBtn').onclick=()=>drawer.classList.toggle('open');
 document.querySelectorAll('[data-layout]').forEach(b=>b.onclick=()=>{document.querySelectorAll('[data-layout]').forEach(x=>x.classList.remove('active'));b.classList.add('active');const n=Number(b.dataset.layout);ws.style.gridTemplateColumns=n===2?'1fr 1fr':n===3?'1fr 1fr 1fr':'1fr 1fr';ws.style.gridTemplateRows=n===2?'1fr 1fr':n===3?'1fr':'1fr 1fr';[...ws.children].forEach((s,i)=>s.style.display=i<n?'flex':'none')});
-document.getElementById('godBtn').onclick=()=>document.querySelector('[data-station="4"]').scrollIntoView({behavior:'smooth'});
+document.getElementById('godBtn').onclick=()=>document.querySelector('[data-station="4"]').scrollIntoView({behavior:'smooth'});const geminiPanel=document.getElementById("geminiPanel");
+const geminiViews={
+split:'<div class="gemini-list"><div class="gemini-row"><span>Research</span><small>workspace</small></div><div class="gemini-row"><span>Vision</span><small>workspace</small></div><div class="gemini-row"><span>Reasoning</span><small>workspace</small></div><div class="gemini-row"><span>Review</span><small>workspace</small></div></div>',
+integrations:'<div class="gemini-list"><div class="gemini-row"><span>Gemini API</span><small>integration slot</small></div><div class="gemini-row"><span>Vision</span><small>integration slot</small></div><div class="gemini-row"><span>Grounding / Search</span><small>integration slot</small></div><div class="gemini-row"><span>Live / multimodal</span><small>integration slot</small></div></div>',
+models:'<div class="gemini-list"><div class="gemini-row"><span>Gemini 2.x family</span><small>routing group</small></div><div class="gemini-row"><span>Vision-capable</span><small>routing group</small></div><div class="gemini-row"><span>Fast</span><small>routing group</small></div><div class="gemini-row"><span>Reasoning</span><small>routing group</small></div></div>'};
+document.querySelectorAll("[data-gemini]").forEach(b=>b.onclick=()=>{geminiPanel.hidden=false;geminiPanel.innerHTML='<div class="gemini-panel-head"><b>'+b.dataset.gemini.toUpperCase()+'</b><button class="btn" onclick="this.parentElement.parentElement.hidden=true">CLOSE</button></div>'+geminiViews[b.dataset.gemini]);});
+document.getElementById("geminiBtn").onclick=()=>{document.querySelector('[data-station="1"]').scrollIntoView({behavior:"smooth"});geminiPanel.hidden=false;geminiPanel.innerHTML='<div class="gemini-panel-head"><b>GEMINI SPLIT SCREEN</b></div>'+geminiViews.split};
 let dragged=null;document.querySelectorAll('.tab').forEach(tab=>{tab.addEventListener('dragstart',e=>{dragged=tab;e.dataTransfer.effectAllowed='move';tab.classList.add('dragging')});tab.addEventListener('dragend',()=>{tab.classList.remove('dragging');dragged=null;document.querySelectorAll('.station').forEach(s=>s.classList.remove('drop-target'))})});
 document.querySelectorAll('.station').forEach(st=>{st.addEventListener('dragover',e=>{e.preventDefault();st.classList.add('drop-target')});st.addEventListener('dragleave',()=>st.classList.remove('drop-target'));st.addEventListener('drop',e=>{e.preventDefault();st.classList.remove('drop-target');if(!dragged)return;const title=dragged.dataset.title,c=st.querySelector('.content'),card=document.createElement('div');card.className='card';card.innerHTML='<h3>'+title+'</h3><p>Module attached to station '+st.dataset.station+'.</p>';c.prepend(card);dragged.remove();drawer.classList.remove('open')})});
 </script></body>
