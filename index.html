@@ -25,7 +25,7 @@ body{overflow:hidden}.app{height:100%;display:flex;flex-direction:column}
 .drawer{height:0;overflow:hidden;border-top:1px solid transparent;transition:.18s}.drawer.open{height:45px;border-top-color:var(--line)}.drawer-inner{height:44px;display:flex;align-items:center;gap:7px;padding:0 12px;overflow-x:auto}.tab{white-space:nowrap;padding:6px 9px;border:1px solid #2a3748;border-radius:6px;background:#0d141e;cursor:grab}.tab.dragging{opacity:.45}
 .station.drop-target{outline:2px solid var(--accent);outline-offset:-2px}.footer{position:absolute;right:10px;bottom:8px;color:#526277;font-size:10px}
 @media(max-width:800px){.workspace{grid-template-columns:1fr;grid-template-rows:repeat(4,minmax(220px,1fr));overflow:auto}.station{min-height:220px}.topbar{height:auto;min-height:54px;flex-wrap:wrap}}
-</style>
+.media-wrap{position:relative;height:230px;border:1px solid #1e2a3a;border-radius:8px;background:#05080c;overflow:hidden}.live-media{width:100%;height:100%;object-fit:cover;background:#05080c}.media-empty{position:absolute;inset:0;display:grid;place-items:center;text-align:center;color:#6f8095;font-weight:700;letter-spacing:.08em}.media-empty small{font-weight:400;letter-spacing:0}.media-state{position:absolute;left:8px;bottom:8px;background:#05080ccc;border:1px solid #263445;border-radius:5px;padding:4px 7px;color:#9aabc0;font-size:10px}.media-controls{display:flex;gap:6px;margin:8px 0}.source-input{flex:1;min-width:0;border:1px solid #253142;background:#0b1118;color:#e7edf5;border-radius:7px;padding:7px 9px}.godview{height:230px;position:relative;border:1px solid #1e2a3a;border-radius:8px;background:radial-gradient(circle,#142337 0 1px,transparent 2px);background-size:22px 22px;overflow:hidden}.gv-core,.gv-node{position:absolute;display:grid;place-items:center;border:1px solid #42678e;background:#0d1825;border-radius:50%;font-size:10px}.gv-core{width:70px;height:70px;left:calc(50% - 35px);top:calc(50% - 35px)}.gv-node{width:58px;height:58px}.gv-a{left:12%;top:18%}.gv-b{right:12%;top:18%}.gv-c{left:12%;bottom:16%}.gv-d{right:12%;bottom:16%}</style>
 </head>
 <body>
 <div class="app">
@@ -48,48 +48,37 @@ body{overflow:hidden}.app{height:100%;display:flex;flex-direction:column}
   <div class="tab" draggable="true" data-title="Evidence Graph">Evidence Graph</div>
 </div></div>
 <main class="workspace" id="workspace">
-<section class="station coordinator" data-station="1"><div class="station-head"><span class="handle">⠿</span><span class="station-title">Coordinator</span><span class="station-role">MindCore</span></div><div class="content">
+<section class="station coordinator" data-station="1"><div class="station-head"><span class="handle">⠿</span><span class="station-title">MindCore</span><span class="station-role">Coordinator</span></div><div class="content">
   <div class="metrics"><div class="metric"><b>4</b><small>stations</small></div><div class="metric"><b>12</b><small>active nodes</small></div><div class="metric"><b class="ok">OK</b><small>fabric</small></div></div>
-  <div class="card"><h3>Orchestration</h3><p>Shared context, routing and task state for the four stations.</p></div>
-  <div class="graph"><div class="node" style="left:46%;top:42%">CORE</div><div class="node" style="left:17%;top:22%">GEO</div><div class="node" style="left:72%;top:23%">SENS</div><div class="node" style="left:68%;top:70%">R&amp;D</div><div class="node" style="left:18%;top:68%">WORK</div><div class="edge" style="left:28%;top:35%;width:19%;transform:rotate(18deg)"></div><div class="edge" style="left:58%;top:36%;width:18%;transform:rotate(-17deg)"></div><div class="edge" style="left:57%;top:60%;width:17%;transform:rotate(24deg)"></div><div class="edge" style="left:29%;top:60%;width:19%;transform:rotate(-22deg)"></div></div>
-</div><span class="footer">drag tabs here</span></section>
-<section class="station" data-station="2"><div class="station-head"><span class="handle">⠿</span><span class="station-title">GEO / Heritage</span><span class="station-role">Cyprus · Varna</span></div><div class="content"><div class="map"><span class="pin" style="left:31%;top:55%"></span><span class="pin" style="left:67%;top:36%"></span><span class="pin" style="left:53%;top:66%"></span></div><div class="card"><h3>Heritage Graph</h3><p>Map → place → object → institution → virtual tour → evidence.</p></div></div><span class="footer">drag tabs here</span></section>
-<section class="station" data-station="3"><div class="station-head"><span class="handle">⠿</span><span class="station-title">Sensor Fabric</span><span class="station-role">Adaptive IoT</span></div><div class="content"><div class="card"><div class="sensor"><span>RFID / RAIN</span><span class="ok">● online</span></div><div class="sensor"><span>Porttelefon</span><span class="ok">● encrypted</span></div><div class="sensor"><span>Camera</span><span class="ok">● local gateway</span></div><div class="sensor"><span>Environment</span><span class="ok">● learning</span></div><div class="sensor"><span>Enigma</span><span class="tag">private domain</span></div></div><div class="card"><h3>Sensor correlation</h3><p>Signals are correlated locally before private data enters the wider MindCloud fabric.</p></div></div><span class="footer">adaptive sensor network</span></section>
-<section class="station" data-station="4"><div class="station-head"><span class="handle">⠿</span><span class="station-title">Research / Work</span><span class="station-role">R&amp;D</span></div><div class="content"><div class="card"><h3>Active workspace</h3><p>Drop MiroFish, Evidence Graph, documents or another capability into this station.</p></div><div class="card"><h3>Pipeline</h3><p>Discover → Verify → Test → Compare → Extract → Sandbox → Integrate → Red-team → Promote</p></div></div><span class="footer">drop zone</span></section>
+  <div class="card"><h3>Orchestration</h3><p>Shared context, routing and task state across the four live stations.</p></div>
+  <div class="graph"><div class="node" style="left:46%;top:42%">CORE</div><div class="node" style="left:17%;top:22%">GEO</div><div class="node" style="left:72%;top:23%">OSIRIS</div><div class="node" style="left:68%;top:70%">GOV</div><div class="node" style="left:18%;top:68%">R&amp;D</div><div class="edge" style="left:28%;top:35%;width:19%;transform:rotate(18deg)"></div><div class="edge" style="left:58%;top:36%;width:18%;transform:rotate(-17deg)"></div><div class="edge" style="left:57%;top:60%;width:17%;transform:rotate(24deg)"></div><div class="edge" style="left:29%;top:60%;width:19%;transform:rotate(-22deg)"></div></div>
+</div><span class="footer">drag modules here</span></section>
+<section class="station media-station" data-station="2"><div class="station-head"><span class="handle">⠿</span><span class="station-title">OSIRIS Live</span><span class="station-role">Image / CCTV</span></div><div class="content">
+  <div class="media-wrap"><video id="liveVideo" class="live-media" autoplay muted playsinline controls></video><img id="liveImage" class="live-media" alt="OSIRIS live image" hidden><div id="mediaEmpty" class="media-empty">LIVE IMAGE PIPE<br><small>Waiting for a configured OSIRIS source</small></div><div id="mediaState" class="media-state">source: not configured</div></div>
+  <div class="media-controls"><input id="sourceInput" class="source-input" placeholder="HLS .m3u8 / MP4 / image URL"><button class="btn" id="connectBtn">CONNECT</button><button class="btn" id="stopBtn">STOP</button></div>
+  <div class="card"><h3>Camera pipe</h3><p id="cameraMeta">/api/cctv → source → stream → proxy</p></div>
+</div><span class="footer">live media station</span></section>
+<section class="station" data-station="3"><div class="station-head"><span class="handle">⠿</span><span class="station-title">GEO / Heritage</span><span class="station-role">Cyprus · Varna · Sweden</span></div><div class="content"><div class="map"><span class="pin" style="left:31%;top:55%"></span><span class="pin" style="left:67%;top:36%"></span><span class="pin" style="left:53%;top:66%"></span></div><div class="card"><h3>Heritage Graph</h3><p>Map → place → object → institution → virtual tour → evidence.</p></div></div><span class="footer">geographic station</span></section>
+<section class="station" data-station="4"><div class="station-head"><span class="handle">⠿</span><span class="station-title">God's Eye View</span><span class="station-role">Global Graph</span></div><div class="content"><div class="godview"><div class="gv-core">MINDCORE</div><div class="gv-node gv-a">OSIRIS</div><div class="gv-node gv-b">GEO</div><div class="gv-node gv-c">RESEARCH</div><div class="gv-node gv-d">SENSORS</div></div><div class="card"><h3>System overview</h3><p>Global state, relationships and active stations in one view.</p></div></div><span class="footer">god's eye view</span></section>
 </main>
 </div>
-<script>
-const ws=document.getElementById('workspace'), drawer=document.getElementById('drawer');
-fetch("/api/router?kind=general").then(r=>r.json()).then(x=>{const e=document.getElementById("routerState");if(e)e.textContent=`Router network: ${x.network.topology} · coordinator → ${x.route.targetName} · ${x.network.stations.length} stations`;}).catch(()=>{const e=document.getElementById("routerState");if(e)e.textContent="Router network: unavailable";});
+<script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script><script>
+const ws=document.getElementById('workspace'), drawer=document.getElementById('drawer'), video=document.getElementById('liveVideo'), image=document.getElementById('liveImage'), empty=document.getElementById('mediaEmpty'), state=document.getElementById('mediaState'), input=document.getElementById('sourceInput');
+let hls=null;
+fetch("/api/cctv").then(r=>r.json()).then(x=>{input.value=localStorage.getItem("osirisSource")||x.source||""; state.textContent="source: "+(x.source?"configured":"not configured")+" · proxy: "+x.proxyStatus; document.getElementById("cameraMeta").textContent="/api/cctv → "+(x.source?"source configured":"no source")+" → "+x.streamStatus+" → "+x.proxyStatus;}).catch(()=>{state.textContent="source: API unavailable"});
+function stopMedia(){if(hls){hls.destroy();hls=null}video.pause();video.removeAttribute("src");video.load();image.hidden=true;video.hidden=false;empty.hidden=false}
+function connectMedia(src){src=(src||"").trim();stopMedia();if(!src){state.textContent="source: not configured";return}localStorage.setItem("osirisSource",src);empty.hidden=true;state.textContent="source: "+src;
+ if(/\.(jpg|jpeg|png|webp|gif)(\?|$)/i.test(src)){video.hidden=true;image.hidden=false;image.src=src;image.onerror=()=>{empty.hidden=false;state.textContent="image: failed to load"};return}
+ video.hidden=false;image.hidden=true;
+ if(/\.m3u8(\?|$)/i.test(src) && window.Hls && Hls.isSupported()){hls=new Hls({lowLatencyMode:true});hls.loadSource(src);hls.attachMedia(video);hls.on(Hls.Events.MANIFEST_PARSED,()=>video.play().catch(()=>{}));}
+ else {video.src=src;video.play().catch(()=>{});}
+}
+document.getElementById('connectBtn').onclick=()=>connectMedia(input.value);
+document.getElementById('stopBtn').onclick=stopMedia;
 document.getElementById('drawerBtn').onclick=()=>drawer.classList.toggle('open');
-document.querySelectorAll('[data-layout]').forEach(b=>b.onclick=()=>{
-  document.querySelectorAll('[data-layout]').forEach(x=>x.classList.remove('active')); b.classList.add('active');
-  const n=Number(b.dataset.layout);
-  ws.style.gridTemplateColumns=n===2?'1fr 1fr':n===3?'1fr 1fr 1fr':'1fr 1fr';
-  ws.style.gridTemplateRows=n===2?'1fr 1fr':n===3?'1fr':'1fr 1fr';
-  [...ws.children].forEach((s,i)=>s.style.display=i<n?'flex':'none');
-});
-document.getElementById('godBtn').onclick=()=>{
-  document.querySelectorAll('.station').forEach(s=>s.classList.toggle('coordinator'));
-  alert("God's Eye View: global orchestration layer toggled.");
-};
-let dragged=null;
-document.querySelectorAll('.tab').forEach(tab=>{
-  tab.addEventListener('dragstart',e=>{dragged=tab;e.dataTransfer.effectAllowed='move';tab.classList.add('dragging')});
-  tab.addEventListener('dragend',()=>{tab.classList.remove('dragging');dragged=null;document.querySelectorAll('.station').forEach(s=>s.classList.remove('drop-target'))});
-});
-document.querySelectorAll('.station').forEach(st=>{
-  st.addEventListener('dragover',e=>{e.preventDefault();st.classList.add('drop-target')});
-  st.addEventListener('dragleave',()=>st.classList.remove('drop-target'));
-  st.addEventListener('drop',e=>{
-    e.preventDefault();st.classList.remove('drop-target');
-    if(!dragged)return;
-    const title=dragged.dataset.title;
-    const c=st.querySelector('.content');
-    const card=document.createElement('div');card.className='card';card.innerHTML='<h3>'+title+'</h3><p>Module attached to station '+st.dataset.station+'.</p>';
-    c.prepend(card); dragged.remove(); drawer.classList.remove('open');
-  });
-});
-</script>
-</body>
+document.querySelectorAll('[data-layout]').forEach(b=>b.onclick=()=>{document.querySelectorAll('[data-layout]').forEach(x=>x.classList.remove('active'));b.classList.add('active');const n=Number(b.dataset.layout);ws.style.gridTemplateColumns=n===2?'1fr 1fr':n===3?'1fr 1fr 1fr':'1fr 1fr';ws.style.gridTemplateRows=n===2?'1fr 1fr':n===3?'1fr':'1fr 1fr';[...ws.children].forEach((s,i)=>s.style.display=i<n?'flex':'none')});
+document.getElementById('godBtn').onclick=()=>document.querySelector('[data-station="4"]').scrollIntoView({behavior:'smooth'});
+let dragged=null;document.querySelectorAll('.tab').forEach(tab=>{tab.addEventListener('dragstart',e=>{dragged=tab;e.dataTransfer.effectAllowed='move';tab.classList.add('dragging')});tab.addEventListener('dragend',()=>{tab.classList.remove('dragging');dragged=null;document.querySelectorAll('.station').forEach(s=>s.classList.remove('drop-target'))})});
+document.querySelectorAll('.station').forEach(st=>{st.addEventListener('dragover',e=>{e.preventDefault();st.classList.add('drop-target')});st.addEventListener('dragleave',()=>st.classList.remove('drop-target'));st.addEventListener('drop',e=>{e.preventDefault();st.classList.remove('drop-target');if(!dragged)return;const title=dragged.dataset.title,c=st.querySelector('.content'),card=document.createElement('div');card.className='card';card.innerHTML='<h3>'+title+'</h3><p>Module attached to station '+st.dataset.station+'.</p>';c.prepend(card);dragged.remove();drawer.classList.remove('open')})});
+</script></body>
 </html>";
