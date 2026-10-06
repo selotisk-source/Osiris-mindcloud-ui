@@ -5,7 +5,7 @@ const STATIONS = [
   { id: "station-4", name: "Research / Work", role: "R&D", accepts: ["research","document","tool","analysis"] }
 ];
 
-export function createRouterNetwork() {
+function createRouterNetwork() {
   const routes = new Map();
   for (const station of STATIONS) routes.set(station.id, new Set(STATIONS.filter(s => s.id !== station.id).map(s => s.id)));
 
@@ -32,3 +32,5 @@ export function createRouterNetwork() {
 
   return { route, snapshot };
 }
+
+module.exports = { createRouterNetwork };
