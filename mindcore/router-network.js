@@ -4,6 +4,7 @@ const { createBestOfN } = require("./best-of-n");
 const { createProcessRewardModel } = require("./process-reward-model");
 const { createTimeComputeScaling } = require("./time-compute-scaling");
 const { createSituationalAwareness } = require("./situational-awareness");
+const { createRecursiveSelfImprovement } = require("./recursive-self-improvement");
 
 const STATIONS = [
   { id: "station-1", name: "Coordinator", role: "MindCore", accepts: ["orchestration","routing","general"] },
@@ -20,6 +21,7 @@ function createRouterNetwork() {
   const processRewardModel = createProcessRewardModel();
   const timeComputeScaling = createTimeComputeScaling();
   const situationalAwareness = createSituationalAwareness();
+  const recursiveSelfImprovement = createRecursiveSelfImprovement();
   for (const station of STATIONS) routes.set(station.id, new Set(STATIONS.filter(s => s.id !== station.id).map(s => s.id)));
 
   function route(task = {}) {
@@ -43,7 +45,7 @@ function createRouterNetwork() {
     };
   }
 
-  return { route, snapshot, grpo, monteCarlo, bestOfN, processRewardModel, timeComputeScaling, situationalAwareness };
+  return { route, snapshot, grpo, monteCarlo, bestOfN, processRewardModel, timeComputeScaling, situationalAwareness, recursiveSelfImprovement };
 }
 
 module.exports = { createRouterNetwork };
