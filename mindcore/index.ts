@@ -9,3 +9,4 @@ export * from "./document-forensics";
 
 export * from "./blackbird";
 export * from "./kernel";
+\nexport * from "./cognee";\n
