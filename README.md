@@ -52,3 +52,7 @@ Cognee remains the knowledge-memory adapter and is registered when `COGNEE_ENDPO
 ARGOS ATLAS is registered as an external GeoOSINT capability for OSIRIS/MindCore. The adapter exposes a typed entry point for opening/describing the atlas and records the requested geographic layer in the MindCore audit stream. Supported conceptual layers include cameras, flights, ships, infrastructure, events, markets and risk zones.
 
 The integration deliberately stops at the official public surface until ARGOS ATLAS's advertised API/MCP interfaces are generally available. No private endpoint, undocumented scraping contract or credential flow is assumed.
+
+## Grounded Spatial Intelligence
+
+MindCore now registers a supervised **Grounded API / GroundedSLAM** adapter in the Spatial Intelligence layer. The intended flow is validated spatial output (SLAM/depth/related signals) → OSIRIS Geo → ARGOS ATLAS. The adapter does not assume undocumented endpoints; live API use requires an explicitly configured GROUNDED_API_ENDPOINT and verified authentication/schema.
