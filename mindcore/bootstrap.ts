@@ -5,6 +5,7 @@ import {toolingCatalog} from "./catalog";
 import {createAgentToolCapabilities,ToolExecutor} from "./agent-tooling";
 import {HttpCogneeAdapter,cogneeMemoryCapability} from "./cognee";
 import {argosAtlasCapability} from "./argos-atlas";
+import {groundedApiCapability} from "./grounded-api";
 
 export function createMindCore(
   emit=(event:any)=>void,
@@ -13,8 +14,9 @@ export function createMindCore(
  const registry=new CapabilityRegistry();
  registry.register(gatedComputerAgent());
  registry.register(argosAtlasCapability());
+ registry.register(groundedApiCapability());
 
- const integratedIds=new Set(["argos-atlas","graft","openmontage","codebase-memory-mcp","browser-use","agentmemory","scientific-agent-skills","diagram-design","anthropic-cybersecurity-skills","awesome-harness-engineering","openviking"]);
+ const integratedIds=new Set(["argos-atlas","grounded-api","graft","openmontage","codebase-memory-mcp","browser-use","agentmemory","scientific-agent-skills","diagram-design","anthropic-cybersecurity-skills","awesome-harness-engineering","openviking"]);
  if(options.toolExecutor){
   for(const capability of createAgentToolCapabilities(options.toolExecutor)){
    registry.register(capability);
