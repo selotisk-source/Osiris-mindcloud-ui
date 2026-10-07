@@ -12,7 +12,7 @@ export function createMindCore(
  const registry=new CapabilityRegistry();
  registry.register(gatedComputerAgent());
 
- const integratedIds=new Set(["graft","openmontage","codebase-memory-mcp"]);
+ const integratedIds=new Set(["graft","openmontage","codebase-memory-mcp","browser-use","agentmemory","scientific-agent-skills","diagram-design","anthropic-cybersecurity-skills","awesome-harness-engineering","openviking"]);
  if(options.toolExecutor){
   for(const capability of createAgentToolCapabilities(options.toolExecutor)){
    registry.register(capability);
