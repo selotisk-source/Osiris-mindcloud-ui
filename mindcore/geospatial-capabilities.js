@@ -2,6 +2,7 @@ const CAPABILITIES = Object.freeze([
   { id: "geo-3d-context", name: "Geospatial 3D Context", domain: "geo", accepts: ["camera", "drone", "map"], outputs: ["spatial_model"], status: "available" },
   { id: "visibility-analysis", name: "Visibility / Sightline Analysis", domain: "geo", accepts: ["spatial_model", "observer", "target"], outputs: ["visibility_profile"], status: "available" },
   { id: "route-analysis", name: "Route & Accessibility Analysis", domain: "geo", accepts: ["spatial_model", "origin", "destination", "constraints"], outputs: ["route_options"], status: "available" },
+  { id: "route-variation", name: "Adaptive Route Variation", domain: "liveness", accepts: ["route_options", "risk_state", "history", "constraints"], outputs: ["selected_route", "route_rationale"], status: "available" },
   { id: "change-detection", name: "Temporal Change Detection", domain: "sensor", accepts: ["observations", "baseline"], outputs: ["changes"], status: "available" },
   { id: "sensor-fusion", name: "Sensor Fusion", domain: "sensor", accepts: ["observations"], outputs: ["fused_observation"], status: "available" },
   { id: "traffic-flow", name: "Traffic & Movement Analysis", domain: "sensor", accepts: ["observations"], outputs: ["flow_summary"], status: "available" },
@@ -88,6 +89,33 @@ function createGeospatialCapabilities() {
     };
   }
 
+  function selectAdaptiveRoute({ routeOptions = [], riskState = {}, history = [], constraints = {} } = {}) {
+    const options = Array.isArray(routeOptions) ? routeOptions.filter(Boolean) : [];
+    if (!options.length) return { type: "route_selection", selectedRoute: null, reason: "no-route-options" };
+
+    const recent = new Set((Array.isArray(history) ? history : []).slice(-Math.max(1, Number(constraints.historyWindow || 3))).map(item => item.routeId).filter(Boolean));
+    const scored = options.map((route, index) => {
+      const risk = clamp01(route.risk);
+      const access = clamp01(route.accessibility == null ? 1 : route.accessibility);
+      const familiarity = recent.has(route.id) ? 1 : 0;
+      const currentRisk = clamp01(riskState[route.id] == null ? risk : riskState[route.id]);
+      const score = (1 - currentRisk) * 0.6 + access * 0.3 + (1 - familiarity) * 0.1;
+      return { route, score, index };
+    }).sort((a, b) => b.score - a.score);
+
+    const chosen = scored[0];
+    return {
+      type: "route_selection",
+      selectedRoute: chosen.route,
+      selectedRouteId: chosen.route.id || null,
+      score: Number(chosen.score.toFixed(4)),
+      policy: "safety-first-accessibility-second-controlled-variation",
+      rationale: "Select a safe accessible option while allowing controlled variation among approved routes.",
+      alternatives: scored.slice(1).map(item => ({ id: item.route.id || null, score: Number(item.score.toFixed(4)) })),
+      timestamp: new Date().toISOString()
+    };
+  }
+
   function planCapabilities({ task = "situational-awareness", available = [] } = {}) {
     const requested = String(task).toLowerCase();
     const availableIds = new Set(available.length ? available : CAPABILITIES.map(item => item.id));
@@ -99,7 +127,7 @@ function createGeospatialCapabilities() {
     return preferred.filter(id => availableIds.has(id));
   }
 
-  return { list, extract, fuse, detectChanges, summarizeTraffic, analyzeWifiRF, planCapabilities };
+  return { list, extract, fuse, detectChanges, summarizeTraffic, analyzeWifiRF, selectAdaptiveRoute, planCapabilities };
 }
 
 module.exports = { CAPABILITIES, createGeospatialCapabilities };
