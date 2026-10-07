@@ -4,7 +4,7 @@
   "version": "0.1.0",
   "description": "Two-station MindCloud workspace for Brave/Chromium.",
   "permissions": ["storage", "tabs", "sidePanel"],
-  "host_permissions": ["https://osiris-mindcloud-ui-production.up.railway.app/*"],
+  "host_permissions": ["https://osiris-mindcloud.up.railway.app/*"],
   "action": { "default_title": "Open MindCloud Split Screen" },
   "side_panel": { "default_path": "sidepanel.html" },
   "background": { "service_worker": "background.js" }
