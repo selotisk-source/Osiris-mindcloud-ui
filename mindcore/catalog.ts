@@ -69,4 +69,5 @@ export const toolingCatalog:ToolEntry[]=[
 {id:"graft",name:"Graft",source:"NanoNets/Graft",layer:"CodeIntelligence",status:"adapter-ready",kind:"repo"},
 {id:"openmontage",name:"OpenMontage",source:"calesthio/OpenMontage",layer:"MediaPipeline",status:"adapter-ready",kind:"repo"},
 {id:"codebase-memory-mcp",name:"Codebase Memory MCP",source:"DeusData/codebase-memory-mcp",layer:"CodeIntelligence",status:"adapter-ready",kind:"repo"},
+{id:"argos-atlas",name:"ARGOS ATLAS",source:"argosatlas.com",layer:"GeoOSINT",status:"adapter-ready",kind:"service"},
 ];
