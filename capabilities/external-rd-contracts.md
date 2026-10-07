@@ -33,3 +33,16 @@ These are adapter boundaries, not vendored third-party runtimes.
 ## Promotion rule
 
 No external capability is promoted to a trusted MindCore path merely because the upstream repository exists. The adapter, output schema, health state and evidence/provenance must be verified independently.
+
+## Orca
+
+- capability: `agent_execution`
+- request: `ExecutionDispatch`
+- output: `AgentExecutionReceipt + WorktreeRef`
+- evidence gate: execution output must retain task, agent, worktree, commit and validation metadata before promotion
+- execution: isolated worktree/process boundary selected by MindCloud policy
+- status: planned adapter
+
+## Shared execution rule
+
+Orca is an execution surface. MindCloud remains authoritative for routing policy, security identity, credential domains and evidence promotion. Task completion in Orca does not automatically promote an artifact into MindCore.
