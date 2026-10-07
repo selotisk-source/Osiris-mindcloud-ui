@@ -5,7 +5,8 @@ const CAPABILITIES = Object.freeze([
   { id: "change-detection", name: "Temporal Change Detection", domain: "sensor", accepts: ["observations", "baseline"], outputs: ["changes"], status: "available" },
   { id: "sensor-fusion", name: "Sensor Fusion", domain: "sensor", accepts: ["observations"], outputs: ["fused_observation"], status: "available" },
   { id: "traffic-flow", name: "Traffic & Movement Analysis", domain: "sensor", accepts: ["observations"], outputs: ["flow_summary"], status: "available" },
-  { id: "situational-layer", name: "Live Situational Layer", domain: "orchestration", accepts: ["fused_observation", "flow_summary", "changes"], outputs: ["situational_state"], status: "available" }
+  { id: "situational-layer", name: "Live Situational Layer", domain: "orchestration", accepts: ["fused_observation", "flow_summary", "changes"], outputs: ["situational_state"], status: "available" },
+  { id: "wifi-rf-presence", name: "WiFi / RF Presence & Motion Sensing", domain: "sensor", accepts: ["rf_observations", "room_model"], outputs: ["presence_map", "motion_events"], status: "available", privacy: "authorized-environment-only" }
 ]);
 
 function clamp01(value) {
@@ -61,6 +62,32 @@ function createGeospatialCapabilities() {
     return { type: "flow_summary", observationCount: items.length, counts, timestamp: new Date().toISOString() };
   }
 
+  function analyzeWifiRF({ observations = [], roomModel = null, authorized = false } = {}) {
+    if (!authorized) {
+      return {
+        type: "rf_sensing_denied",
+        reason: "explicit authorization required",
+        observationCount: 0
+      };
+    }
+    const items = Array.isArray(observations) ? observations : [];
+    const motionEvents = items.filter(item => item && item.motion === true).map(item => ({
+      zone: item.zone || "unknown",
+      confidence: clamp01(item.confidence),
+      timestamp: item.timestamp || new Date().toISOString()
+    }));
+    return {
+      type: "wifi_rf_presence",
+      roomModel,
+      observationCount: items.length,
+      motionEventCount: motionEvents.length,
+      motionEvents,
+      outputScope: "presence-and-motion-zones",
+      identityInference: false,
+      timestamp: new Date().toISOString()
+    };
+  }
+
   function planCapabilities({ task = "situational-awareness", available = [] } = {}) {
     const requested = String(task).toLowerCase();
     const availableIds = new Set(available.length ? available : CAPABILITIES.map(item => item.id));
@@ -72,7 +99,7 @@ function createGeospatialCapabilities() {
     return preferred.filter(id => availableIds.has(id));
   }
 
-  return { list, extract, fuse, detectChanges, summarizeTraffic, planCapabilities };
+  return { list, extract, fuse, detectChanges, summarizeTraffic, analyzeWifiRF, planCapabilities };
 }
 
 module.exports = { CAPABILITIES, createGeospatialCapabilities };
