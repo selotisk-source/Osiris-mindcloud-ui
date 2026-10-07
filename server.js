@@ -37,6 +37,15 @@ const server = http.createServer((req, res) => {
     }));
     return;
   }
+  if (req.url === "/api/capabilities") {
+    res.writeHead(200, { "content-type": "application/json; charset=utf-8" });
+    res.end(JSON.stringify({
+      type: "mindcloud_capability_registry",
+      source: "MindCore",
+      capabilities: routerNetwork.geospatialCapabilities.list()
+    }));
+    return;
+  }
   if (req.url === "/api/cctv") {
     res.writeHead(200, { "content-type": "application/json; charset=utf-8" });
     res.end(JSON.stringify(cctvResponse()));
