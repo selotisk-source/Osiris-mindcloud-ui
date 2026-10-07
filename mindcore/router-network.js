@@ -9,6 +9,7 @@ const { createReasoningOrchestrator } = require("./reasoning-orchestrator");
 const { createInContextLearning } = require("./in-context-learning");
 const { createPPO } = require("./ppo");
 const { createMonteCarloTreeResearch } = require("./monte-carlo-tree-research");
+const { createGeospatialCapabilities } = require("./geospatial-capabilities");
 
 const STATIONS = [
   { id: "station-1", name: "Coordinator", role: "MindCore", accepts: ["orchestration","routing","general"] },
@@ -30,6 +31,7 @@ function createRouterNetwork() {
   const inContextLearning = createInContextLearning();
   const ppo = createPPO();
   const monteCarloTreeResearch = createMonteCarloTreeResearch();
+  const geospatialCapabilities = createGeospatialCapabilities();
   for (const station of STATIONS) routes.set(station.id, new Set(STATIONS.filter(s => s.id !== station.id).map(s => s.id)));
 
   function route(task = {}) {
@@ -53,7 +55,7 @@ function createRouterNetwork() {
     };
   }
 
-  return { route, snapshot, grpo, monteCarlo, monteCarloTreeResearch, bestOfN, processRewardModel, timeComputeScaling, situationalAwareness, recursiveSelfImprovement, reasoningOrchestrator, inContextLearning, ppo };
+  return { route, snapshot, grpo, monteCarlo, monteCarloTreeResearch, bestOfN, processRewardModel, timeComputeScaling, situationalAwareness, recursiveSelfImprovement, reasoningOrchestrator, inContextLearning, ppo, geospatialCapabilities };
 }
 
 module.exports = { createRouterNetwork };
