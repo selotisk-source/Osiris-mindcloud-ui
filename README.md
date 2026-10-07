@@ -27,3 +27,15 @@ These patterns are integrated as explicit capability/runtime references rather t
 - self-healing with evidence and verification
 - agent identity separated from security identity
 - Metanoia revalidation before consequential promotion
+
+## Integrated agent toolchain
+
+MindCore now has typed adapter contracts for three external capabilities:
+
+- **Graft** — codebase context and graph operations.
+- **Codebase Memory MCP** — local structural code intelligence and knowledge-graph queries.
+- **OpenMontage** — supervised agentic video production.
+
+The adapters are execution-surface integrations: MindCore keeps routing, approval, audit and promotion authority. External credentials, browser sessions and filesystem/process access remain outside agent identity and behind explicit execution domains.
+
+Cognee remains the knowledge-memory adapter and is registered when `COGNEE_ENDPOINT` is configured.
