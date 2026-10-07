@@ -55,5 +55,8 @@ export const toolingCatalog:ToolEntry[]=[
 {id:"openscreen",name:"OpenScreen",source:"siddharthvaddem/openscreen",layer:"EvidenceCapture",status:"registered",kind:"repo"},
 {id:"ds2api",name:"DeepSeek API Bridge",source:"CJackHwang/ds2api",layer:"ProviderAdapter",status:"registered",kind:"repo"},
 {id:"systematic-trading",name:"Awesome Systematic Trading",source:"paperswithbacktest/awesome-systematic-trading",layer:"MarketResearch",status:"adapter-ready",kind:"repo"},
-{id:"model-gateway",name:"Model Gateway",source:"Alishahryar1/free-claude-code",layer:"ModelRouter",status:"adapter-ready",kind:"repo"}
+{id:"model-gateway",name:"Model Gateway",source:"Alishahryar1/free-claude-code",layer:"ModelRouter",status:"adapter-ready",kind:"repo"},
+{id:"autoharness",name:"AutoHarness",source:"tigerless-labs/autoharness",layer:"SelfLearning",status:"adapter-ready",kind:"repo"},
+{id:"opencode-runtime",name:"OpenCode Server Runtime",source:"OpenCode",layer:"AgentRuntime",status:"adapter-ready",kind:"repo"},
+{id:"mimo-v2-6-pro",name:"MiMo-V2.6-Pro",source:"Xiaomi MiMo",layer:"FrontierModel",status:"registered",kind:"resource"}
 ];
