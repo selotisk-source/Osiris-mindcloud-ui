@@ -59,4 +59,5 @@ export const toolingCatalog:ToolEntry[]=[
 {id:"autoharness",name:"AutoHarness",source:"tigerless-labs/autoharness",layer:"SelfLearning",status:"adapter-ready",kind:"repo"},
 {id:"opencode-runtime",name:"OpenCode Server Runtime",source:"OpenCode",layer:"AgentRuntime",status:"adapter-ready",kind:"repo"},
 {id:"mimo-v2-6-pro",name:"MiMo-V2.6-Pro",source:"Xiaomi MiMo",layer:"FrontierModel",status:"registered",kind:"resource"}
+{id:"cognee",name:"Cognee",source:"topoteretes/cognee",layer:"Knowledge",status:"adapter-ready",kind:"repo"},
 ];
