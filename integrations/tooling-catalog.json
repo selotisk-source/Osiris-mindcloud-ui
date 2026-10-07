@@ -149,6 +149,36 @@
       "integration": "typed adapter for agent dispatch, isolated git worktrees, execution receipts, supervised task coordination and operator-visible workspace state; MindCloud retains policy, credentials and promotion authority",
       "status": "planned-adapter",
       "security": "Orca worktrees/processes are execution surfaces only; credentials, browser sessions and computer-use authority remain in explicit MindCloud execution domains; task completion does not itself imply worktree/process completion"
+    },
+    {
+      "id": "graft",
+      "source": "NanoNets/Graft",
+      "role": "codebase context graph",
+      "mindcloud_layer": "CodeIntelligence",
+      "priority": 1,
+      "integration": "typed MindCore capability adapter for init/build/ask/grep/map/viz; generated graph remains a local regenerable cache",
+      "status": "adapter-ready",
+      "security": "admin-gated execution; repository workspace is explicit"
+    },
+    {
+      "id": "openmontage",
+      "source": "calesthio/OpenMontage",
+      "role": "agentic video production",
+      "mindcloud_layer": "MediaPipeline",
+      "priority": 2,
+      "integration": "typed supervised capability for plan/research/script/render/validate; outputs become artifacts before promotion",
+      "status": "adapter-ready",
+      "security": "admin-gated execution; credentials stay in the execution domain"
+    },
+    {
+      "id": "codebase-memory-mcp",
+      "source": "DeusData/codebase-memory-mcp",
+      "role": "code intelligence MCP",
+      "mindcloud_layer": "CodeIntelligence",
+      "priority": 1,
+      "integration": "typed adapter around local stdio MCP/CLI operations for graph search, tracing, architecture, impact analysis and gated indexing",
+      "status": "adapter-ready",
+      "security": "local-only by default; explicit repository root and execution domain"
     }
   ],
   "shared_contracts": [
@@ -166,6 +196,10 @@
     "GpuComputeRequest",
     "ExecutionDispatch",
     "WorktreeRef",
-    "AgentExecutionReceipt"
+    "AgentExecutionReceipt",
+    "AgentToolRequest",
+    "AgentToolResult",
+    "CodeIntelligenceQuery",
+    "MediaPipelineRequest"
   ]
 }
