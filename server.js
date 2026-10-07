@@ -6,6 +6,7 @@ const { createRouterNetwork } = require("./mindcore/router-network");
 const routerNetwork = createRouterNetwork();
 const port = Number(process.env.PORT || 3000);
 const html = fs.readFileSync(path.join(__dirname, "index.html"), "utf8");
+const agentTools = JSON.parse(fs.readFileSync(path.join(__dirname, "integrations", "agent-tools.json"), "utf8"));
 
 function cctvResponse() {
   const source = process.env.CCTV_SOURCE_URL || null;
@@ -35,6 +36,11 @@ const server = http.createServer((req, res) => {
       network: routerNetwork.snapshot(),
       route: routerNetwork.route({ taskId: "ui-route", kind })
     }));
+    return;
+  }
+  if (req.url === "/api/agent-tools") {
+    res.writeHead(200, { "content-type": "application/json; charset=utf-8" });
+    res.end(JSON.stringify(agentTools));
     return;
   }
   if (req.url === "/api/capabilities") {
