@@ -119,7 +119,9 @@ function createGeospatialCapabilities() {
   function planCapabilities({ task = "situational-awareness", available = [] } = {}) {
     const requested = String(task).toLowerCase();
     const availableIds = new Set(available.length ? available : CAPABILITIES.map(item => item.id));
-    const preferred = requested.includes("traffic")
+    const preferred = requested.includes("liveness") || requested.includes("route") || requested.includes("protection")
+      ? ["geo-3d-context", "route-analysis", "route-variation", "sensor-fusion", "situational-layer"]
+      : requested.includes("traffic")
       ? ["sensor-fusion", "traffic-flow", "change-detection", "situational-layer"]
       : requested.includes("geo") || requested.includes("map")
         ? ["geo-3d-context", "visibility-analysis", "route-analysis", "situational-layer"]
