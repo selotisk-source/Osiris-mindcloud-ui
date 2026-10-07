@@ -1,7 +1,17 @@
 import type {AgentCapability,ApprovalLevel,TaskContext} from "./contracts";
 import {requireApproval} from "./approval-gate";
 
-export type AgentToolId = "graft" | "openmontage" | "codebase-memory-mcp";
+export type AgentToolId =
+  | "graft"
+  | "openmontage"
+  | "codebase-memory-mcp"
+  | "browser-use"
+  | "agentmemory"
+  | "scientific-agent-skills"
+  | "diagram-design"
+  | "anthropic-cybersecurity-skills"
+  | "awesome-harness-engineering"
+  | "openviking";
 
 export interface ToolExecutionRequest {
   tool:AgentToolId;
@@ -62,10 +72,71 @@ export const agentToolSpecs:ToolSpec[]=[
     operations:["search_graph","trace_path","architecture","impact_analysis","list_projects","index_repository"],
     approval:"admin",
     description:"Local MCP code-intelligence graph for structural queries, call chains and repository indexing."
+  },
+  {
+    id:"browser-use",
+    name:"Browser Use",
+    layer:"ComputerAgent",
+    source:"browser-use/browser-use",
+    operations:["browse","navigate","click","type","extract","screenshot"],
+    approval:"admin",
+    description:"Browser automation surface for supervised computer-use tasks; browser sessions remain isolated execution domains."
+  },
+  {
+    id:"agentmemory",
+    name:"AgentMemory",
+    layer:"AgentMemory",
+    source:"rohitg00/agentmemory",
+    operations:["remember","observe","smart_search","context","forget","session_start","session_end"],
+    approval:"admin",
+    description:"Persistent cross-agent coding memory with MCP/REST access; memory storage and credentials remain in its execution domain."
+  },
+  {
+    id:"scientific-agent-skills",
+    name:"Scientific Agent Skills",
+    layer:"ResearchAgent",
+    source:"K-Dense-AI/scientific-agent-skills",
+    operations:["list_skills","search_skill","run_skill","search_database","analyze","cite"],
+    approval:"admin",
+    description:"Agent Skills-compatible scientific and research skill library; selected skills are invoked through a controlled research workspace."
+  },
+  {
+    id:"diagram-design",
+    name:"Diagram Design",
+    layer:"Visualization",
+    source:"cathrynlavery/diagram-design",
+    operations:["generate","redraw","validate","export"],
+    approval:"admin",
+    description:"Editorial HTML/SVG diagram skill for architecture, evidence and system visualizations."
+  },
+  {
+    id:"anthropic-cybersecurity-skills",
+    name:"Anthropic Cybersecurity Skills",
+    layer:"SecurityResearch",
+    source:"mukul975/Anthropic-Cybersecurity-Skills",
+    operations:["discover_skill","assess","hunt","incident_response","map_framework","validate"],
+    approval:"admin",
+    description:"Structured cybersecurity skills library. Use only in explicitly authorized security research and defensive workflows."
+  },
+  {
+    id:"awesome-harness-engineering",
+    name:"Awesome Harness Engineering",
+    layer:"HarnessEngineering",
+    source:"harness-engineer/awesome-harness-engineering",
+    operations:["catalog","inspect","evaluate","benchmark","map_pattern"],
+    approval:"admin",
+    description:"Curated harness-engineering patterns used as a reference layer for reliable agent environments and orchestration."
+  },
+  {
+    id:"openviking",
+    name:"OpenViking",
+    layer:"ContextDatabase",
+    source:"volcengine/OpenViking",
+    operations:["ls","tree","read","find","retrieve","import","write"],
+    approval:"admin",
+    description:"Filesystem-oriented context database unifying knowledge, memory and skills behind an inspectable context surface."
   }
 ];
-
-function spec(id:AgentToolId){return agentToolSpecs.find(x=>x.id===id)!;}
 
 export function createAgentToolCapabilities(executor:ToolExecutor):AgentCapability[]{
   return agentToolSpecs.map(s=>({
