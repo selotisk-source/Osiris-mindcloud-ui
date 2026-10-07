@@ -7,77 +7,35 @@ const routerNetwork = createRouterNetwork();
 const port = Number(process.env.PORT || 3000);
 const html = fs.readFileSync(path.join(__dirname, "index.html"), "utf8");
 const tradingHtml = fs.readFileSync(path.join(__dirname, "trading.html"), "utf8");
+const newsletterHtml = fs.readFileSync(path.join(__dirname, "newsletter.html"), "utf8");
 const agentTools = JSON.parse(fs.readFileSync(path.join(__dirname, "integrations", "agent-tools.json"), "utf8"));
 
+function sendJson(res, data, status=200) {
+  res.writeHead(status, {"content-type":"application/json; charset=utf-8","cache-control":"no-store"});
+  res.end(JSON.stringify(data));
+}
 function cctvResponse() {
   const source = process.env.CCTV_SOURCE_URL || null;
   const publicAccess = process.env.CCTV_PUBLIC_ACCESS === "true";
-  return {
-    status: source ? "configured" : "not_configured",
-    service: "osiris-mindcloud-ui",
-    endpoint: "/api/cctv",
-    source: source ? "configured" : null,
-    streamStatus: source ? "configured" : "unconfigured",
-    proxyStatus: "not_implemented",
-    access: source ? (publicAccess ? "public" : "osiris-controlled") : "unconfigured"
-  };
+  return {status:source?"configured":"not_configured",service:"osiris-mindcloud-ui",endpoint:"/api/cctv",source:source?"configured":null,streamStatus:source?"configured":"unconfigured",proxyStatus:"not_implemented",access:source?(publicAccess?"public":"osiris-controlled"):"unconfigured"};
 }
-
-const server = http.createServer((req, res) => {
-  if (req.url === "/trading" || req.url === "/trading/") {
-    res.writeHead(200, { "content-type": "text/html; charset=utf-8" });
-    res.end(tradingHtml);
-    return;
+const server = http.createServer((req,res)=>{
+  const url = new URL(req.url, "http://"+(req.headers.host||"localhost"));
+  const pathname = url.pathname;
+  if(pathname==="/trading"||pathname==="/trading/"){res.writeHead(200,{"content-type":"text/html; charset=utf-8"});res.end(tradingHtml);return;}
+  if(pathname==="/newsletter"||pathname==="/newsletter/"||pathname==="/nyheter"||pathname==="/nyheter/"){res.writeHead(200,{"content-type":"text/html; charset=utf-8"});res.end(newsletterHtml);return;}
+  if(pathname==="/health"){sendJson(res,{status:"ok",service:"osiris-mindcloud-ui"});return;}
+  if(pathname==="/api/router"){const kind=url.searchParams.get("kind")||"general";sendJson(res,{network:routerNetwork.snapshot(),route:routerNetwork.route({taskId:"ui-route",kind})});return;}
+  if(pathname==="/api/agent-tools"){sendJson(res,agentTools);return;}
+  if(pathname==="/api/capabilities"){sendJson(res,{type:"mindcloud_capability_registry",source:"MindCore",capabilities:routerNetwork.geospatialCapabilities.list()});return;}
+  if(pathname==="/api/liveness/route"){sendJson(res,{type:"mindcloud_live_liveness",capability:"route-variation",status:"available",policy:"safety-first-accessibility-second-controlled-variation",humanApprovalRequired:true});return;}
+  if(pathname==="/api/cctv"){sendJson(res,cctvResponse());return;}
+  if(pathname==="/newsletters/index.json"||pathname.startsWith("/newsletters/")){
+    const relative=pathname.replace(/^\/+/, "");
+    const root=path.join(__dirname,"newsletters"), file=path.join(__dirname,relative);
+    if(file.startsWith(root+path.sep)&&fs.existsSync(file)&&fs.statSync(file).isFile()){res.writeHead(200,{"content-type":"application/json; charset=utf-8","cache-control":"public, max-age=60"});res.end(fs.readFileSync(file));return;}
+    sendJson(res,{error:"newsletter_not_found"},404);return;
   }
-  if (req.url === "/health") {
-    res.writeHead(200, { "content-type": "application/json; charset=utf-8" });
-    res.end(JSON.stringify({ status: "ok", service: "osiris-mindcloud-ui" }));
-    return;
-  }
-  if (req.url.startsWith("/api/router")) {
-    const url = new URL(req.url, "http://" + (req.headers.host || "localhost"));
-    const kind = url.searchParams.get("kind") || "general";
-    res.writeHead(200, { "content-type": "application/json; charset=utf-8" });
-    res.end(JSON.stringify({
-      network: routerNetwork.snapshot(),
-      route: routerNetwork.route({ taskId: "ui-route", kind })
-    }));
-    return;
-  }
-  if (req.url === "/api/agent-tools") {
-    res.writeHead(200, { "content-type": "application/json; charset=utf-8" });
-    res.end(JSON.stringify(agentTools));
-    return;
-  }
-  if (req.url === "/api/capabilities") {
-    res.writeHead(200, { "content-type": "application/json; charset=utf-8" });
-    res.end(JSON.stringify({
-      type: "mindcloud_capability_registry",
-      source: "MindCore",
-      capabilities: routerNetwork.geospatialCapabilities.list()
-    }));
-    return;
-  }
-  if (req.url === "/api/liveness/route") {
-    res.writeHead(200, { "content-type": "application/json; charset=utf-8" });
-    res.end(JSON.stringify({
-      type: "mindcloud_live_liveness",
-      capability: "route-variation",
-      status: "available",
-      policy: "safety-first-accessibility-second-controlled-variation",
-      humanApprovalRequired: true
-    }));
-    return;
-  }
-  if (req.url === "/api/cctv") {
-    res.writeHead(200, { "content-type": "application/json; charset=utf-8" });
-    res.end(JSON.stringify(cctvResponse()));
-    return;
-  }
-  res.writeHead(200, { "content-type": "text/html; charset=utf-8" });
-  res.end(html);
+  res.writeHead(200,{"content-type":"text/html; charset=utf-8"});res.end(html);
 });
-
-server.listen(port, "0.0.0.0", () => {
-  console.log("OSIRIS MindCloud listening on port " + port);
-});
+server.listen(port,"0.0.0.0",()=>console.log("OSIRIS MindCloud listening on port "+port));
