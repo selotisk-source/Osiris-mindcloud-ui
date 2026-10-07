@@ -109,6 +109,36 @@
       "integration": "OpenAI/Claude-compatible request normalization only where an authorized provider endpoint exists",
       "status": "reference-only",
       "note": "Upstream repository is archived; do not build account scraping or credential rotation into MindCloud."
+    },
+    {
+      "id": "openplanter",
+      "source": "ShinMegamiBoson/OpenPlanter",
+      "role": "investigation agent and knowledge graph",
+      "mindcloud_layer": "InvestigationAgent",
+      "priority": 1,
+      "integration": "isolated investigation adapter for heterogeneous-data ingestion, entity resolution, evidence-backed findings and graph artifacts; findings enter EvidenceGraph before promotion",
+      "status": "planned-adapter",
+      "security": "no unrestricted shell/web credentials; execution and workspace remain isolated; source evidence is immutable/read-only by default"
+    },
+    {
+      "id": "aeris10-plfm-radar",
+      "source": "NawfalMotii79/PLFM_RADAR",
+      "role": "10.5 GHz PLFM phased-array radar sensor",
+      "mindcloud_layer": "SensorFabric",
+      "priority": 2,
+      "integration": "read-only sensor adapter producing typed detections/range/Doppler/tracking evidence; no direct actuator authority; hardware domain isolated from MindCore",
+      "status": "research-index",
+      "security": "hardware/FPGA execution isolated; sensor output requires Evidence validation and promotion gate"
+    },
+    {
+      "id": "vgpu",
+      "source": "vercel-labs/vgpu",
+      "role": "cross-runtime WebGPU compute and visualization",
+      "mindcloud_layer": "GPUCompute",
+      "priority": 1,
+      "integration": "optional GPU compute/visualization capability for browser and headless Node; deterministic mock path used for CI and evidence-safe tests; documentation/examples discovered through agent-facing interfaces",
+      "status": "planned-adapter",
+      "security": "no credential access; GPU workloads sandboxed; prefer mock/headless validation before browser runtime promotion"
     }
   ],
   "shared_contracts": [
@@ -118,6 +148,11 @@
     "EvidenceArtifact",
     "RunEvent",
     "HealthStatus",
-    "ApprovalGate"
+    "ApprovalGate",
+    "InvestigationRequest",
+    "InvestigationFinding",
+    "GraphArtifact",
+    "SensorObservation",
+    "GpuComputeRequest"
   ]
 }
