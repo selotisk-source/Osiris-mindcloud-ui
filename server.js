@@ -46,6 +46,17 @@ const server = http.createServer((req, res) => {
     }));
     return;
   }
+  if (req.url === "/api/liveness/route") {
+    res.writeHead(200, { "content-type": "application/json; charset=utf-8" });
+    res.end(JSON.stringify({
+      type: "mindcloud_live_liveness",
+      capability: "route-variation",
+      status: "available",
+      policy: "safety-first-accessibility-second-controlled-variation",
+      humanApprovalRequired: true
+    }));
+    return;
+  }
   if (req.url === "/api/cctv") {
     res.writeHead(200, { "content-type": "application/json; charset=utf-8" });
     res.end(JSON.stringify(cctvResponse()));
