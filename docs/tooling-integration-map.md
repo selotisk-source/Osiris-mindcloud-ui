@@ -20,6 +20,12 @@ MindCore
   │    └─ SystematicTradingIndex / research catalogue
   ├─ MediaPipeline
   │    └─ Pixelle-style generation
+  ├─ InvestigationAgent
+  │    └─ OpenPlanter / entity resolution + evidence graph
+  ├─ SensorFabric
+  │    └─ AERIS-10 / PLFM radar research adapter
+  ├─ GPUCompute
+  │    └─ vgpu / browser + headless Node WebGPU
   └─ Evidence
        ├─ screen capture / OpenScreen-style recorder
        └─ DocumentForensics / PDF redaction audit
@@ -39,7 +45,9 @@ The `phishdestroy/taylor-wessing-data-breach-toolkit` project is a defensive for
 3. **EdgeRuntime adapter** — provides local/on-device inference as a routing option.
 4. **MarketResearch + SystematicTradingIndex** — connects financial research to the evidence graph without granting the research index live-order authority.
 5. **Research/Knowledge agents** — paper/dataset/document workflows.
-6. **DocumentForensics + Media/Evidence capture** — defensive document auditing and polished run recordings.
+6. **InvestigationAgent + EvidenceGraph** — OpenPlanter-style entity resolution and graph-backed findings.
+7. **GPUCompute + SensorFabric** — vgpu mock/headless validation first; AERIS-10 remains read-only research until hardware evidence is available.
+8. **DocumentForensics + Media/Evidence capture** — defensive document auditing and polished run recordings.
 
 ## Important upstream findings
 
