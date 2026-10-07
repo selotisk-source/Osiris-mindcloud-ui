@@ -1,7 +1,24 @@
-<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>MindCloud Split Screen</title><style>
-*{box-sizing:border-box}body{margin:0;background:#070a0f;color:#e7edf5;font:13px system-ui,sans-serif}header{padding:12px;border-bottom:1px solid #253142;font-weight:700;letter-spacing:.08em}header span{color:#79b8ff}.grid{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;height:calc(100vh - 45px);gap:6px;padding:6px}.station{border:1px solid #253142;border-radius:8px;background:#0d131c;overflow:hidden}.head{padding:8px;border-bottom:1px solid #253142;font-weight:650}.body{height:calc(100% - 37px);padding:8px}.tool{display:block;width:100%;margin:5px 0;padding:8px;border:1px solid #253142;border-radius:6px;background:#101722;color:#e7edf5;text-align:left}.muted{color:#8290a3;font-size:11px}</style></head><body><header>MIND<span>CLOUD</span> · SPLIT SCREEN</header><main class="grid">
-<div class="station"><div class="head">MindCore · Coordinator</div><div class="body"><div>Routing / convergence</div><p class="muted">Drag modules into stations in the full MindCloud workspace.</p></div></div>
-<div class="station"><div class="head">GEO / Heritage</div><div class="body"><div>Map → place → object → evidence</div></div></div>
-<div class="station"><div class="head">Sensor Fabric</div><div class="body"><div>Live media / sensor sources</div></div></div>
-<div class="station"><div class="head">Research / Work</div><div class="body"><button class="tool" id="open">Open MindCloud</button></div></div>
-</main><script>document.getElementById('open').onclick=()=>chrome.tabs.create({url:'https://osiris-mindcloud-ui-production.up.railway.app'});</script></body></html>
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>MindCloud Two-Station Brave Workspace</title><style>
+*{box-sizing:border-box}body{margin:0;background:#070a0f;color:#e7edf5;font:13px system-ui,sans-serif}header{padding:12px;border-bottom:1px solid #253142;font-weight:700;letter-spacing:.08em}header span{color:#79b8ff}.grid{display:grid;grid-template-columns:1fr 1fr;height:calc(100vh - 45px);gap:6px;padding:6px}.station{border:1px solid #253142;border-radius:8px;background:#0d131c;overflow:hidden}.head{padding:9px;border-bottom:1px solid #253142;font-weight:650}.body{height:calc(100% - 39px);padding:10px}.tool{display:block;width:100%;margin:7px 0;padding:9px;border:1px solid #253142;border-radius:6px;background:#101722;color:#e7edf5;text-align:left}.muted{color:#8290a3;font-size:11px}.evidence{margin-top:14px;padding:9px;border:1px dashed #3a4a60;border-radius:6px}.tag{display:inline-block;padding:3px 6px;border-radius:4px;background:#172335;font-size:10px;margin-right:5px}</style></head><body><header>MIND<span>CLOUD</span> · TWO-STATION BRAVE WORKSPACE</header><main class="grid">
+<div class="station"><div class="head">Station A · Brave / Runtime</div><div class="body"><div><span class="tag">RUNTIME</span><span class="tag">OSIRIS</span></div><p>Browser execution, live observation, media/sensor interaction and task execution.</p><button class="tool" id="open">Open MindCloud</button><button class="tool" id="probe">Probe OSIRIS CCTV (read-only)</button><div class="evidence"><strong>Shared evidence ID</strong><div id="evidenceId" class="muted">Awaiting runtime observation.</div></div><div class="evidence"><strong>Verification</strong><div id="verification" class="muted">No OSIRIS response captured.</div></div></div></div>
+<div class="station"><div class="head">Station B · Source / Evidence</div><div class="body"><div><span class="tag">VERIFY</span><span class="tag">PROVENANCE</span></div><p>Repository/API inspection, source validation, provenance and evidence promotion into MindCore.</p><div class="evidence"><strong>Promotion gate</strong><div class="muted">Evidence remains provisional until source, API response and provenance checks succeed.</div></div></div></div>
+</main><script>
+const base='https://osiris-mindcloud-ui-production.up.railway.app';
+document.getElementById('open').onclick=()=>chrome.tabs.create({url:base});
+document.getElementById('probe').onclick=async()=>{
+  const verification=document.getElementById('verification');
+  const evidenceId=document.getElementById('evidenceId');
+  const id=crypto.randomUUID();
+  evidenceId.textContent=id;
+  verification.textContent='Requesting /api/cctv…';
+  try{
+    const response=await fetch(base+'/api/cctv',{method:'GET',headers:{accept:'application/json'}});
+    const text=await response.text();
+    let payload; try{payload=JSON.parse(text)}catch{payload={raw:text}}
+    const evidence={evidenceId:id,source:base+'/api/cctv',capturedAt:new Date().toISOString(),httpStatus:response.status,ok:response.ok,payload};
+    verification.textContent=JSON.stringify(evidence);
+  }catch(error){
+    verification.textContent=JSON.stringify({evidenceId:id,error:String(error),capturedAt:new Date().toISOString()});
+  }
+};
+</script></body></html>
