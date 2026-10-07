@@ -179,6 +179,16 @@
       "integration": "typed adapter around local stdio MCP/CLI operations for graph search, tracing, architecture, impact analysis and gated indexing",
       "status": "adapter-ready",
       "security": "local-only by default; explicit repository root and execution domain"
+    },
+    {
+      "id": "argos-atlas",
+      "source": "argosatlas.com",
+      "role": "live geospatial OSINT atlas",
+      "mindcloud_layer": "GeoOSINT",
+      "priority": 1,
+      "integration": "typed external visualization adapter for cameras, flights, ships, infrastructure, events, markets and risk zones; future API/MCP connection is gated on official availability",
+      "status": "adapter-ready",
+      "security": "public-source data only; no credentialed scraping; API/MCP contract must be verified before automation"
     }
   ],
   "shared_contracts": [
