@@ -6,6 +6,7 @@ const { createRouterNetwork } = require("./mindcore/router-network");
 const routerNetwork = createRouterNetwork();
 const port = Number(process.env.PORT || 3000);
 const html = fs.readFileSync(path.join(__dirname, "index.html"), "utf8");
+const tradingHtml = fs.readFileSync(path.join(__dirname, "trading.html"), "utf8");
 const agentTools = JSON.parse(fs.readFileSync(path.join(__dirname, "integrations", "agent-tools.json"), "utf8"));
 
 function cctvResponse() {
@@ -23,6 +24,11 @@ function cctvResponse() {
 }
 
 const server = http.createServer((req, res) => {
+  if (req.url === "/trading" || req.url === "/trading/") {
+    res.writeHead(200, { "content-type": "text/html; charset=utf-8" });
+    res.end(tradingHtml);
+    return;
+  }
   if (req.url === "/health") {
     res.writeHead(200, { "content-type": "application/json; charset=utf-8" });
     res.end(JSON.stringify({ status: "ok", service: "osiris-mindcloud-ui" }));
