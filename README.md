@@ -46,3 +46,9 @@ MindCore now has typed supervised adapter contracts for ten external capabilitie
 The integrations are execution-surface adapters: MindCore keeps routing, approval, audit and promotion authority. External credentials, browser sessions, filesystem/process access and third-party runtimes remain outside agent identity and behind explicit execution domains.
 
 Cognee remains the knowledge-memory adapter and is registered when `COGNEE_ENDPOINT` is configured.
+
+## ARGOS ATLAS GeoOSINT
+
+ARGOS ATLAS is registered as an external GeoOSINT capability for OSIRIS/MindCore. The adapter exposes a typed entry point for opening/describing the atlas and records the requested geographic layer in the MindCore audit stream. Supported conceptual layers include cameras, flights, ships, infrastructure, events, markets and risk zones.
+
+The integration deliberately stops at the official public surface until ARGOS ATLAS's advertised API/MCP interfaces are generally available. No private endpoint, undocumented scraping contract or credential flow is assumed.
