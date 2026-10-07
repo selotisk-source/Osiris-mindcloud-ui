@@ -11,3 +11,4 @@ export * from "./kernel";
 export * from "./cognee";
 export * from "./agent-tooling";
 export * from "./argos-atlas";
+export * from "./grounded-api";
