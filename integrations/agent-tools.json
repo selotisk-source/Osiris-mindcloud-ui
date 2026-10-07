@@ -1,0 +1,36 @@
+{
+  "schema_version": "0.1",
+  "project": "MindCloud / MindCore",
+  "policy": {
+    "mode": "supervised-adapter",
+    "principle": "Third-party runtimes remain execution surfaces; MindCore owns policy, routing, audit and promotion.",
+    "security": "Credentials, browser sessions, filesystem roots and process execution stay behind explicit execution domains."
+  },
+  "tools": [
+    {
+      "id": "graft",
+      "source": "NanoNets/Graft",
+      "layer": "CodeIntelligence",
+      "integration": "Graft graph/context operations are exposed through the MindCore capability contract.",
+      "operations": ["init", "build", "ask", "grep", "map", "viz"],
+      "status": "adapter-ready"
+    },
+    {
+      "id": "openmontage",
+      "source": "calesthio/OpenMontage",
+      "layer": "MediaPipeline",
+      "integration": "OpenMontage is attached as a supervised production workspace; planning, research, scripting, rendering and validation remain auditable task operations.",
+      "operations": ["plan", "research", "script", "render", "validate"],
+      "status": "adapter-ready"
+    },
+    {
+      "id": "codebase-memory-mcp",
+      "source": "DeusData/codebase-memory-mcp",
+      "layer": "CodeIntelligence",
+      "integration": "Local MCP code intelligence is exposed through typed structural-query operations; repository indexing is gated.",
+      "operations": ["search_graph", "trace_path", "architecture", "impact_analysis", "list_projects", "index_repository"],
+      "transport": "stdio",
+      "status": "adapter-ready"
+    }
+  ]
+}
