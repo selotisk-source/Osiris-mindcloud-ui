@@ -1,0 +1,61 @@
+{
+  "date": "2026-10-07",
+  "title": "Nyhetsbrev 7 oktober 2026",
+  "subtitle": "Moskvas bränsle | Ukrainsk export | Svarta havet",
+  "status": "draft",
+  "sections": [
+    {
+      "category": "Olja",
+      "headline": "Moskvas bränsle är målet",
+      "text": "Natten 5–6 oktober skickade Ukraina omkring 650 drönare mot Moskva och regionen, enligt borgmästare Sergej Sobjanin. Ryska myndigheter uppgav omfattande luftförsvarsinsatser och lokala myndigheter rapporterade döda, skadade och skador på bostäder. Volodarskaja, ett stort oljelager och en logistisk knutpunkt för Moskvas flygplatser, uppges ha träffats; branden är belagd av bilder och kanaler men saknar ryskt myndighetsmedgivande. Kampanjen pekar därmed mot logistiken kring bränsleförsörjningen, inte bara raffinering.",
+      "implication": "Den viktiga frågan är skadans varaktighet och hur mycket extra belastning som läggs på luftförsvar, flygplatser och bränslereserver.",
+      "evidence": "Ryska myndighetsuppgifter för anfallet; branden på Volodarskaja är inte myndighetsbekräftad."
+    },
+    {
+      "category": "Försvar",
+      "headline": "Tio exportcenter är ett besked, inte en invigning",
+      "text": "Ukraina har presenterat en modell med exportcenter i Europa för att sälja och skala försvarsteknik. Under 2026 har Berlin och Köpenhamn pekats ut, samtidigt som tillståndsprocessen varit en flaskhals. I september uppgav vapentillverkarrådet att inga exporttillstånd hade utfärdats under den nya ordningens första månad.",
+      "implication": "Skriv inte att tio center är öppna. Den strukturella förändringen är skiftet från mottagare till licensgivare och möjligheten att bygga ukrainsk design i allierade länder.",
+      "evidence": "Besked och senare rapportering om tillståndsläget; full bemanning av tio center är inte dokumenterad."
+    },
+    {
+      "category": "Försvar",
+      "headline": "Volym nu, wingman senare",
+      "text": "Billigare engångsdrönare och spaningssystem utvecklas parallellt med nästa generations autonoma stridsflyg. Buntar Aerospace har tagit in kapital för Buntar-3 och en AI-copilot. Northrops YFQ-48A Talon Blue uppges ha flugit autonomt, medan programmet för Collaborative Combat Aircraft drivs med produktionskontrakt till andra aktörer.",
+      "implication": "Den korta och den långa tidslinjen börjar mötas: billiga autonoma system kan ge volym snabbt, medan avancerade wingmen är ett flerårigt program.",
+      "evidence": "Tillverkarrapportering och bolags-/myndighetsuppgifter; skilj prototypflygning från faktisk serieproduktion."
+    },
+    {
+      "category": "Sjöfart",
+      "headline": "Drönare i Bulgariens ekonomiska zon",
+      "text": "Den 6 oktober träffades två handelsfartyg omkring 70 sjömil öster om Byala i Bulgariens exklusiva ekonomiska zon. Alfa Watan sjönk och Able tog eld; besättning räddades från det senare fartyget. Ursprung och ansvar för angreppen utreds.",
+      "implication": "Riskbilden för civil sjöfart i Svarta havet breddas. En exklusiv ekonomisk zon är inte territoriellt vatten, vilket gör den juridiska och militära hanteringen särskild.",
+      "evidence": "Händelsen rapporterad; drönarnas ursprung är oklart."
+    },
+    {
+      "category": "Notiser",
+      "headline": "Övriga signaler",
+      "text": "En MQ-4C Triton körde av banan vid Naval Station Mayport; skadebild och händelseförlopp är inte offentligt klarlagda. En rysk Su-35 sköt enligt rapporteringen ner en egen Mi-8 över Voronezj. Montana Air National Guard går från C-130H till C-130J och Taiwan har tagit emot de två första av 66 nya F-16V Block 70.",
+      "implication": "Flera mindre händelser pekar samtidigt mot fortsatt hög operativ belastning och pågående modernisering.",
+      "evidence": "Skilj bekräftade händelser från uppgifter där detaljer ännu saknas."
+    }
+  ],
+  "editorial": {
+    "framework": [
+      "SIGNAL",
+      "KÄLLA",
+      "VAD VI VET",
+      "OSÄKERHET",
+      "VARFÖR DET ÄR INTRESSANT",
+      "KOPPLINGAR",
+      "VÅR ANALYS"
+    ],
+    "categories": [
+      "Nyheter",
+      "Historia & arkeologi",
+      "AI & framtid",
+      "Våra egna forskningsspår"
+    ],
+    "note": "Spotpriser och KYC-mejl ingår inte i denna utgåva. Kyiv-flödet från 7 oktober är inte inarbetat i denna version."
+  }
+}
