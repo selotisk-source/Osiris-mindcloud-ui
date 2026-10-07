@@ -1,5 +1,5 @@
 {
-  "schema_version": "0.1",
+  "schema_version": "0.2",
   "project": "MindCloud / MindCore",
   "policy": {
     "mode": "supervised-adapter",
@@ -30,6 +30,63 @@
       "integration": "Local MCP code intelligence is exposed through typed structural-query operations; repository indexing is gated.",
       "operations": ["search_graph", "trace_path", "architecture", "impact_analysis", "list_projects", "index_repository"],
       "transport": "stdio",
+      "status": "adapter-ready"
+    },
+    {
+      "id": "browser-use",
+      "source": "browser-use/browser-use",
+      "layer": "ComputerAgent",
+      "integration": "Supervised browser automation capability with isolated browser sessions and explicit action approval.",
+      "operations": ["browse", "navigate", "click", "type", "extract", "screenshot"],
+      "status": "adapter-ready"
+    },
+    {
+      "id": "agentmemory",
+      "source": "rohitg00/agentmemory",
+      "layer": "AgentMemory",
+      "integration": "Persistent cross-agent memory is exposed through typed memory operations; storage remains in the memory execution domain.",
+      "operations": ["remember", "observe", "smart_search", "context", "forget", "session_start", "session_end"],
+      "status": "adapter-ready"
+    },
+    {
+      "id": "scientific-agent-skills",
+      "source": "K-Dense-AI/scientific-agent-skills",
+      "layer": "ResearchAgent",
+      "integration": "Agent Skills-compatible scientific workflows are discoverable and executable through a supervised research workspace.",
+      "operations": ["list_skills", "search_skill", "run_skill", "search_database", "analyze", "cite"],
+      "status": "adapter-ready"
+    },
+    {
+      "id": "diagram-design",
+      "source": "cathrynlavery/diagram-design",
+      "layer": "Visualization",
+      "integration": "Editorial HTML/SVG diagram generation and redraws become evidence-linked visualization artifacts.",
+      "operations": ["generate", "redraw", "validate", "export"],
+      "status": "adapter-ready"
+    },
+    {
+      "id": "anthropic-cybersecurity-skills",
+      "source": "mukul975/Anthropic-Cybersecurity-Skills",
+      "layer": "SecurityResearch",
+      "integration": "Structured security skills are available to authorized defensive and security-research workflows behind the admin approval gate.",
+      "operations": ["discover_skill", "assess", "hunt", "incident_response", "map_framework", "validate"],
+      "status": "adapter-ready",
+      "security": "authorized systems only; no unrestricted credentials or autonomous production changes"
+    },
+    {
+      "id": "awesome-harness-engineering",
+      "source": "harness-engineer/awesome-harness-engineering",
+      "layer": "HarnessEngineering",
+      "integration": "Harness patterns are indexed as a reference layer for evaluating orchestration, context, tool design, constraints and safe autonomy.",
+      "operations": ["catalog", "inspect", "evaluate", "benchmark", "map_pattern"],
+      "status": "adapter-ready"
+    },
+    {
+      "id": "openviking",
+      "source": "volcengine/OpenViking",
+      "layer": "ContextDatabase",
+      "integration": "Context is exposed through an inspectable filesystem-oriented interface for knowledge, memory and skills.",
+      "operations": ["ls", "tree", "read", "find", "retrieve", "import", "write"],
       "status": "adapter-ready"
     }
   ]
