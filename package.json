@@ -3,7 +3,8 @@
   "private": true,
   "version": "0.1.0",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "verify": "node scripts/verify-runtime.js"
   },
   "engines": {
     "node": ">=20"
