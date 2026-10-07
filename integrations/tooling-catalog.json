@@ -139,6 +139,16 @@
       "integration": "optional GPU compute/visualization capability for browser and headless Node; deterministic mock path used for CI and evidence-safe tests; documentation/examples discovered through agent-facing interfaces",
       "status": "planned-adapter",
       "security": "no credential access; GPU workloads sandboxed; prefer mock/headless validation before browser runtime promotion"
+    },
+    {
+      "id": "orca",
+      "source": "stablyai/orca",
+      "role": "multi-agent execution orchestrator and worktree workspace",
+      "mindcloud_layer": "ExecutionOrchestrator",
+      "priority": 1,
+      "integration": "typed adapter for agent dispatch, isolated git worktrees, execution receipts, supervised task coordination and operator-visible workspace state; MindCloud retains policy, credentials and promotion authority",
+      "status": "planned-adapter",
+      "security": "Orca worktrees/processes are execution surfaces only; credentials, browser sessions and computer-use authority remain in explicit MindCloud execution domains; task completion does not itself imply worktree/process completion"
     }
   ],
   "shared_contracts": [
@@ -153,6 +163,9 @@
     "InvestigationFinding",
     "GraphArtifact",
     "SensorObservation",
-    "GpuComputeRequest"
+    "GpuComputeRequest",
+    "ExecutionDispatch",
+    "WorktreeRef",
+    "AgentExecutionReceipt"
   ]
 }
