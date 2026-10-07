@@ -58,6 +58,9 @@ export const toolingCatalog:ToolEntry[]=[
 {id:"model-gateway",name:"Model Gateway",source:"Alishahryar1/free-claude-code",layer:"ModelRouter",status:"adapter-ready",kind:"repo"},
 {id:"autoharness",name:"AutoHarness",source:"tigerless-labs/autoharness",layer:"SelfLearning",status:"adapter-ready",kind:"repo"},
 {id:"opencode-runtime",name:"OpenCode Server Runtime",source:"OpenCode",layer:"AgentRuntime",status:"adapter-ready",kind:"repo"},
-{id:"mimo-v2-6-pro",name:"MiMo-V2.6-Pro",source:"Xiaomi MiMo",layer:"FrontierModel",status:"registered",kind:"resource"}
+{id:"mimo-v2-6-pro",name:"MiMo-V2.6-Pro",source:"Xiaomi MiMo",layer:"FrontierModel",status:"registered",kind:"resource"},
 {id:"cognee",name:"Cognee",source:"topoteretes/cognee",layer:"Knowledge",status:"adapter-ready",kind:"repo"},
+{id:"graft",name:"Graft",source:"NanoNets/Graft",layer:"CodeIntelligence",status:"adapter-ready",kind:"repo"},
+{id:"openmontage",name:"OpenMontage",source:"calesthio/OpenMontage",layer:"MediaPipeline",status:"adapter-ready",kind:"repo"},
+{id:"codebase-memory-mcp",name:"Codebase Memory MCP",source:"DeusData/codebase-memory-mcp",layer:"CodeIntelligence",status:"adapter-ready",kind:"repo"},
 ];
