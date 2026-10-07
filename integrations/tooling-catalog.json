@@ -189,6 +189,16 @@
       "integration": "typed external visualization adapter for cameras, flights, ships, infrastructure, events, markets and risk zones; future API/MCP connection is gated on official availability",
       "status": "adapter-ready",
       "security": "public-source data only; no credentialed scraping; API/MCP contract must be verified before automation"
+    },
+    {
+      "id": "grounded-api",
+      "source": "Grounded Superintelligence",
+      "role": "spatial intelligence / SLAM enrichment",
+      "mindcloud_layer": "SpatialIntelligence",
+      "priority": 1,
+      "integration": "typed adapter boundary for Grounded API outputs such as SLAM, depth and hand-tracking data; feed validated spatial observations into OSIRIS Geo and ARGOS ATLAS",
+      "status": "adapter-ready",
+      "security": "endpoint and credentials are explicit deployment configuration; no undocumented API contract is assumed"
     }
   ],
   "shared_contracts": [
