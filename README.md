@@ -30,12 +30,19 @@ These patterns are integrated as explicit capability/runtime references rather t
 
 ## Integrated agent toolchain
 
-MindCore now has typed adapter contracts for three external capabilities:
+MindCore now has typed supervised adapter contracts for ten external capabilities:
 
 - **Graft** — codebase context and graph operations.
 - **Codebase Memory MCP** — local structural code intelligence and knowledge-graph queries.
 - **OpenMontage** — supervised agentic video production.
+- **Browser Use** — controlled browser/computer-agent execution.
+- **AgentMemory** — persistent cross-agent coding memory.
+- **Scientific Agent Skills** — reusable scientific/research Agent Skills.
+- **Diagram Design** — editorial architecture and evidence diagrams.
+- **Anthropic Cybersecurity Skills** — authorized security-research and defensive skill library.
+- **Awesome Harness Engineering** — harness-engineering reference/evaluation layer.
+- **OpenViking** — inspectable context database for knowledge, memory and skills.
 
-The adapters are execution-surface integrations: MindCore keeps routing, approval, audit and promotion authority. External credentials, browser sessions and filesystem/process access remain outside agent identity and behind explicit execution domains.
+The integrations are execution-surface adapters: MindCore keeps routing, approval, audit and promotion authority. External credentials, browser sessions, filesystem/process access and third-party runtimes remain outside agent identity and behind explicit execution domains.
 
 Cognee remains the knowledge-memory adapter and is registered when `COGNEE_ENDPOINT` is configured.
