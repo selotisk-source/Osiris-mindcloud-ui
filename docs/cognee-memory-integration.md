@@ -37,7 +37,7 @@ Cognee can run locally with its open-source stack and local models, so it is sui
 ## Integration state
 
 **Catalog:** adapter-ready  
-**Runtime connection:** not connected  
+**Runtime connection:** HTTP adapter deployed; runtime health is exposed through `/api/memory/health` and `/api/runtime/status`  
 **Core status:** optional capability, not a MindCore dependency
 
-The first production integration should benchmark retrieval quality against MindCore's existing evidence graph and determine whether Cognee is best used as the long-term memory substrate, a complementary graph/vector index, or both.
+The production runtime now exposes a health boundary for the Cognee service. Persistent storage is still a separate deployment concern: the current Railway service has no attached volume, so durable memory storage must be explicitly provisioned before it is treated as authoritative long-term memory.
