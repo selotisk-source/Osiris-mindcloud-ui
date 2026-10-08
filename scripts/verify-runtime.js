@@ -81,7 +81,12 @@ async function waitForHealth(child) {
     assert.match(sidepanel, /Station B · Source \/ Evidence/);
     assert.match(sidepanel, /\/api\/cctv/);
     assert.match(manifest, /"side_panel"/);
-    assert.match(manifest, /"host_permissions"/);
+    const manifestData = JSON.parse(manifest);
+    assert.deepEqual(
+      manifestData.host_permissions,
+      ["https://osiris-mindcloud.up.railway.app/*"],
+      "Brave host permissions must be restricted to the exact production host"
+    );
 
     console.log(JSON.stringify({
       status: "verified",
