@@ -17,7 +17,28 @@ function sendJson(res, data, status=200) {
 function cctvResponse() {
   const source = process.env.CCTV_SOURCE_URL || null;
   const publicAccess = process.env.CCTV_PUBLIC_ACCESS === "true";
-  return {status:source?"configured":"not_configured",service:"osiris-mindcloud-ui",endpoint:"/api/cctv",source:source?"configured":null,streamStatus:source?"configured":"unconfigured",proxyStatus:"not_implemented",access:source?(publicAccess?"public":"osiris-controlled"):"unconfigured"};
+  let protocol = null;
+  try { protocol = source ? new URL(source).protocol.replace(":", "").toUpperCase() : null; } catch {}
+  return {
+    status: source ? "configured" : "not_configured",
+    service: "osiris-mindcloud-ui",
+    endpoint: "/api/cctv",
+    source: source ? "configured" : null,
+    streamProtocol: protocol,
+    streamStatus: source ? "configured" : "unconfigured",
+    proxyStatus: "not_implemented",
+    access: source ? (publicAccess ? "public" : "osiris-controlled") : "unconfigured"
+  };
+}
+async function cogneeHealth() {
+  const endpoint = (process.env.COGNEE_SERVICE_URL || "").replace(/\/$/, "");
+  if (!endpoint) return {status:"not_configured",endpoint:null};
+  try {
+    const response = await fetch(endpoint + "/health", {signal:AbortSignal.timeout(2500)});
+    return {status:response.ok ? "healthy" : "degraded",endpoint,httpStatus:response.status};
+  } catch (error) {
+    return {status:"offline",endpoint,error:error instanceof Error ? error.message : String(error)};
+  }
 }
 const server = http.createServer((req,res)=>{
   const url = new URL(req.url, "http://"+(req.headers.host||"localhost"));
@@ -30,6 +51,18 @@ const server = http.createServer((req,res)=>{
   if(pathname==="/api/capabilities"){sendJson(res,{type:"mindcloud_capability_registry",source:"MindCore",capabilities:routerNetwork.geospatialCapabilities.list()});return;}
   if(pathname==="/api/liveness/route"){sendJson(res,{type:"mindcloud_live_liveness",capability:"route-variation",status:"available",policy:"safety-first-accessibility-second-controlled-variation",humanApprovalRequired:true});return;}
   if(pathname==="/api/cctv"){sendJson(res,cctvResponse());return;}
+  if(pathname==="/api/memory/health"){cogneeHealth().then(result=>sendJson(res,result)).catch(error=>sendJson(res,{status:"error",error:String(error)},500));return;}
+  if(pathname==="/api/runtime/status"){
+    cogneeHealth().then(memory=>sendJson(res,{
+      type:"mindcloud_runtime_status",
+      service:"osiris-mindcloud-ui",
+      health:"ok",
+      cctv:cctvResponse(),
+      memory,
+      capabilities:routerNetwork.geospatialCapabilities.list()
+    })).catch(error=>sendJson(res,{type:"mindcloud_runtime_status",health:"degraded",error:String(error)},500));
+    return;
+  }
   if(pathname==="/newsletters/index.json"||pathname.startsWith("/newsletters/")){
     const relative=pathname.replace(/^\/+/, "");
     const root=path.join(__dirname,"newsletters"), file=path.join(__dirname,relative);
