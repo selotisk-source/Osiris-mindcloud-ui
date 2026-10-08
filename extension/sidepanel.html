@@ -3,7 +3,7 @@
 <div class="station"><div class="head">Station A · Brave / Runtime</div><div class="body"><div><span class="tag">RUNTIME</span><span class="tag">OSIRIS</span></div><p>Browser execution, live observation, media/sensor interaction and task execution.</p><button class="tool" id="open">Open MindCloud</button><button class="tool" id="probe">Probe OSIRIS CCTV (read-only)</button><div class="evidence"><strong>Shared evidence ID</strong><div id="evidenceId" class="muted">Awaiting runtime observation.</div></div><div class="evidence"><strong>Verification</strong><div id="verification" class="muted">No OSIRIS response captured.</div></div></div></div>
 <div class="station"><div class="head">Station B · Source / Evidence</div><div class="body"><div><span class="tag">VERIFY</span><span class="tag">PROVENANCE</span></div><p>Repository/API inspection, source validation, provenance and evidence promotion into MindCore.</p><div class="evidence"><strong>Promotion gate</strong><div class="muted">Evidence remains provisional until source, API response and provenance checks succeed.</div></div></div></div>
 </main><script>
-const base='https://osiris-mindcloud-ui-production.up.railway.app';
+const base=window.location.origin;
 document.getElementById('open').onclick=()=>chrome.tabs.create({url:base});
 document.getElementById('probe').onclick=async()=>{
   const verification=document.getElementById('verification');
