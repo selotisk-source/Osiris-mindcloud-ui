@@ -64,6 +64,17 @@ async function waitForHealth(child) {
     assert.equal(cctv.body.proxyStatus, "not_implemented");
     assert.equal(cctv.body.access, "unconfigured");
 
+    const memory = await get("/api/memory/health");
+    assert.equal(memory.status, 200);
+    assert.equal(memory.body.status, "not_configured");
+
+    const runtime = await get("/api/runtime/status");
+    assert.equal(runtime.status, 200);
+    assert.equal(runtime.body.type, "mindcloud_runtime_status");
+    assert.equal(runtime.body.health, "ok");
+    assert.ok(runtime.body.cctv);
+    assert.ok(runtime.body.memory);
+
     const sidepanel = fs.readFileSync(path.join(root, "extension", "sidepanel.html"), "utf8");
     const manifest = fs.readFileSync(path.join(root, "extension", "manifest.json"), "utf8");
     assert.match(sidepanel, /Station A · Brave \/ Runtime/);
@@ -80,6 +91,8 @@ async function waitForHealth(child) {
         "capabilities",
         "liveness-approval-gate",
         "cctv-safe-unconfigured-state",
+        "memory-health",
+        "runtime-status",
         "two-station-sidepanel",
         "brave-host-permission"
       ]
