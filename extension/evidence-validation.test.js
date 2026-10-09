@@ -17,5 +17,6 @@ assert.equal(validateEvidence({...base, capturedAt:"not-a-date"}).responseValid,
 assert.equal(validateEvidence({...base, payload:{...base.payload, service:"other"}}).responseValid, false);
 assert.equal(validateEvidence({...base, evidenceId:""}).responseValid, false);
 const streamProof = {...base, payload:{...base.payload,status:"configured",streamStatus:"configured",proxyStatus:"implemented"}, streamProof:{verified:true}};
-assert.equal(validateEvidence(streamProof).readyForHumanReview, true);
-console.log("evidence-validation tests: 12 assertions passed");
+assert.equal(validateEvidence(streamProof).readyForHumanReview, false, "client-supplied verified boolean must never authorize stream readiness");
+assert.equal(validateEvidence({...streamProof, streamProof:{verified:true,source:DEFAULT_ORIGIN+"/api/cctv",signature:"forged"}}).readyForHumanReview, false, "untrusted client proof fields must remain blocked");
+console.log("evidence-validation tests: 13 assertions passed");
