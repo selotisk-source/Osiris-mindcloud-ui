@@ -14,7 +14,7 @@
       { id: "source", label: "Approved HTTPS CCTV endpoint", passed: !!sourceUrl && sourceUrl.origin === expectedOrigin && sourceUrl.protocol === "https:" && !sourceUrl.username && !sourceUrl.password && sourceUrl.pathname === "/api/cctv" && !sourceUrl.search && !sourceUrl.hash },
       { id: "timestamp", label: "Capture timestamp valid", passed: typeof evidence?.capturedAt === "string" && Number.isFinite(Date.parse(evidence.capturedAt)) },
       { id: "http", label: "HTTP response successful", passed: Number.isInteger(evidence?.httpStatus) && evidence.httpStatus >= 200 && evidence.httpStatus < 300 && evidence.ok === true },
-      { id: "content-type", label: "JSON content type", passed: typeof evidence?.contentType === "string" && /application\\/json/i.test(evidence.contentType) },
+      { id: "content-type", label: "JSON content type", passed: typeof evidence?.contentType === "string" && evidence.contentType.toLowerCase().includes("application/json") },
       { id: "payload", label: "OSIRIS CCTV payload shape", passed: !!payload && typeof payload === "object" && !Array.isArray(payload) && payload.service === "osiris-mindcloud-ui" && payload.endpoint === "/api/cctv" && ["configured", "not_configured"].includes(payload.status) && ["configured", "unconfigured"].includes(payload.streamStatus) && ["implemented", "not_implemented"].includes(payload.proxyStatus) }
     ];
     const responseValid = checks.every(check => check.passed);
