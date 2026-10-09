@@ -2,8 +2,10 @@ const http = require("node:http");
 const fs = require("node:fs");
 const path = require("node:path");
 const { createRouterNetwork } = require("./mindcore/router-network");
+const { MindCloudRuntime } = require("./mindcloud/runtime");
 
 const routerNetwork = createRouterNetwork();
+const mindcloud = new MindCloudRuntime();
 const port = Number(process.env.PORT || 3000);
 const html = fs.readFileSync(path.join(__dirname, "index.html"), "utf8");
 const tradingHtml = fs.readFileSync(path.join(__dirname, "trading.html"), "utf8");
@@ -13,6 +15,20 @@ const agentTools = JSON.parse(fs.readFileSync(path.join(__dirname, "integrations
 function sendJson(res, data, status=200) {
   res.writeHead(status, {"content-type":"application/json; charset=utf-8","cache-control":"no-store"});
   res.end(JSON.stringify(data));
+}
+function readJson(req) {
+  return new Promise((resolve, reject) => {
+    let body = "";
+    req.on("data", chunk => {
+      body += chunk;
+      if (body.length > 1024 * 1024) reject(new Error("request_too_large"));
+    });
+    req.on("end", () => {
+      try { resolve(body ? JSON.parse(body) : {}); }
+      catch { reject(new Error("invalid_json")); }
+    });
+    req.on("error", reject);
+  });
 }
 function cctvResponse() {
   const source = process.env.CCTV_SOURCE_URL || null;
@@ -40,12 +56,23 @@ async function cogneeHealth() {
     return {status:"offline",endpoint,error:error instanceof Error ? error.message : String(error)};
   }
 }
-const server = http.createServer((req,res)=>{
+const server = http.createServer(async (req,res)=>{
   const url = new URL(req.url, "http://"+(req.headers.host||"localhost"));
   const pathname = url.pathname;
   if(pathname==="/trading"||pathname==="/trading/"){res.writeHead(200,{"content-type":"text/html; charset=utf-8"});res.end(tradingHtml);return;}
   if(pathname==="/newsletter"||pathname==="/newsletter/"||pathname==="/nyheter"||pathname==="/nyheter/"){res.writeHead(200,{"content-type":"text/html; charset=utf-8"});res.end(newsletterHtml);return;}
   if(pathname==="/health"){sendJson(res,{status:"ok",service:"osiris-mindcloud-ui"});return;}
+  if(pathname==="/api/mindcloud/status"){sendJson(res,mindcloud.snapshot());return;}
+  if(pathname==="/api/mindcloud/route" && req.method==="POST"){
+    try {
+      const task = await readJson(req);
+      if (!task || typeof task !== "object") return sendJson(res,{error:"invalid_task"},400);
+      if (!task.taskId) task.taskId = "task-" + Date.now();
+      sendJson(res,mindcloud.route(task));
+    } catch (error) { sendJson(res,{error:error instanceof Error ? error.message : String(error)},400); }
+    return;
+  }
+  if(pathname==="/api/mindcloud/events"){sendJson(res,{type:"mindcloud_events",events:mindcloud.eventsFor(url.searchParams.get("taskId")||undefined)});return;}
   if(pathname==="/api/router"){const kind=url.searchParams.get("kind")||"general";sendJson(res,{network:routerNetwork.snapshot(),route:routerNetwork.route({taskId:"ui-route",kind})});return;}
   if(pathname==="/api/agent-tools"){sendJson(res,agentTools);return;}
   if(pathname==="/api/capabilities"){sendJson(res,{type:"mindcloud_capability_registry",source:"MindCore",capabilities:routerNetwork.geospatialCapabilities.list()});return;}
@@ -59,6 +86,7 @@ const server = http.createServer((req,res)=>{
       health:"ok",
       cctv:cctvResponse(),
       memory,
+      mindcloud:mindcloud.snapshot(),
       capabilities:routerNetwork.geospatialCapabilities.list()
     })).catch(error=>sendJson(res,{type:"mindcloud_runtime_status",health:"degraded",error:String(error)},500));
     return;
