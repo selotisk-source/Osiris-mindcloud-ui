@@ -18,7 +18,7 @@
       { id: "payload", label: "OSIRIS CCTV payload shape", passed: !!payload && typeof payload === "object" && !Array.isArray(payload) && payload.service === "osiris-mindcloud-ui" && payload.endpoint === "/api/cctv" && ["configured", "not_configured"].includes(payload.status) && ["configured", "unconfigured"].includes(payload.streamStatus) && ["implemented", "not_implemented"].includes(payload.proxyStatus) }
     ];
     const responseValid = checks.every(check => check.passed);
-    const streamReady = responseValid && payload.status === "configured" && payload.proxyStatus === "implemented" && evidence?.streamProof?.verified === true;
+    const streamReady = false; // Fail closed until server-side source-bound stream proof is verified.
     return {
       checks,
       responseValid,
