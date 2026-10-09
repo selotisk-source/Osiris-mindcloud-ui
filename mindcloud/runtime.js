@@ -1,4 +1,5 @@
 const { createRouterNetwork } = require("../mindcore/router-network");
+const { capabilitiesByLayer, suggest, recipes } = require("./capability-graph");
 
 class MindCloudRuntime {
   constructor() {
@@ -13,7 +14,9 @@ class MindCloudRuntime {
       health: "ok",
       topology: this.network.snapshot(),
       tasks: [...this.tasks.values()],
-      eventCount: this.events.length
+      eventCount: this.events.length,
+      capabilityLayers: capabilitiesByLayer(),
+      recipes
     };
   }
 
@@ -24,6 +27,7 @@ class MindCloudRuntime {
       kind: routed.kind,
       status: "routed",
       route: routed,
+      composition: suggest(task),
       createdAt: routed.routedAt
     };
     if (record.taskId) this.tasks.set(record.taskId, record);
@@ -32,7 +36,7 @@ class MindCloudRuntime {
       type: "complete",
       timestamp: new Date().toISOString(),
       source: "MindCloudRuntime",
-      data: { action: "route", target: routed.target }
+      data: { action: "route", target: routed.target, recipes: record.composition.recipes.map(r => r.id) }
     });
     return record;
   }
