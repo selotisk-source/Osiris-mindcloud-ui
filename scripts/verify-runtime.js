@@ -82,6 +82,8 @@ async function waitForHealth(child) {
     assert.match(sidepanel, /\/api\/cctv/);
     assert.match(manifest, /"side_panel"/);
     const manifestData = JSON.parse(manifest);
+    const evidenceValidator = fs.readFileSync(path.join(root, "extension", "evidence-validation.js"), "utf8");
+    assert.ok(evidenceValidator.includes('const DEFAULT_ORIGIN = "https://osiris-mindcloud.up.railway.app";'));
     assert.deepEqual(
       manifestData.host_permissions,
       ["https://osiris-mindcloud.up.railway.app/*"],
@@ -104,7 +106,9 @@ async function waitForHealth(child) {
         "memory-health",
         "runtime-status",
         "two-station-sidepanel",
-        "brave-host-permission"
+        "brave-host-permission",
+        "brave-api-origin",
+        "station-b-evidence-validation"
       ]
     }, null, 2));
   } catch (error) {
