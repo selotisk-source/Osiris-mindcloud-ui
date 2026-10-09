@@ -79,5 +79,20 @@ document.querySelectorAll('[data-layout]').forEach(b=>b.onclick=()=>{document.qu
 document.getElementById('godBtn').onclick=()=>document.querySelector('[data-station="4"]').scrollIntoView({behavior:'smooth'});
 let dragged=null;document.querySelectorAll('.tab').forEach(tab=>{tab.addEventListener('dragstart',e=>{dragged=tab;e.dataTransfer.effectAllowed='move';tab.classList.add('dragging')});tab.addEventListener('dragend',()=>{tab.classList.remove('dragging');dragged=null;document.querySelectorAll('.station').forEach(s=>s.classList.remove('drop-target'))})});
 document.querySelectorAll('.station').forEach(st=>{st.addEventListener('dragover',e=>{e.preventDefault();st.classList.add('drop-target')});st.addEventListener('dragleave',()=>st.classList.remove('drop-target'));st.addEventListener('drop',e=>{e.preventDefault();st.classList.remove('drop-target');if(!dragged)return;const title=dragged.dataset.title,c=st.querySelector('.content'),card=document.createElement('div');card.className='card';card.innerHTML='<h3>'+title+'</h3><p>Module attached to station '+st.dataset.station+'.</p>';c.prepend(card);dragged.remove();drawer.classList.remove('open')})});
+</script><script>
+(async function(){
+  const head=document.querySelector('[data-station="1"] .content');
+  const card=document.createElement('div'); card.className='card'; card.style.borderColor='#6f8fb5';
+  card.innerHTML='<h3>LIVE MINDCLOUD RUNTIME</h3><div id="runtimeLive">Connecting…</div>';
+  head.prepend(card);
+  async function refresh(){
+    try{
+      const s=await fetch('/api/mindcloud/status',{cache:'no-store'}).then(r=>r.json());
+      const e=await fetch('/api/mindcloud/events',{cache:'no-store'}).then(r=>r.json());
+      document.getElementById('runtimeLive').innerHTML='<div class="metrics"><div class="metric"><b>'+s.tasks.length+'</b><small>tasks</small></div><div class="metric"><b>'+s.eventCount+'</b><small>events</small></div><div class="metric"><b class="ok">'+s.health.toUpperCase()+'</b><small>runtime</small></div></div><p style="margin-top:8px">Live event stream: '+e.events.length+' events · topology: '+s.topology.topology+'</p>';
+    }catch(err){document.getElementById('runtimeLive').textContent='Runtime unavailable'}
+  }
+  refresh(); setInterval(refresh,3000);
+})();
 </script></body>
 </html>;
