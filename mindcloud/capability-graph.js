@@ -1,4 +1,13 @@
-const { toolingCatalog } = require("../mindcore/catalog");
+const { modules = [] } = require("../integrations/tooling-catalog.json");
+
+// The HTTP runtime runs directly on Node.js; consume the JSON registry rather
+// than requiring catalog.ts, which Node.js 20 cannot load without a TS build.
+const toolingCatalog = modules.map((item) => ({
+  id: item.id,
+  name: item.role || item.id,
+  layer: item.mindcloud_layer || "Unclassified",
+  status: item.status || "registered"
+}));
 
 const recipes = [
   { id:"research-to-evidence", name:"Research → Evidence", layers:["Research","WebResearch","EvidenceIntegrity","Knowledge"], purpose:"Collect research, normalize findings and preserve provenance." },
