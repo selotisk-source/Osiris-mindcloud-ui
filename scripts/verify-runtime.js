@@ -49,6 +49,20 @@ async function waitForHealth(child) {
     assert.ok(router.body.network);
     assert.ok(router.body.route);
 
+    const catalogEntries = JSON.parse(fs.readFileSync(path.join(root, "mindcore", "catalog.json"), "utf8"));
+    assert.equal(catalogEntries.length, 71);
+    assert.equal(new Set(catalogEntries.map((entry) => entry.id)).size, catalogEntries.length);
+    const graphResponse = await get("/api/mindcloud/capabilities");
+    const graphEntries = Object.values(graphResponse.body.layers).flat();
+    assert.equal(graphEntries.length, catalogEntries.length);
+
+    const beforeSuggest = await get("/api/mindcloud/status");
+    const suggestion = await get("/api/mindcloud/suggest?kind=research");
+    const afterSuggest = await get("/api/mindcloud/status");
+    assert.equal(suggestion.body.type, "mindcloud_suggestions");
+    assert.equal(afterSuggest.body.eventCount, beforeSuggest.body.eventCount);
+    assert.equal(afterSuggest.body.tasks.length, beforeSuggest.body.tasks.length);
+
     const capabilities = await get("/api/capabilities");
     assert.equal(capabilities.status, 200);
     assert.equal(capabilities.body.type, "mindcloud_capability_registry");
@@ -93,6 +107,8 @@ async function waitForHealth(child) {
         "cctv-safe-unconfigured-state",
         "memory-health",
         "runtime-status",
+        "catalog-parity-71",
+        "suggest-read-only",
         "two-station-sidepanel",
         "brave-host-permission"
       ]
