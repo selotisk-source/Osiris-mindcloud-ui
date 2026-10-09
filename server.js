@@ -3,6 +3,7 @@ const fs = require("node:fs");
 const path = require("node:path");
 const { createRouterNetwork } = require("./mindcore/router-network");
 const { MindCloudRuntime } = require("./mindcloud/runtime");
+const { suggest } = require("./mindcloud/capability-graph");
 
 const routerNetwork = createRouterNetwork();
 const mindcloud = new MindCloudRuntime();
@@ -64,7 +65,7 @@ const server = http.createServer(async (req,res)=>{
   if(pathname==="/health"){sendJson(res,{status:"ok",service:"osiris-mindcloud-ui"});return;}
   if(pathname==="/api/mindcloud/status"){sendJson(res,mindcloud.snapshot());return;}
   if(pathname==="/api/mindcloud/capabilities"){sendJson(res,{type:"mindcloud_capability_graph",layers:mindcloud.snapshot().capabilityLayers,recipes:mindcloud.snapshot().recipes});return;}
-  if(pathname==="/api/mindcloud/suggest"){sendJson(res,mindcloud.route({taskId:"suggestion-preview",kind:url.searchParams.get("kind")||"general",goal:url.searchParams.get("goal")||""}));return;}
+  if(pathname==="/api/mindcloud/suggest"){sendJson(res,{type:"mindcloud_suggestions",...suggest({kind:url.searchParams.get("kind")||"general",goal:url.searchParams.get("goal")||""})});return;}
   if(pathname==="/api/mindcloud/route" && req.method==="POST"){
     try {
       const task = await readJson(req);
