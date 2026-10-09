@@ -1,9 +1,24 @@
 <!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>MindCloud Two-Station Brave Workspace</title><style>
-*{box-sizing:border-box}body{margin:0;background:#070a0f;color:#e7edf5;font:13px system-ui,sans-serif}header{padding:12px;border-bottom:1px solid #253142;font-weight:700;letter-spacing:.08em}header span{color:#79b8ff}.grid{display:grid;grid-template-columns:1fr 1fr;height:calc(100vh - 45px);gap:6px;padding:6px}.station{border:1px solid #253142;border-radius:8px;background:#0d131c;overflow:hidden}.head{padding:9px;border-bottom:1px solid #253142;font-weight:650}.body{height:calc(100% - 39px);padding:10px}.tool{display:block;width:100%;margin:7px 0;padding:9px;border:1px solid #253142;border-radius:6px;background:#101722;color:#e7edf5;text-align:left}.muted{color:#8290a3;font-size:11px}.evidence{margin-top:14px;padding:9px;border:1px dashed #3a4a60;border-radius:6px}.tag{display:inline-block;padding:3px 6px;border-radius:4px;background:#172335;font-size:10px;margin-right:5px}</style></head><body><header>MIND<span>CLOUD</span> · TWO-STATION BRAVE WORKSPACE</header><main class="grid">
+*{box-sizing:border-box}body{margin:0;background:#070a0f;color:#e7edf5;font:13px system-ui,sans-serif}header{padding:12px;border-bottom:1px solid #253142;font-weight:700;letter-spacing:.08em}header span{color:#79b8ff}.grid{display:grid;grid-template-columns:1fr 1fr;height:calc(100vh - 45px);gap:6px;padding:6px}.station{border:1px solid #253142;border-radius:8px;background:#0d131c;overflow:hidden}.head{padding:9px;border-bottom:1px solid #253142;font-weight:650}.body{height:calc(100% - 39px);padding:10px}.tool{display:block;width:100%;margin:7px 0;padding:9px;border:1px solid #253142;border-radius:6px;background:#101722;color:#e7edf5;text-align:left}.muted{color:#8290a3;font-size:11px}.evidence{margin-top:14px;padding:9px;border:1px dashed #3a4a60;border-radius:6px}.tag{display:inline-block;padding:3px 6px;border-radius:4px;background:#172335;font-size:10px;margin-right:5px}.checks{padding-left:18px;margin:8px 0;font-size:11px}.check-pass{color:#9ee6b0}.check-fail{color:#ff9d9d}</style></head><body><header>MIND<span>CLOUD</span> · TWO-STATION BRAVE WORKSPACE</header><main class="grid">
 <div class="station"><div class="head">Station A · Brave / Runtime</div><div class="body"><div><span class="tag">RUNTIME</span><span class="tag">OSIRIS</span></div><p>Browser execution, live observation, media/sensor interaction and task execution.</p><button class="tool" id="open">Open MindCloud</button><button class="tool" id="probe">Probe OSIRIS CCTV (read-only)</button><div class="evidence"><strong>Shared evidence ID</strong><div id="evidenceId" class="muted">Awaiting runtime observation.</div></div><div class="evidence"><strong>Verification</strong><div id="verification" class="muted">No OSIRIS response captured.</div></div></div></div>
-<div class="station"><div class="head">Station B · Source / Evidence</div><div class="body"><div><span class="tag">VERIFY</span><span class="tag">PROVENANCE</span></div><p>Repository/API inspection, source validation, provenance and evidence promotion into MindCore.</p><div class="evidence"><strong>Promotion gate</strong><div class="muted">Evidence remains provisional until source, API response and provenance checks succeed.</div></div></div></div>
-</main><script>
-const base=window.location.origin;
+<div class="station"><div class="head">Station B · Source / Evidence</div><div class="body"><div><span class="tag">VERIFY</span><span class="tag">PROVENANCE</span></div><p>Repository/API inspection, source validation, provenance and evidence promotion into MindCore.</p><div class="evidence"><strong>Evidence validation</strong><div id="evidenceValidation" class="muted">Awaiting Station A response.</div><ul id="validationChecks" class="checks"></ul><div id="promotionGate" class="muted">BLOCKED — no validated response or stream proof.</div></div></div></div>
+</main><script src="evidence-validation.js"></script><script>
+const base=MindCloudEvidenceValidation.DEFAULT_ORIGIN;
+function renderEvidenceValidation(evidence){
+  const result=MindCloudEvidenceValidation.validateEvidence(evidence);
+  const summary=document.getElementById('evidenceValidation');
+  const list=document.getElementById('validationChecks');
+  const gate=document.getElementById('promotionGate');
+  summary.textContent=result.summary;
+  list.replaceChildren();
+  for(const check of result.checks){
+    const item=document.createElement('li');
+    item.className=check.passed?'check-pass':'check-fail';
+    item.textContent=(check.passed?'PASS — ':'FAIL — ')+check.label;
+    list.appendChild(item);
+  }
+  gate.textContent=result.readyForHumanReview?'READY FOR HUMAN REVIEW — no automatic promotion.':'BLOCKED — live-stream proof and human review are required.';
+}
 document.getElementById('open').onclick=()=>chrome.tabs.create({url:base});
 document.getElementById('probe').onclick=async()=>{
   const verification=document.getElementById('verification');
@@ -14,11 +29,16 @@ document.getElementById('probe').onclick=async()=>{
   try{
     const response=await fetch(base+'/api/cctv',{method:'GET',headers:{accept:'application/json'}});
     const text=await response.text();
-    let payload; try{payload=JSON.parse(text)}catch{payload={raw:text}}
-    const evidence={evidenceId:id,source:base+'/api/cctv',capturedAt:new Date().toISOString(),httpStatus:response.status,ok:response.ok,payload};
+    const contentType=response.headers.get('content-type')||'';
+    let payload; let parseError=false;
+    try{payload=JSON.parse(text)}catch{payload={raw:text};parseError=true}
+    const evidence={evidenceId:id,source:base+'/api/cctv',capturedAt:new Date().toISOString(),httpStatus:response.status,ok:response.ok,contentType,payload,parseError,streamProof:null};
     verification.textContent=JSON.stringify(evidence);
+    renderEvidenceValidation(evidence);
   }catch(error){
-    verification.textContent=JSON.stringify({evidenceId:id,error:String(error),capturedAt:new Date().toISOString()});
+    const evidence={evidenceId:id,source:base+'/api/cctv',capturedAt:new Date().toISOString(),httpStatus:0,ok:false,contentType:'',payload:null,error:String(error),streamProof:null};
+    verification.textContent=JSON.stringify(evidence);
+    renderEvidenceValidation(evidence);
   }
 };
 </script></body></html>

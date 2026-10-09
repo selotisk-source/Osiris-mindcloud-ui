@@ -88,6 +88,11 @@ async function waitForHealth(child) {
       "Brave host permissions must be restricted to the exact production host"
     );
 
+    assert.match(sidepanel, /const base=MindCloudEvidenceValidation\\.DEFAULT_ORIGIN;/);
+    assert.match(sidepanel, /id="evidenceValidation"/);
+    assert.match(sidepanel, /id="validationChecks"/);
+    assert.match(sidepanel, /renderEvidenceValidation\\(evidence\\)/);
+
     console.log(JSON.stringify({
       status: "verified",
       checks: [
