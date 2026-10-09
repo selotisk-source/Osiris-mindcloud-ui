@@ -96,6 +96,10 @@ async function waitForHealth(child) {
     assert.match(sidepanel, /\/api\/cctv/);
     assert.match(manifest, /"side_panel"/);
     assert.match(manifest, /"host_permissions"/);
+    const evidenceValidator = fs.readFileSync(path.join(root, "extension", "evidence-validation.js"), "utf8");
+    assert.ok(sidepanel.includes("MindCloudEvidenceValidation.DEFAULT_ORIGIN"));
+    assert.match(sidepanel, /renderEvidenceValidation/);
+    assert.match(evidenceValidator, /const streamReady = false/);
 
     console.log(JSON.stringify({
       status: "verified",
@@ -110,7 +114,10 @@ async function waitForHealth(child) {
         "catalog-parity-71",
         "suggest-read-only",
         "two-station-sidepanel",
-        "brave-host-permission"
+        "brave-host-permission",
+        "brave-api-origin",
+        "station-b-evidence-validation",
+        "stream-proof-fail-closed"
       ]
     }, null, 2));
   } catch (error) {
