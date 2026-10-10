@@ -18,7 +18,7 @@ async function health(id) {
   if (id === "mapillary") return {ok:true,status:"configured",mode:"free-street-level-imagery",provider:"Mapillary"};
   if (id !== "overpass-turbo") return {ok:true,status:"configured",mode:"native-http"};
   try {
-    const {response,endpoint}=await fetchOverpass("[out:json];node(1);out;",10000);
+    const {response,endpoint}=await fetchOverpass("[out:json];node(1);out;",2500);
     let body=null;
     try { body=await response.json(); } catch {}
     const healthy=response.ok && Array.isArray(body?.elements);
@@ -35,7 +35,7 @@ async function health(id) {
 function overpassEndpoints() {
   const primary = process.env.OVERPASS_API_URL || "https://overpass-api.de/api/interpreter";
   const configured = (process.env.OVERPASS_API_FALLBACKS || "").split(",").map(value => value.trim()).filter(Boolean);
-  const defaults = process.env.OVERPASS_API_URL ? [] : ["https://overpass.private.coffee/api/interpreter"];
+  const defaults = ["https://overpass-api.de/api/interpreter", "https://overpass.private.coffee/api/interpreter", "https://maps.mail.ru/osm/tools/overpass/api/interpreter"];
   return [...new Set([primary, ...configured, ...defaults])];
 }
 
