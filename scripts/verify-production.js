@@ -65,6 +65,27 @@ async function getJson(path) {
   assert.deepEqual(adapters.lifecycle, ["discover", "health", "execute", "result", "audit"]);
   assert.ok(Array.isArray(adapters.adapters), "adapter registry missing");
 
+  const agentTools = await getJson("/api/agent-tools");
+  assert.ok(Array.isArray(agentTools.tools), "agent tool catalog missing");
+  const expectedCandidates = ["watermelon-ui", "watermelon-ai", "manus-ai", "punkt-ai"];
+  const toolIds = new Set(agentTools.tools.map(tool => tool.id));
+  for (const id of expectedCandidates) {
+    assert.ok(toolIds.has(id), "registered tool candidate missing: " + id);
+    const adapter = adapters.adapters.find(item => item.id === id);
+    assert.ok(adapter, "adapter runtime missing catalog candidate: " + id);
+    assert.equal(adapter.runtime.state, "registered-only",
+      id + " must not be presented as executable before a runtime adapter is verified");
+  }
+
+  const metanoiaUnauthenticated = await fetch(base + "/api/mindcloud/metanoia/approve", {
+    method: "POST",
+    headers: { "content-type": "application/json", accept: "application/json" },
+    body: JSON.stringify({}),
+    signal: AbortSignal.timeout(timeout)
+  });
+  assert.equal(metanoiaUnauthenticated.status, 401,
+    "Metanoia version transition must reject unauthenticated approval");
+
   const cctv = await getJson("/api/cctv");
   assert.equal(cctv.endpoint, "/api/cctv");
   assert.ok(["configured", "not_configured"].includes(cctv.status), "CCTV must report explicit configuration state");
@@ -129,6 +150,8 @@ async function getJson(path) {
       "arena-production-post-and-fail-closed-contract",
       "mindcloud-status-json",
       "adapter-registry-and-lifecycle",
+      "incoming-tool-candidates-registered-with-honest-runtime-state",
+      "metanoia-version-transition-rejects-unauthenticated-approval",
       "cctv-explicit-state",
       "runtime-component-status",
       "live-overpass-provider-health-state-and-diagnostics-with-degradation-tolerance",
