@@ -68,7 +68,8 @@ async function waitHealthy(child) {
       CRT_SH_URL: `http://127.0.0.1:${providerPort}/crt.sh`,
       CLOUDFLARE_DNS_URL: `http://127.0.0.1:${providerPort}/dns-query`,
       MINDCLOUD_AUTHORIZED_DOMAINS: "example.com",
-      MINDCLOUD_TOOL_EXECUTION_TOKEN: token
+      MINDCLOUD_TOOL_EXECUTION_TOKEN: token,
+      MINDCLOUD_APPROVAL_TOKEN: "mindcloud-approval-test-token"
     },
     stdio: ["ignore", "pipe", "pipe"]
   });
@@ -129,6 +130,52 @@ async function waitHealthy(child) {
     const snapshot = await json(await fetch(appBase + "/api/adapters"));
     assert.equal(snapshot.status, 200);
     assert.equal(snapshot.body.auditCount, 4);
+
+    const approvalRequest = await json(await fetch(appBase + "/api/approvals/request", {
+      method: "POST",
+      headers: { "content-type": "application/json", authorization: "Bearer " + token },
+      body: JSON.stringify({ id: "anthropic-cybersecurity-skills", operation: "assess", input: { target: "authorized-test-target" } })
+    }));
+    assert.equal(approvalRequest.status, 201);
+    assert.equal(approvalRequest.body.request.status, "pending");
+    const approvalId = approvalRequest.body.request.id;
+
+    const unauthorizedDecision = await json(await fetch(appBase + "/api/approvals/" + approvalId + "/decision", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ decision: "approved", reason: "test" })
+    }));
+    assert.equal(unauthorizedDecision.status, 401);
+
+    const approvedDecision = await json(await fetch(appBase + "/api/approvals/" + approvalId + "/decision", {
+      method: "POST",
+      headers: { "content-type": "application/json", authorization: "Bearer mindcloud-approval-test-token" },
+      body: JSON.stringify({ decision: "approved", reason: "Acceptance test approval" })
+    }));
+    assert.equal(approvedDecision.status, 200);
+    assert.equal(approvedDecision.body.request.status, "approved");
+
+    const approvedExecution = await json(await fetch(appBase + "/api/adapters/execute", {
+      method: "POST",
+      headers: { "content-type": "application/json", authorization: "Bearer " + token },
+      body: JSON.stringify({ id: "anthropic-cybersecurity-skills", operation: "assess", input: { target: "authorized-test-target" }, approvalId })
+    }));
+    assert.equal(approvedExecution.status, 200);
+    assert.equal(approvedExecution.body.error, "adapter_not_configured", "approval should pass the gate but still require an executable adapter");
+
+    const replayedApproval = await json(await fetch(appBase + "/api/adapters/execute", {
+      method: "POST",
+      headers: { "content-type": "application/json", authorization: "Bearer " + token },
+      body: JSON.stringify({ id: "anthropic-cybersecurity-skills", operation: "assess", input: { target: "authorized-test-target" }, approvalId })
+    }));
+    assert.equal(replayedApproval.body.error, "human_approval_required", "approval ticket must be single-use");
+
+    const approvalQueue = await json(await fetch(appBase + "/api/approvals", {
+      headers: { authorization: "Bearer " + token }
+    }));
+    assert.equal(approvalQueue.status, 200);
+    assert.ok(approvalQueue.body.audit.some(event => event.type === "approved" && event.approvalId === approvalId));
+    assert.ok(approvalQueue.body.audit.some(event => event.type === "consumed" && event.approvalId === approvalId));
     console.log(JSON.stringify({
       status: "verified",
       checks: [
@@ -139,6 +186,9 @@ async function waitHealthy(child) {
         "evidence-request-id-and-source",
         "adapter-audit-recorded",
         "subdomain-domain-allowlist-gate",
+        "approval-ticket-requires-separate-approval-credential",
+        "approval-ticket-is-bound-to-tool-and-operation",
+        "approval-ticket-single-use-and-audited",
         "passive-certificate-transparency-discovery",
         "free-dns-over-https-resolution"
       ]
