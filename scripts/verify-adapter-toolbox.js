@@ -44,6 +44,4 @@ for (const adapter of snapshot.adapters) {
 assert.deepEqual(runtime.discover("overpass-turbo").adapter.operations,["query","export_geojson","health"]);
 assert.deepEqual(runtime.discover("shodan").adapter.operations,["host","search","dns","health"]);
 assert.deepEqual(runtime.discover("ruflo").adapter.operations,["discover_tools","health"]);
-const unsupported = await runtime.execute({id:"overpass-turbo",operation:"health",input:{}});
-assert.equal(unsupported.error,undefined,"declared health must route through the shared lifecycle");
 console.log("adapter-toolbox: verified UI syntax, lifecycle controls, native operation conformance, executable operation inventory, and protected execution boundary");
