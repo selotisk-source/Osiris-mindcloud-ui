@@ -46,9 +46,12 @@ class AdapterRuntime {
     // A successful operation proves the adapter path worked at least once in this
     // runtime session. Otherwise, preserve degraded health instead of mislabeling it
     // as merely configured. Missing configuration remains registered-only.
-    const readiness = latestSuccessfulExecution ? "verified"
+    // Readiness describes the latest observed state; verification is historical
+    // evidence that an execution succeeded at least once in this runtime session.
+    // A newer failed health probe must therefore override the readiness label.
+    const readiness = latestHealth && (!latestHealth.ok || latestHealth.result?.status !== "healthy") ? "degraded"
+      : latestSuccessfulExecution ? "verified"
       : latestHealth && latestHealth.ok && latestHealth.result?.status === "healthy" ? "healthy"
-      : latestHealth && configured ? "degraded"
       : configured ? "configured" : "registered-only";
     return {
       state:configured?"configured":"registered-only",
