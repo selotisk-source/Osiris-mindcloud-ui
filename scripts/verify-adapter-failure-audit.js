@@ -6,21 +6,28 @@ const { AdapterRuntime } = require("../mindcloud/adapter-runtime");
 (async () => {
   const port = 39149;
   const endpoint = `http://127.0.0.1:${port}`;
-  const envName = "ADAPTER_TEST_ADAPTER_URL";
-  const previousEndpoint = process.env[envName];
+  const envNames = ["ADAPTER_TEST_ADAPTER_URL", "ADAPTER_TEST_ADAPTER_TWO_URL"];
+  const previousEndpoints = Object.fromEntries(envNames.map(name => [name, process.env[name]]));
   let providerCalls = 0;
   const provider = http.createServer((req, res) => {
     providerCalls += 1;
-    res.writeHead(503, { "content-type": "application/json" });
+    const status = req.url === "/execute-two" ? 502 : 503;
+    res.writeHead(status, { "content-type": "application/json" });
     res.end(JSON.stringify({ error: "provider_temporarily_unavailable" }));
   });
   await new Promise(resolve => provider.listen(port, "127.0.0.1", resolve));
-  process.env[envName] = endpoint;
+  process.env[envNames[0]] = endpoint;
+  process.env[envNames[1]] = endpoint;
 
   try {
     const runtime = new AdapterRuntime({
       tools: [{
         id: "test-adapter",
+        layer: "Verification",
+        status: "adapter-ready",
+        operations: ["inspect"]
+      }, {
+        id: "test-adapter-two",
         layer: "Verification",
         status: "adapter-ready",
         operations: ["inspect"]
@@ -52,6 +59,20 @@ const { AdapterRuntime } = require("../mindcloud/adapter-runtime");
     assert.equal(entry.timestamp, result.timestamp || entry.timestamp);
     assert.equal(snapshot.adapters[0].runtime.verification.status, "not-verified");
 
+    // Run the same failure contract against a second independently registered adapter.
+    const secondResult = await runtime.execute({
+      id: "test-adapter-two",
+      operation: "inspect",
+      input: { target: "second-fixture" }
+    });
+    assert.equal(providerCalls, 2);
+    assert.equal(secondResult.ok, false);
+    assert.equal(secondResult.status, 502);
+    assert.equal(runtime.snapshot().auditCount, 2);
+    assert.equal(runtime.audit[1].requestId, secondResult.requestId);
+    assert.equal(runtime.audit[1].id, "test-adapter-two");
+    assert.equal(runtime.audit[1].ok, false);
+
     console.log(JSON.stringify({
       status: "verified",
       checks: [
@@ -60,13 +81,16 @@ const { AdapterRuntime } = require("../mindcloud/adapter-runtime");
         "failed-execution-not-marked-verified",
         "non-idempotent-operation-not-retried"
       ],
+      adaptersTested: 2,
       providerCalls,
-      auditCount: snapshot.auditCount,
-      httpStatus: result.status
+      auditCount: runtime.snapshot().auditCount,
+      httpStatuses: [result.status, secondResult.status]
     }, null, 2));
   } finally {
-    if (previousEndpoint === undefined) delete process.env[envName];
-    else process.env[envName] = previousEndpoint;
+    for (const name of envNames) {
+      if (previousEndpoints[name] === undefined) delete process.env[name];
+      else process.env[name] = previousEndpoints[name];
+    }
     provider.closeAllConnections?.();
     await new Promise(resolve => provider.close(resolve));
   }
