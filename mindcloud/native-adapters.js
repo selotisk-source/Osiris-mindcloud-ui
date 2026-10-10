@@ -14,11 +14,30 @@ async function health(id) {
   if (!s) return null;
   if (!s.configured) return {ok:false,status:"credentials-missing",required:s.required};
   if (id !== "overpass-turbo") return {ok:true,status:"configured",mode:"native-http"};
-  const endpoint=process.env.OVERPASS_STATUS_URL||"https://overpass-api.de/api/status";
+  const endpoint=process.env.OVERPASS_API_URL||"https://overpass-api.de/api/interpreter";
   try {
-    const r=await fetch(endpoint,{signal:AbortSignal.timeout(5000)});
-    return {ok:r.ok,status:r.ok?"healthy":"degraded",httpStatus:r.status,endpoint};
-  } catch(e) { return {ok:false,status:"offline",endpoint,error:e instanceof Error?e.message:String(e)}; }
+    const response=await fetch(endpoint,{
+      method:"POST",
+      headers:{
+        "content-type":"application/x-www-form-urlencoded;charset=UTF-8",
+        "accept":"application/json",
+        "user-agent":"MindCloud/1.0 (https://github.com/selotisk-source/Osiris-mindcloud-ui)"
+      },
+      body:new URLSearchParams({data:"[out:json];node(1);out;"}).toString(),
+      signal:AbortSignal.timeout(10000)
+    });
+    let body=null;
+    try { body=await response.json(); } catch {}
+    const healthy=response.ok && Array.isArray(body?.elements);
+    return {
+      ok:healthy,
+      status:healthy?"healthy":"degraded",
+      httpStatus:response.status,
+      endpoint,
+      probe:"interpreter-json",
+      ...(healthy?{}:{detail:body})
+    };
+  } catch(e) { return {ok:false,status:"offline",endpoint,probe:"interpreter-json",error:e instanceof Error?e.message:String(e)}; }
 }
 async function readResponse(response) {
   const contentType=response.headers.get("content-type")||"";
