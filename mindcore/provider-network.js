@@ -79,7 +79,7 @@ function createProviderNetwork(config = {}) {
     let body;
 
     if (provider.id === "gemini") {
-      url += "?key=" + encodeURIComponent(apiKey);
+      headers["x-goog-api-key"] = apiKey;
       body = { contents: [{ role: "user", parts: [{ text: String(prompt) }] }], generationConfig: { maxOutputTokens: maxTokens } };
     } else if (provider.id === "claude") {
       headers = { ...headers, "x-api-key": apiKey, "anthropic-version": "2023-06-01" };
