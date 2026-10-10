@@ -13,6 +13,57 @@ const html = fs.readFileSync(path.join(__dirname, "index.html"), "utf8");
 const tradingHtml = fs.readFileSync(path.join(__dirname, "trading.html"), "utf8");
 const newsletterHtml = fs.readFileSync(path.join(__dirname, "newsletter.html"), "utf8");
 const agentTools = JSON.parse(fs.readFileSync(path.join(__dirname, "integrations", "agent-tools.json"), "utf8"));
+const approvalRequests = new Map();
+const approvalAudit = [];
+
+function tokenMatches(supplied, expected) {
+  if (!supplied || !expected || supplied.length !== expected.length) return false;
+  return require("node:crypto").timingSafeEqual(Buffer.from(supplied), Buffer.from(expected));
+}
+function bearerToken(req) { return (req.headers.authorization || "").replace(/^Bearer\\s+/i, ""); }
+function isExecutionAuthorized(req) {
+  return tokenMatches(bearerToken(req), process.env.MINDCLOUD_TOOL_EXECUTION_TOKEN || "");
+}
+function isApprovalAuthorized(req) {
+  return tokenMatches(bearerToken(req), process.env.MINDCLOUD_APPROVAL_TOKEN || "");
+}
+function createApprovalRequest(tool, operation, input) {
+  const id = require("node:crypto").randomUUID();
+  const createdAt = new Date().toISOString();
+  const ticket = {id,toolId:tool.id,operation,inputSummary:JSON.stringify(input || {}).slice(0,1000),status:"pending",createdAt,expiresAt:new Date(Date.now()+10*60*1000).toISOString()};
+  approvalRequests.set(id,ticket);
+  approvalAudit.push({type:"requested",approvalId:id,toolId:tool.id,operation,timestamp:createdAt});
+  return ticket;
+}
+function decideApproval(id, decision, reason) {
+  const ticket = approvalRequests.get(id);
+  if (!ticket) return {error:"approval_not_found"};
+  if (ticket.status !== "pending") return {error:"approval_not_pending",status:ticket.status};
+  if (Date.now() > Date.parse(ticket.expiresAt)) {
+    ticket.status="expired";
+    approvalAudit.push({type:"expired",approvalId:id,timestamp:new Date().toISOString()});
+    return {error:"approval_expired"};
+  }
+  if (decision !== "approved" && decision !== "rejected") return {error:"invalid_decision"};
+  ticket.status=decision;
+  ticket.decidedAt=new Date().toISOString();
+  ticket.reason=String(reason || "").slice(0,1000);
+  approvalAudit.push({type:decision,approvalId:id,toolId:ticket.toolId,operation:ticket.operation,reason:ticket.reason,timestamp:ticket.decidedAt});
+  return ticket;
+}
+function consumeApproval(id, toolId, operation) {
+  const ticket = approvalRequests.get(String(id || ""));
+  if (!ticket || ticket.status !== "approved" || ticket.toolId !== toolId || ticket.operation !== operation) return false;
+  if (Date.now() > Date.parse(ticket.expiresAt)) {
+    ticket.status="expired";
+    approvalAudit.push({type:"expired",approvalId:ticket.id,timestamp:new Date().toISOString()});
+    return false;
+  }
+  ticket.status="consumed";
+  ticket.consumedAt=new Date().toISOString();
+  approvalAudit.push({type:"consumed",approvalId:ticket.id,toolId,operation,timestamp:ticket.consumedAt});
+  return true;
+}
 const adapters = new AdapterRuntime(agentTools);
 
 function sendJson(res, data, status=200) {
@@ -213,6 +264,33 @@ const server = http.createServer(async (req,res)=>{
   if(pathname==="/api/adapters"){sendJson(res,adapters.snapshot());return;}
   if(pathname.startsWith("/api/adapters/") && pathname.endsWith("/discover")){const id=pathname.split("/")[3];sendJson(res,adapters.discover(id));return;}
   if(pathname.startsWith("/api/adapters/") && pathname.endsWith("/health")){const id=pathname.split("/")[3];adapters.health(id).then(result=>sendJson(res,result));return;}
+  if(pathname==="/api/approvals" && req.method==="GET") {
+    if (!isExecutionAuthorized(req)) { sendJson(res,{error:"unauthorized"},401); return; }
+    sendJson(res,{type:"mindcloud_approval_queue",requests:[...approvalRequests.values()],audit:approvalAudit});
+    return;
+  }
+  if(pathname==="/api/approvals/request" && req.method==="POST") {
+    if (!isExecutionAuthorized(req)) { sendJson(res,{error:"unauthorized"},401); return; }
+    try {
+      const task=await readJson(req);
+      const tool=agentTools.tools.find(item=>item.id===task?.id);
+      if (!tool || !tool.operations?.includes(task.operation)) { sendJson(res,{error:"operation_not_allowed"},400); return; }
+      if (!tool.security) { sendJson(res,{error:"approval_not_required"},400); return; }
+      sendJson(res,{type:"mindcloud_approval_request",request:createApprovalRequest(tool,task.operation,task.input)},201);
+    } catch(error) { sendJson(res,{error:error instanceof Error?error.message:String(error)},400); }
+    return;
+  }
+  if(pathname.startsWith("/api/approvals/") && pathname.endsWith("/decision") && req.method==="POST") {
+    if (!isApprovalAuthorized(req)) { sendJson(res,{error:"approval_authorization_required"},401); return; }
+    const id=pathname.split("/")[3];
+    try {
+      const body=await readJson(req);
+      const result=decideApproval(id,body?.decision,body?.reason);
+      if (result.error) { sendJson(res,result,result.error==="approval_not_found"?404:409); return; }
+      sendJson(res,{type:"mindcloud_approval_decision",request:result});
+    } catch(error) { sendJson(res,{error:error instanceof Error?error.message:String(error)},400); }
+    return;
+  }
   if(pathname==="/api/adapters/execute" && req.method==="POST"){
     const expectedToken = process.env.MINDCLOUD_TOOL_EXECUTION_TOKEN || "";
     const suppliedToken = (req.headers.authorization || "").replace(/^Bearer\s+/i, "");
@@ -229,7 +307,9 @@ const server = http.createServer(async (req,res)=>{
       if (!tool) { sendJson(res,{ok:false,error:"adapter_not_found"},404); return; }
       // Client-provided approval is never trusted. Passive subdomain lookups are allowed
       // only when the requested root is covered by the server-owned domain allowlist.
-      const approved = !tool.security || (tool.id === "subdomain-finder" && isAuthorizedSubdomainScope(task.input?.domain));
+      const passiveScopeApproved = tool.id === "subdomain-finder" && isAuthorizedSubdomainScope(task.input?.domain);
+      const ticketApproved = Boolean(tool.security && consumeApproval(task.approvalId,tool.id,task.operation));
+      const approved = !tool.security || passiveScopeApproved || ticketApproved;
       sendJson(res,await adapters.execute({...task,approved}));
     } catch(error) {
       sendJson(res,{ok:false,error:error instanceof Error?error.message:String(error)},400);
