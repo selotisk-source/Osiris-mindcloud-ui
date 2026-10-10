@@ -5,7 +5,7 @@ const html = fs.readFileSync("index.html", "utf8");
 const registry = JSON.parse(fs.readFileSync("integrations/agent-tools.json", "utf8"));
 const { AdapterRuntime } = require("../mindcloud/adapter-runtime");
 
-const scripts = [...html.matchAll(/<script\\b[^>]*>([\\s\\S]*?)<\\/script>/gi)]
+const scripts = [...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)]
   .map(match => match[1])
   .filter(source => source.trim());
 assert.ok(scripts.length > 0, "UI must contain an executable script");
