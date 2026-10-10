@@ -1,0 +1,46 @@
+{
+  "date": "2026-10-10",
+  "title": "Briefing · Odessos: Sankt Athanasius och de romerska termerna",
+  "subtitle": "Ett nytt prioriterat forskningsspår binder samman kyrkohistoria, antik stadsarkitektur och underjordiska strukturer i Varna.",
+  "status": "AKTUELLT SPÅR",
+  "sections": [
+    {
+      "category": "KULTURARV",
+      "headline": "Sankt Athanasius blir ett prioriterat forskningsnav",
+      "text": "MindCloud prioriterar Sankt Athanasius i Varna som ett centralt nav för forskning om Odessos, kyrkohistoria och det levande kulturarvet i det tidigare grekiska kvarteret.",
+      "implication": "Fortsatt kartläggning kan samordnas kring kyrkan, närliggande arkeologi och institutionella källor.",
+      "evidence": "Dokumenterad historisk plats; prioriteringen är MindClouds redaktionella och forskningsmässiga beslut."
+    },
+    {
+      "category": "ARKEOLOGI",
+      "headline": "Romerska termerna och de underjordiska strukturerna",
+      "text": "De romerska termerna i Odessos är ett dokumenterat arkeologiskt komplex med bevarade underjordiska delar. Närheten till Sankt Athanasius gör området särskilt intressant för en sammanhängande historisk kartläggning.",
+      "implication": "Nästa steg är att jämföra arkeologiska planer, dokumenterade gångar och kyrkans historiska byggnadsfaser.",
+      "evidence": "Dokumenterat av regional arkeologisk forskning och Varna-museets material. Ingen specifik underjordisk förbindelse mellan kyrkan och termerna betraktas som bevisad."
+    },
+    {
+      "category": "KYRKOHISTORIA",
+      "headline": "Den så kallade Sankt Theodor i Basilica Thermarum",
+      "text": "Forskningen beskriver en kyrklig tolkning i den basilikaformade delen av termerna, ofta benämnd den 'så kallade Sankt Theodor'. Detta ska förstås som en arkeologisk och historisk identifiering, inte som en separat bevarad kyrkobyggnad med säker modern planlösning.",
+      "implication": "Sankt Theodor kan bli en viktig länk när vi studerar hur den antika stadsanläggningen återanvändes i den kristna perioden.",
+      "evidence": "Scholarly interpretation; kartan markerar därför denna del som tolkning och inte som fullt verifierad separat byggnad."
+    },
+    {
+      "category": "FÄLTOBSERVATION",
+      "headline": "Ett underjordiskt växtspår ska dokumenteras separat",
+      "text": "En observation har rapporterats av ett underjordiskt rum där växtlighet eller frukt uppges förekomma under Sankt Athanasius. Observationen är intressant men har ännu inte verifierats arkeologiskt och behandlas därför som en separat hypotes.",
+      "implication": "Om spåret ska följas vidare görs det genom säkra, tillåtna och dokumenterade källor — inte genom att beträda avspärrade eller osäkra utrymmen.",
+      "evidence": "Rapporterad observation; ännu inte oberoende verifierad."
+    }
+  ],
+  "editorial": {
+    "framework": [
+      "VAD VI VET",
+      "VAD SOM ÄR TOLKNING",
+      "NYA SPÅR",
+      "EVIDENSLÄGE",
+      "VARFÖR DET ÄR INTRESSANT",
+      "NÄSTA STEG"
+    ]
+  }
+}
