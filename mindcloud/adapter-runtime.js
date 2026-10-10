@@ -43,8 +43,12 @@ class AdapterRuntime {
     const latestSuccessfulExecution = [...this.audit].reverse().find(entry =>
       entry.id === tool.id && entry.operation !== "health" && entry.ok === true
     );
+    // A successful operation proves the adapter path worked at least once in this
+    // runtime session. Otherwise, preserve degraded health instead of mislabeling it
+    // as merely configured. Missing configuration remains registered-only.
     const readiness = latestSuccessfulExecution ? "verified"
-      : latestHealth?.ok && latestHealth.result?.status === "healthy" ? "healthy"
+      : latestHealth && latestHealth.ok && latestHealth.result?.status === "healthy" ? "healthy"
+      : latestHealth && configured ? "degraded"
       : configured ? "configured" : "registered-only";
     return {
       state:configured?"configured":"registered-only",
