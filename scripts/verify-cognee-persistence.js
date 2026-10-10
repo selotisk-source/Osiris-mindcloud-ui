@@ -18,6 +18,7 @@ const shellSyntax = spawnSync("sh", ["-n", cogneeEntrypointPath], { encoding: "u
 assert.equal(shellSyntax.status, 0, "Cognee Railway entrypoint shell syntax must pass: " + shellSyntax.stderr);
 for (const setting of [
   "EMBEDDING_BATCH_SIZE 1",
+  "GRAPH_EXTRACTOR llm",
   "GLINER_INFERENCE_THREADS 1",
   "IMPROVE_AUTO_ENABLED false",
   "FASTEMBED_CACHE_PATH /data/fastembed_cache",
