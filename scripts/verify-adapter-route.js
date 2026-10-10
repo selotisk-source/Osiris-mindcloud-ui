@@ -183,6 +183,7 @@ async function waitHealthy(child) {
     }));
     assert.equal(approvalQueue.status, 200);
     assert.ok(approvalQueue.body.audit.some(event => event.type === "approved" && event.approvalId === approvalId));
+    assert.ok(approvalQueue.body.audit.some(event => event.type === "input_mismatch" && event.approvalId === approvalId));
     assert.ok(approvalQueue.body.audit.some(event => event.type === "consumed" && event.approvalId === approvalId));
     console.log(JSON.stringify({
       status: "verified",
