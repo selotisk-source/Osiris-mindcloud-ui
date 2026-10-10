@@ -142,6 +142,7 @@ async function waitForHealth(child) {
     assert.equal(selftest.body.core.status,"passed");
     assert.equal(selftest.body.status,"degraded");
     assert.ok(selftest.body.integrations.checks.some(check=>check.id==="cognee-memory" && !check.ok));
+    assert.ok(selftest.body.integrations.checks.some(check=>check.id==="browser-use-execution" && check.ok));
 
     const unknownApi = await get("/api/internal/does-not-exist");
     assert.equal(unknownApi.status,404);
@@ -172,6 +173,7 @@ async function waitForHealth(child) {
         "adapter-execution-roundtrip",
         "adapter-approval-gate",
         "selftest-core-vs-integration-status",
+        "live-browser-execution-probe",
         "unknown-api-returns-404",
         "two-station-sidepanel",
         "brave-host-permission"
