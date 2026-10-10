@@ -371,6 +371,28 @@
       "authentication": "local process; inherits only a minimal environment allowlist",
       "security": "disabled by default; read-only initialize/tools/list; no tool invocation, no arbitrary command input; process timeout and bounded output",
       "evidence_status": "official MCP handshake and tools/list verified in GitHub Actions; production adapter not yet enabled or live-tested"
+    },
+    {
+      "id": "speech-figure",
+      "source": "snagiba-commits/speech-figure",
+      "source_url": "https://github.com/snagiba-commits/speech-figure",
+      "layer": "VoiceAndVisualization",
+      "integration": "Research candidate for local speech transcription and word-silhouette visualization. Documentation reviewed; no executable MindCloud adapter or runtime verification is claimed.",
+      "operations": [
+        "inspect",
+        "start_session",
+        "stop_session",
+        "get_transcript",
+        "export_transcript",
+        "render_preview"
+      ],
+      "status": "research-registered",
+      "transport": "local-browser-candidate",
+      "execution_mode": "local-browser",
+      "cost_model": "no paid service required by the documented local engine; license clearance required before commercial use",
+      "license": "PolyForm Noncommercial 1.0.0; commercial use requires permission from the author",
+      "security": "microphone explicit opt-in; camera optional; transcript forwarding off by default; verify network egress and cleanup before promotion",
+      "promotion_gate": "isolated-runtime-test-and-license-clearance"
     }
   ]
 }
