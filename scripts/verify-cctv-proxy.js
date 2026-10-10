@@ -93,7 +93,7 @@ function encoded(url) {
     assert.equal(status.proxyStatus, "implemented");
     assert.equal(status.streamStatus, "unverified", "configuration must not be mistaken for stream verification");
     assert.equal(status.proxyAuthStatus, "configured", "test proxy token must be reported as configured");
-    assert.equal(status.frameStatus, "not_implemented", "configured source must not imply a verified frame");
+    assert.equal(status.frameStatus, "not_implemented", "configured HLS source must not imply a verified frame");
     assert.equal(status.evidenceStatus, "not_verified", "configured source must not imply verified evidence");
 
     const manifestResponse = await fetch(appBase + "/api/cctv/stream", {
