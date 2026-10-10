@@ -104,6 +104,22 @@ async function getJson(path) {
     }
   }
 
+  const selftestResponse = await fetch(base + "/api/mindcloud/selftest", {
+    method: "POST",
+    headers: { accept: "application/json" },
+    signal: AbortSignal.timeout(30000)
+  });
+  const selftest = await selftestResponse.json();
+  assert.equal(selftestResponse.status, 200, "production MindCloud self-test must return HTTP 200: " + JSON.stringify(selftest));
+  assert.equal(selftest.type, "mindcloud_e2e_selftest");
+  assert.equal(selftest.integrations?.memory?.status, "healthy", "Cognee health must pass in production");
+  assert.equal(selftest.integrations?.memoryRoundTrip?.status, "healthy",
+    "Cognee write/readback round-trip must pass in production: " + JSON.stringify(selftest.integrations?.memoryRoundTrip));
+  assert.equal(selftest.integrations.memoryRoundTrip.persisted, true,
+    "production Cognee readback must return the unique marker");
+  assert.equal(selftest.integrations.memoryRoundTrip.mode, "write-readback");
+  assert.match(selftest.integrations.memoryRoundTrip.markerHash || "", /^[a-f0-9]{64}$/);
+
   const runtime = await getJson("/api/runtime/status");
   assert.equal(runtime.type, "mindcloud_runtime_status");
   assert.equal(runtime.coreHealth, "ok");
@@ -163,6 +179,7 @@ async function getJson(path) {
       "metanoia-version-transition-rejects-unauthenticated-approval",
       "cctv-explicit-state",
       "runtime-component-status",
+      "production-cognee-write-readback-round-trip",
       "live-overpass-provider-health-state-and-diagnostics-with-degradation-tolerance",
       "agentmemory-cognee-live-health-and-discovery",
       "free-passive-subdomain-adapter",
