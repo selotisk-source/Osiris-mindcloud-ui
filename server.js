@@ -81,6 +81,18 @@ const server = http.createServer(async (req,res)=>{
   if(pathname==="/api/router"){const kind=url.searchParams.get("kind")||"general";sendJson(res,{network:routerNetwork.snapshot(),route:routerNetwork.route({taskId:"ui-route",kind})});return;}
   if(pathname==="/api/agent-tools"){sendJson(res,agentTools);return;}
   if(pathname==="/api/agent-tools/health"){sendJson(res,inspectToolHealth());return;}
+  if(pathname==="/api/internal/browser-use-selftest" && req.method==="GET" && process.env.MINDCLOUD_SELFTEST==="true"){
+    try {
+      const health = toolHealth.inspectAll().tools.find(tool => tool.id === "browser-use");
+      if (!health || health.status !== "IMPLEMENTED" || !health.adapter) return sendJson(res,{status:"blocked",reason:"browser-use-not-implemented",health:health?.status||"UNKNOWN"},409);
+      const adapter = require(path.join(__dirname, health.adapter));
+      const result = await adapter.execute("navigate",{url:"https://example.com",task:"Navigate to https://example.com and return the page title and URL."});
+      sendJson(res,{type:"browser_use_selftest",status:"passed",result});
+    } catch(error) {
+      sendJson(res,{type:"browser_use_selftest",status:"failed",error:error instanceof Error ? error.message : String(error),code:error?.code||null},502);
+    }
+    return;
+  }
   if(pathname==="/api/agent-tools/execute" && req.method==="POST"){
     const expectedToken = process.env.MINDCLOUD_TOOL_EXECUTION_TOKEN || "";
     const suppliedToken = (req.headers.authorization || "").replace(/^Bearer\s+/i, "");
