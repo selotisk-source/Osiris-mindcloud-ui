@@ -186,8 +186,8 @@
       "role": "live geospatial OSINT atlas",
       "mindcloud_layer": "GeoOSINT",
       "priority": 1,
-      "integration": "typed external visualization adapter for cameras, flights, ships, infrastructure, events, markets and risk zones; future API/MCP connection is gated on official availability",
-      "status": "adapter-ready",
+      "integration": "Catalog entry only. Confirm an official API/MCP contract and real data access before building an executable adapter; do not present Argos Atlas as connected or runnable until endpoint, authentication, licence and response schema are verified.",
+      "status": "planned-adapter",
       "security": "public-source data only; no credentialed scraping; API/MCP contract must be verified before automation"
     },
     {
