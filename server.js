@@ -11,6 +11,7 @@ const html = fs.readFileSync(path.join(__dirname, "index.html"), "utf8");
 const tradingHtml = fs.readFileSync(path.join(__dirname, "trading.html"), "utf8");
 const newsletterHtml = fs.readFileSync(path.join(__dirname, "newsletter.html"), "utf8");
 const agentTools = JSON.parse(fs.readFileSync(path.join(__dirname, "integrations", "agent-tools.json"), "utf8"));
+const { inspectAll: inspectToolHealth } = require("./integrations/tool-health");
 
 function sendJson(res, data, status=200) {
   res.writeHead(status, {"content-type":"application/json; charset=utf-8","cache-control":"no-store"});
@@ -77,6 +78,7 @@ const server = http.createServer(async (req,res)=>{
   if(pathname==="/api/mindcloud/events"){sendJson(res,{type:"mindcloud_events",events:mindcloud.eventsFor(url.searchParams.get("taskId")||undefined)});return;}
   if(pathname==="/api/router"){const kind=url.searchParams.get("kind")||"general";sendJson(res,{network:routerNetwork.snapshot(),route:routerNetwork.route({taskId:"ui-route",kind})});return;}
   if(pathname==="/api/agent-tools"){sendJson(res,agentTools);return;}
+  if(pathname==="/api/agent-tools/health"){sendJson(res,inspectToolHealth());return;}
   if(pathname==="/api/capabilities"){sendJson(res,{type:"mindcloud_capability_registry",source:"MindCore",capabilities:routerNetwork.geospatialCapabilities.list()});return;}
   if(pathname==="/api/liveness/route"){sendJson(res,{type:"mindcloud_live_liveness",capability:"route-variation",status:"available",policy:"safety-first-accessibility-second-controlled-variation",humanApprovalRequired:true});return;}
   if(pathname==="/api/cctv"){sendJson(res,cctvResponse());return;}
