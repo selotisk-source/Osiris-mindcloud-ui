@@ -106,7 +106,7 @@ function setWorkspaceLayout(n){
   document.querySelectorAll('[data-layout]').forEach(x=>x.classList.toggle('active',Number(x.dataset.layout)===n));
   ws.dataset.layoutMode=String(n);
   ws.style.gridTemplateColumns=n===3?'repeat(3,minmax(0,1fr))':'repeat(2,minmax(0,1fr))';
-  ws.style.gridTemplateRows=n===3?'minmax(0,1fr)':'repeat(2,minmax(0,1fr))';
+  ws.style.gridTemplateRows=(n===2||n===3)?'minmax(0,1fr)':'repeat(2,minmax(0,1fr))';
   const stations=[...ws.children];
   stations.forEach((s,i)=>{
     const id=Number(s.dataset.station);
