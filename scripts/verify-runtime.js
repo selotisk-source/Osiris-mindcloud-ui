@@ -70,6 +70,39 @@ async function waitForHealth(child) {
     const taskEvents = await get("/api/mindcloud/events?taskId="+encodeURIComponent(taskId));
     assert.ok(taskEvents.body.events.some(event=>event.taskId===taskId && event.type==="complete"));
 
+    const initialVersions = await get("/api/mindcloud/versions");
+    assert.equal(initialVersions.status,200);
+    assert.equal(initialVersions.body.type,"mindcloud_model_version_history");
+    assert.equal(initialVersions.body.versions.length,1);
+    assert.equal(initialVersions.body.versions[0].id,"model-v1");
+    assert.match(initialVersions.body.versions[0].modelHash,/^[a-f0-9]{64}$/);
+
+    const versionWithoutRationale = await post("/api/mindcloud/versions",{model:{state:"changed"}});
+    assert.equal(versionWithoutRationale.status,400);
+    assert.equal(versionWithoutRationale.body.error,"rationale_required_min_8_chars");
+
+    const createdVersion = await post("/api/mindcloud/versions",{
+      model:{state:"validated",threshold:0.8},
+      rationale:"Raise threshold after validation test",
+      changeType:"policy_update",
+      evidenceRefs:["test:evidence-001"]
+    });
+    assert.equal(createdVersion.status,201);
+    assert.equal(createdVersion.body.version.id,"model-v2");
+    assert.equal(createdVersion.body.version.parentId,"model-v1");
+    assert.equal(createdVersion.body.version.rationale,"Raise threshold after validation test");
+    assert.deepEqual(createdVersion.body.version.evidenceRefs,["test:evidence-001"]);
+    assert.match(createdVersion.body.version.modelHash,/^[a-f0-9]{64}$/);
+
+    const versionReadback = await get("/api/mindcloud/versions/model-v2");
+    assert.equal(versionReadback.status,200);
+    assert.equal(versionReadback.body.version.model.threshold,0.8);
+    const versionsAfterUpdate = await get("/api/mindcloud/versions");
+    assert.equal(versionsAfterUpdate.body.versions.length,2);
+    assert.ok(versionsAfterUpdate.body.versions.some(version=>version.id==="model-v2" && version.parentId==="model-v1"));
+    const versionEvents = await get("/api/mindcloud/events");
+    assert.ok(versionEvents.body.events.some(event=>event.type==="model_version_created" && event.data.versionId==="model-v2"));
+
     const beforeSuggestion = await get("/api/mindcloud/status");
     const suggested = await get("/api/mindcloud/suggest?kind=research&goal=evidence");
     const afterSuggestion = await get("/api/mindcloud/status");
@@ -172,6 +205,7 @@ async function waitForHealth(child) {
         "health",
         "router",
         "task-route-readback-events",
+        "model-version-history-rationale-parent-hash-readback",
         "capabilities",
         "liveness-approval-gate",
         "cctv-state-reported",
