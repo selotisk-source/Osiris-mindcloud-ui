@@ -11,9 +11,15 @@ const { AdapterRuntime } = require("../mindcloud/adapter-runtime");
   let providerCalls = 0;
   const provider = http.createServer((req, res) => {
     providerCalls += 1;
-    const status = req.url === "/execute-two" ? 502 : 503;
-    res.writeHead(status, { "content-type": "application/json" });
-    res.end(JSON.stringify({ error: "provider_temporarily_unavailable" }));
+    let body = "";
+    req.on("data", chunk => { body += chunk; });
+    req.on("end", () => {
+      let input = {};
+      try { input = JSON.parse(body); } catch {}
+      const status = input.id === "test-adapter-two" ? 502 : 503;
+      res.writeHead(status, { "content-type": "application/json" });
+      res.end(JSON.stringify({ error: "provider_temporarily_unavailable" }));
+    });
   });
   await new Promise(resolve => provider.listen(port, "127.0.0.1", resolve));
   process.env[envNames[0]] = endpoint;
