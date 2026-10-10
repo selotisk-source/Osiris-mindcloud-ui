@@ -1,5 +1,7 @@
 const assert = require("node:assert/strict");
 const {executeWithRetry,isRetrySafeOperation,isTransientFailure} = require("../mindcloud/adapter-policy");
+const {AdapterRuntime} = require("../mindcloud/adapter-runtime");
+const native = require("../mindcloud/native-adapters");
 
 (async () => {
   assert.equal(isRetrySafeOperation("query"),true);
@@ -47,5 +49,21 @@ const {executeWithRetry,isRetrySafeOperation,isTransientFailure} = require("../m
   assert.equal(calls,2);
   assert.equal(thrown.value.ok,true);
   assert.equal(thrown.execution.recovered,true);
-  console.log(JSON.stringify({status:"verified",checks:["safe-operation-allowlist","transient-status-classification","retry-once-then-success","bounded-retries","no-retry-for-write-operations","retry-transient-network-errors"]},null,2));
+
+  const oldHealth=native.health;
+  const oldExecute=native.execute;
+  try {
+    native.health=async id=>({ok:false,status:"credentials-missing",required:id==="shodan"?"SHODAN_API_KEY":undefined});
+    native.execute=async()=>{throw new Error("health operation must not invoke provider execution");};
+    const runtime=new AdapterRuntime({tools:[{id:"shodan",layer:"SecurityResearch",status:"adapter-ready",security:true,operations:["host","search","dns","health"]}]});
+    const health=await runtime.execute({id:"shodan",operation:"health",input:{}});
+    assert.equal(health.ok,false);
+    assert.equal(health.result.status,"credentials-missing");
+    assert.equal(health.execution.retryPolicy,"health-probe","health must use the common lifecycle, not a provider operation");
+    assert.equal(runtime.runtimeState({id:"ruflo",transport:"stdio-mcp"}).transport,"stdio-mcp-readonly","native transport mode must not be mislabeled as HTTP");
+  } finally {
+    native.health=oldHealth;
+    native.execute=oldExecute;
+  }
+  console.log(JSON.stringify({status:"verified",checks:["safe-operation-allowlist","transient-status-classification","retry-once-then-success","bounded-retries","no-retry-for-write-operations","retry-transient-network-errors","health-operation-uses-common-lifecycle","health-probe-does-not-require-action-approval","transport-mode-reported-truthfully"]},null,2));
 })().catch(error => { console.error(error); process.exitCode=1; });
