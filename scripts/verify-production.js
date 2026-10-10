@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 const assert = require("node:assert/strict");
 
-const base = (process.env.MINDCLOUD_PRODUCTION_URL || "https://osiris-mindcloud.up.railway.app").replace(/\/$/, "");
+const base = (process.env.MINDCLOUD_PRODUCTION_URL || "https://mindcloud-live.up.railway.app").replace(/\/$/, "");
 const timeout = 10000;
 
 async function getJson(path) {
