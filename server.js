@@ -146,7 +146,7 @@ function cctvResponse() {
     streamProtocol: protocol,
     streamStatus: source ? "unverified" : "unconfigured",
     proxyStatus: "implemented",
-    proxyAuthStatus: process.env.CCTV_PROXY_TOKEN ? "configured" : "credentials-missing",
+    proxyAuthStatus: (process.env.CCTV_PROXY_TOKEN || process.env.CCTV_PUBLIC_ACCESS === "true") ? "configured" : "credentials-missing",
     frameStatus: !source ? "unconfigured" : cctvSnapshotState.verified ? "verified" : (/\.(?:jpe?g|png|webp)(?:\?|$)/i.test(source) ? "unverified" : "not_implemented"),
     evidenceStatus: !source ? "unavailable" : cctvSnapshotState.verified ? "snapshot-hash-recorded" : "not_verified",
     snapshotStatus: source ? cctvSnapshotState.status : "not_configured",
@@ -693,9 +693,12 @@ const server = http.createServer(async (req,res)=>{
   if(pathname==="/api/cctv/stream" && req.method==="GET"){
     const expectedToken = process.env.CCTV_PROXY_TOKEN || "";
     const suppliedToken = (req.headers.authorization || "").replace(/^Bearer\s+/i, "");
-    if (!expectedToken) { sendJson(res,{error:"cctv_proxy_token_not_configured"},503); return; }
-    if (!suppliedToken || suppliedToken.length !== expectedToken.length ||
-        !require("node:crypto").timingSafeEqual(Buffer.from(suppliedToken), Buffer.from(expectedToken))) {
+    const publicAccess = process.env.CCTV_PUBLIC_ACCESS === "true";
+    // Public cameras may be played through the same-origin proxy without shipping a secret to the browser.
+    // Private cameras still require a server-side token and never fall back to anonymous access.
+    if (!expectedToken && !publicAccess) { sendJson(res,{error:"cctv_proxy_token_not_configured"},503); return; }
+    if (!publicAccess && (!suppliedToken || suppliedToken.length !== expectedToken.length ||
+        !require("node:crypto").timingSafeEqual(Buffer.from(suppliedToken), Buffer.from(expectedToken)))) {
       sendJson(res,{error:"unauthorized"},401); return;
     }
     let resource = null;
