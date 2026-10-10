@@ -130,7 +130,7 @@ class AdapterRuntime {
     return this.record(requestId,{id,operation,...(run.value || {ok:false,error:"adapter_execution_failed"}),execution:{...run.execution,inputContractVersion:inputContract.version,inputValidation:inputContract.mode}});
   }
 
-  record(requestId,result){this.audit.push({requestId,timestamp:new Date().toISOString(),...result});return result;}
+  record(requestId,result){const entry={...result,requestId,timestamp:new Date().toISOString()};this.audit.push(entry);return {...result,requestId};}
   snapshot(){
     const adapters=this.list();
     const readinessSummary={
