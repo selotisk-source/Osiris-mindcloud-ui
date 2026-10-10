@@ -22,7 +22,7 @@ class AdapterRuntime {
 
   runtimeState(tool) {
     const nativeState = native.state(tool.id);
-    const endpoint = nativeState ? null : this.endpointFor(tool.id);
+    const endpoint = nativeState || tool.status === "research-registered" ? null : this.endpointFor(tool.id);
     const envName = `ADAPTER_${String(tool.id).toUpperCase().replace(/[^A-Z0-9]/g,"_")}_URL`;
     const endpointAliases = {
       "browser-use":"BROWSER_USE_SERVICE_URL",
@@ -75,6 +75,7 @@ class AdapterRuntime {
   async health(id) {
     const tool=this.registry.tools.find(item=>item.id===id);
     if(!tool)return {ok:false,error:"adapter_not_found",id};
+    if(tool.status==="research-registered") return {ok:false,status:"research-registered",reason:"capability_not_promoted",executionEnabled:false};
     const nativeHealth=await native.health(id);
     if(nativeHealth)return nativeHealth;
     const endpoint=this.endpointFor(id);
@@ -98,6 +99,7 @@ class AdapterRuntime {
     const requestId=crypto.randomUUID();
     const tool=this.registry.tools.find(item=>item.id===id);
     if(!tool)return this.record(requestId,{ok:false,error:"adapter_not_found",id,operation});
+    if(tool.status==="research-registered" && operation!=="health") return this.record(requestId,{ok:false,error:"capability_not_promoted",id,operation,status:tool.status,executionEnabled:false});
     const runtimeOperations=this.runtimeState(tool).operations;
     if(!tool.operations?.includes(operation))return this.record(requestId,{ok:false,error:"operation_not_allowed",id,operation});
     if(!runtimeOperations.includes(operation))return this.record(requestId,{ok:false,error:"operation_not_implemented",id,operation,implementedOperations:runtimeOperations});
