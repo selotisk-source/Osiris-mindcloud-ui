@@ -6,6 +6,7 @@ const { MindCloudRuntime } = require("./mindcloud/runtime");
 const { AdapterRuntime } = require("./mindcloud/adapter-runtime");
 const { proxyCctvRequest } = require("./mindcloud/cctv-proxy");
 const { evaluateMetanoia } = require("./mindcloud/metanoia-engine");
+const { evaluateDecision } = require("./mindcloud/decision-governor");
 const { evaluateArena } = require("./mindcore/arena-skill");
 const { runArenaWorkflow } = require("./mindcloud/arena-workflow");
 const { EvidenceGraph } = require("./mindcloud/evidence-graph");
@@ -315,6 +316,15 @@ const server = http.createServer(async (req,res)=>{
     } catch(error) {
       const message = error instanceof Error ? error.message : String(error);
       sendJson(res,{error:message},Number.isInteger(error.statusCode) ? error.statusCode : 400);
+    }
+    return;
+  }
+  if(pathname==="/api/mindcloud/decision-governor/evaluate" && req.method==="POST"){
+    try {
+      const input = await readJson(req);
+      sendJson(res, evaluateDecision(input));
+    } catch (error) {
+      sendJson(res,{error:error instanceof Error ? error.message : String(error)},Number.isInteger(error.statusCode) ? error.statusCode : 400);
     }
     return;
   }
