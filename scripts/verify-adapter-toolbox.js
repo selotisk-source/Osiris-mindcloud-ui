@@ -35,6 +35,12 @@ for (const adapter of snapshot.adapters) {
     "every adapter must publish supported operation contracts");
   assert.ok(Array.isArray(adapter.runtime.executableOperations),
     "every adapter must publish the operations executable in its current configuration");
+  assert.ok(adapter.runtime.executableOperations.every(operation=>adapter.runtime.operations.includes(operation)),
+    "executable operations must be a subset of the declared effective contract");
+  if (adapter.runtime.state === "registered-only") {
+    assert.ok(adapter.runtime.executableOperations.every(operation=>operation === "health"),
+      "unconfigured adapters must not advertise action execution as available");
+  }
   if (native.supports(adapter.id)) {
     const expected = [...native.operationsFor(adapter.id), ...(registry.tools.find(tool=>tool.id===adapter.id).operations.includes("health")?["health"]:[])];
     assert.deepEqual(adapter.runtime.operations,expected,
