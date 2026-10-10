@@ -168,7 +168,9 @@
         "health"
       ],
       "env": "OVERPASS_API_URL",
-      "status": "adapter-ready"
+      "status": "adapter-ready",
+      "cost_model": "free-public-endpoint",
+      "authentication": "none"
     },
     {
       "id": "geohints",
@@ -181,7 +183,8 @@
         "health"
       ],
       "env": "GEOHINTS_URL",
-      "status": "adapter-ready"
+      "status": "adapter-ready",
+      "cost_model": "free-reference-data; local hosting preferred"
     },
     {
       "id": "google-street-view",
@@ -195,7 +198,8 @@
       ],
       "env": "GOOGLE_MAPS_API_KEY",
       "endpoint_env": "GOOGLE_STREET_VIEW_URL",
-      "status": "adapter-ready"
+      "status": "adapter-ready",
+      "cost_model": "billing-required; park until free alternative evaluated"
     },
     {
       "id": "shodan",
@@ -211,21 +215,23 @@
       "env": "SHODAN_API_KEY",
       "endpoint_env": "SHODAN_API_BASE_URL",
       "status": "adapter-ready",
-      "security": "authorized targets and scopes only"
+      "security": "authorized targets and scopes only",
+      "cost_model": "paid-capability-risk; park unless free account quota is sufficient"
     },
     {
       "id": "subdomain-finder",
-      "source": "Subdomain discovery service",
+      "source": "crt.sh Certificate Transparency + Cloudflare DNS-over-HTTPS",
       "layer": "SecurityResearch",
-      "integration": "Scoped DNS/subdomain discovery with allowlists, rate limits and provenance.",
+      "integration": "Free, keyless passive subdomain discovery from public certificate-transparency records plus DNS-over-HTTPS resolution; scope restricted to the requested domain.",
       "operations": [
         "discover",
         "resolve",
         "health"
       ],
-      "env": "SUBDOMAIN_FINDER_URL",
       "status": "adapter-ready",
-      "security": "authorized domains only"
+      "security": "explicitly authorized domains only; passive queries only",
+      "cost_model": "free-public-endpoints-no-key",
+      "authentication": "none"
     },
     {
       "id": "opensanctions",
@@ -239,21 +245,24 @@
       ],
       "env": "OPENSANCTIONS_API_KEY",
       "endpoint_env": "OPENSANCTIONS_API_BASE_URL",
-      "status": "adapter-ready"
+      "status": "adapter-ready",
+      "cost_model": "API-plan-to-be-checked; prefer downloadable dataset if API is paid"
     },
     {
       "id": "cookies-viewer",
-      "source": "Browser cookie inspection",
+      "source": "Brave/Chromium extension cookies API",
       "layer": "ComputerAgent",
-      "integration": "Inspect cookies only inside explicitly authorized isolated browser contexts; cookie values must never enter audit logs.",
+      "integration": "Local extension-only cookie metadata inspection for the active tab. Never reads or displays cookie values and never sends cookie data to MindCloud.",
       "operations": [
         "list",
         "inspect",
         "health"
       ],
-      "env": "COOKIES_VIEWER_URL",
       "status": "adapter-ready",
-      "security": "authorized browser contexts only"
+      "security": "user-initiated, active tab only, metadata only, no value collection or network transfer",
+      "transport": "extension-local",
+      "cost_model": "local-no-service-fee",
+      "authentication": "browser permission per site"
     }
   ]
 }
