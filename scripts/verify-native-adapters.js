@@ -27,6 +27,7 @@ global.fetch = async (url, options={}) => {
   process.env.OPENSANCTIONS_API_KEY="test-sanctions-key";
   process.env.MAPILLARY_ACCESS_TOKEN="test-mapillary-token";
   process.env.COGNEE_SERVICE_URL="http://cognee.test";
+  process.env.MINDCLOUD_AUTHORIZED_DOMAINS="example.com";
 
   const registry=[
     {id:"overpass-turbo",operations:["query","export_geojson"]},
@@ -73,6 +74,14 @@ global.fetch = async (url, options={}) => {
   assert.match(calls[6].url,/cloudflare-dns\.com/);
   const outOfScope=await native.execute({id:"subdomain-finder",operation:"resolve",input:{domain:"example.com",name:"example.net"},requestId:"test-dns-scope"});
   assert.equal(outOfScope.error,"name_outside_requested_domain");
+  const unauthorizedDomain=await native.execute({id:"subdomain-finder",operation:"discover",input:{domain:"example.net"},requestId:"test-unauthorized-domain"});
+  assert.equal(unauthorizedDomain.error,"domain_not_authorized");
+  const savedAllowlist=process.env.MINDCLOUD_AUTHORIZED_DOMAINS;
+  delete process.env.MINDCLOUD_AUTHORIZED_DOMAINS;
+  assert.equal(native.state("subdomain-finder").configured,false);
+  const missingAllowlist=await native.execute({id:"subdomain-finder",operation:"discover",input:{domain:"example.com"},requestId:"test-missing-domain-allowlist"});
+  assert.equal(missingAllowlist.error,"authorized_domain_allowlist_missing");
+  process.env.MINDCLOUD_AUTHORIZED_DOMAINS=savedAllowlist;
   const denied=await native.execute({id:"shodan",operation:"host",input:{},requestId:"test-invalid"});
   assert.equal(denied.error,"ip_required");
 
