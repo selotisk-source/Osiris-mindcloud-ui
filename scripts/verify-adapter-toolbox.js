@@ -24,11 +24,16 @@ assert.match(html, /adapterHealthCache\[id\]=result/, "health result must be ret
 assert.match(html, /adapterDiscoveryCache\[id\]=result/, "discovery result must be retained in the UI");
 assert.match(html, /readinessLabel/, "toolbox must display the runtime readiness state");
 assert.match(html, /verificationText/, "toolbox must distinguish execution verification from registration and health");
+assert.match(html, /readinessSummary/, "toolbox must display adapter readiness coverage totals");
 assert.doesNotMatch(html, /fetch\(['"]\/api\/adapters\/execute/, "browser UI must not call the protected execution endpoint or expose its token");
 
 const runtime = new AdapterRuntime(registry);
 const snapshot = runtime.snapshot();
 assert.equal(snapshot.adapters.length, registry.tools.length, "runtime status must cover every registered adapter");
+assert.equal(snapshot.verificationScope, "current-runtime-session");
+assert.equal(snapshot.readinessSummary.total, registry.tools.length);
+assert.equal(snapshot.readinessSummary.verified, 0, "new runtime has no execution verification evidence");
+assert.equal(snapshot.readinessSummary.executionNotVerified, registry.tools.length);
 for (const adapter of snapshot.adapters) {
   assert.ok(adapter.id, "every adapter needs a stable ID");
   assert.ok(["configured", "registered-only"].includes(adapter.runtime.state),
@@ -70,6 +75,9 @@ assert.equal(browserVerified.verification.status, "verified");
 assert.equal(browserVerified.verification.operation, "browse");
 assert.ok(browserVerified.verification.lastVerifiedAt);
 assert.equal(browserVerified.healthStatus, "healthy", "execution verification must not erase the separate health result");
+const verifiedSnapshot = runtime.snapshot();
+assert.equal(verifiedSnapshot.readinessSummary.verified, 1);
+assert.equal(verifiedSnapshot.readinessSummary.executionNotVerified, registry.tools.length - 1);
 
 (async () => {
   const previousEndpoint = process.env.BROWSER_USE_SERVICE_URL;
