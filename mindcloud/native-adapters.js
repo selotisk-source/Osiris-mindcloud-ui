@@ -35,7 +35,7 @@ async function health(id) {
 function overpassEndpoints() {
   const primary = process.env.OVERPASS_API_URL || "https://overpass-api.de/api/interpreter";
   const configured = (process.env.OVERPASS_API_FALLBACKS || "").split(",").map(value => value.trim()).filter(Boolean);
-  const defaults = ["https://overpass-api.de/api/interpreter", "https://overpass.private.coffee/api/interpreter", "https://maps.mail.ru/osm/tools/overpass/api/interpreter"];
+  const defaults = ["https://overpass-api.de/api/interpreter", "https://overpass.private.coffee/api/interpreter", "https://maps.mail.ru/osm/tools/overpass/api/interpreter", "https://overpass.osm.jp/api/interpreter"];
   return [...new Set([primary, ...configured, ...defaults])];
 }
 
