@@ -340,7 +340,7 @@ async function waitForHealth(child) {
     assert.equal(cctv.status, 200);
     assert.equal(cctv.body.status, process.env.CCTV_SOURCE_URL ? "configured" : "not_configured");
     assert.equal(cctv.body.proxyStatus, "implemented");
-    assert.equal(cctv.body.proxyAuthStatus, (process.env.CCTV_PROXY_TOKEN || process.env.CCTV_PUBLIC_ACCESS === "true") ? "configured" : "credentials-missing");
+    assert.equal(cctv.body.proxyAuthStatus, "credentials-missing"); // pre-deploy verifier intentionally unsets CCTV auth variables
     assert.equal(cctv.body.streamStatus, process.env.CCTV_SOURCE_URL ? "unverified" : "unconfigured");
     assert.equal(cctv.body.frameStatus, process.env.CCTV_SOURCE_URL ? (cctv.body.snapshotStatus === "verified" ? "verified" : "not_implemented") : "unconfigured");
     assert.equal(cctv.body.evidenceStatus, process.env.CCTV_SOURCE_URL ? (cctv.body.snapshotStatus === "verified" ? "snapshot-hash-recorded" : "not_verified") : "unavailable");
