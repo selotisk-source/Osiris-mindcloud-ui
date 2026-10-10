@@ -175,6 +175,46 @@ async function waitHealthy(child) {
     assert.equal(snapshot.status, 200);
     assert.ok([5, 6].includes(snapshot.body.auditCount), "audit count includes the common dispatch execution and may include one optional evidence-graph record");
 
+    const hashBoundRequest = await json(await fetch(appBase + "/api/approvals/request", {
+      method: "POST",
+      headers: { "content-type": "application/json", authorization: "Bearer " + token },
+      body: JSON.stringify({ id: "anthropic-cybersecurity-skills", operation: "assess", input: { target: "hash-bound-original" } })
+    }));
+    assert.equal(hashBoundRequest.status, 201);
+    const hashBoundApprovalId = hashBoundRequest.body.request.id;
+    assert.match(hashBoundRequest.body.request.inputHash, /^[a-f0-9]{64}$/, "approval ticket must expose its canonical input hash");
+
+    const hashBoundDecision = await json(await fetch(appBase + "/api/approvals/" + hashBoundApprovalId + "/decision", {
+      method: "POST",
+      headers: { "content-type": "application/json", authorization: "Bearer mindcloud-approval-test-token" },
+      body: JSON.stringify({ decision: "approved", reason: "Input-hash regression test" })
+    }));
+    assert.equal(hashBoundDecision.status, 200);
+    assert.equal(hashBoundDecision.body.request.status, "approved");
+
+    const changedInputAttempt = await json(await fetch(appBase + "/api/adapters/execute", {
+      method: "POST",
+      headers: { "content-type": "application/json", authorization: "Bearer " + token },
+      body: JSON.stringify({ id: "anthropic-cybersecurity-skills", operation: "assess", input: { target: "hash-bound-modified" }, approvalId: hashBoundApprovalId })
+    }));
+    assert.equal(changedInputAttempt.status, 200);
+    assert.equal(changedInputAttempt.body.error, "human_approval_required", "approval must not authorize modified input");
+    assert.equal(changedInputAttempt.body.approvalId, hashBoundApprovalId);
+
+    const originalInputAttempt = await json(await fetch(appBase + "/api/adapters/execute", {
+      method: "POST",
+      headers: { "content-type": "application/json", authorization: "Bearer " + token },
+      body: JSON.stringify({ id: "anthropic-cybersecurity-skills", operation: "assess", input: { target: "hash-bound-original" }, approvalId: hashBoundApprovalId })
+    }));
+    assert.equal(originalInputAttempt.status, 200);
+    assert.equal(originalInputAttempt.body.error, "adapter_not_configured", "mismatched input must not consume the approval ticket");
+    const hashBoundQueue = await json(await fetch(appBase + "/api/approvals", {
+      headers: { authorization: "Bearer " + token }
+    }));
+    const hashBoundAudit = hashBoundQueue.body.audit.filter(event => event.approvalId === hashBoundApprovalId);
+    assert.ok(hashBoundAudit.some(event => event.type === "input_mismatch"), "input mismatch must be audited");
+    assert.ok(hashBoundAudit.some(event => event.type === "consumed"), "the exact approved input consumes the ticket once");
+
     const approvalRequest = await json(await fetch(appBase + "/api/approvals/request", {
       method: "POST",
       headers: { "content-type": "application/json", authorization: "Bearer " + token },
