@@ -141,7 +141,7 @@ function cctvResponse() {
     streamStatus: source ? "unverified" : "unconfigured",
     proxyStatus: "implemented",
     proxyAuthStatus: process.env.CCTV_PROXY_TOKEN ? "configured" : "credentials-missing",
-    frameStatus: source ? "not_implemented" : "unconfigured",
+    frameStatus: source ? (/\.(?:jpe?g|png|webp)(?:\?|$)/i.test(source) ? "unverified" : "not_implemented") : "unconfigured",
     evidenceStatus: source ? "not_verified" : "unavailable",
     access: source ? "osiris-controlled" : "unconfigured"
   };
