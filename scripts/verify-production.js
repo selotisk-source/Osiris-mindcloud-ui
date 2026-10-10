@@ -107,7 +107,8 @@ async function getJson(path) {
   const selftestResponse = await fetch(base + "/api/mindcloud/selftest", {
     method: "POST",
     headers: { accept: "application/json" },
-    signal: AbortSignal.timeout(30000)
+    // The self-test runs sequential live probes; Cognee write/readback can consume up to 40s.
+    signal: AbortSignal.timeout(90000)
   });
   const selftest = await selftestResponse.json();
   assert.equal(selftestResponse.status, 200, "production MindCloud self-test must return HTTP 200: " + JSON.stringify(selftest));
