@@ -8,7 +8,7 @@ global.fetch = async (url, options={}) => {
   return {
     ok:true,status:200,
     headers:{get:(key)=>key.toLowerCase()==="content-type"?"application/json":"application/json"},
-    json:async()=>String(url).includes("crt.sh")?[{name_value:"www.example.com\\napi.example.com\\n*.example.com\\nnotexample.com"}]:String(url).includes("cloudflare-dns.com")?{Status:0,Answer:[{name:"www.example.com",type:1,data:"203.0.113.10",TTL:60}]}:String(url).includes("overpass.test")?{elements:[{type:"node",id:7,lat:43.2,lon:27.9,tags:{name:"Test point"}}]}:{mock:true,items:[],status:"OK"}
+    json:async()=>String(url).includes("crt.sh")?[{name_value:"www.example.com\napi.example.com\\n*.example.com\\nnotexample.com"}]:String(url).includes("cloudflare-dns.com")?{Status:0,Answer:[{name:"www.example.com",type:1,data:"203.0.113.10",TTL:60}]}:String(url).includes("overpass.test")?{elements:[{type:"node",id:7,lat:43.2,lon:27.9,tags:{name:"Test point"}}]}:{mock:true,items:[],status:"OK"}
   };
 };
 
