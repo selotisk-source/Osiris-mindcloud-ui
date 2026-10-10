@@ -73,7 +73,7 @@ async function waitForHealth(child) {
   await new Promise(resolve => mockAdapter.listen(39128,"127.0.0.1",resolve));
   const child = spawn(process.execPath, ["server.js"], {
     cwd: root,
-    env: { ...process.env, PORT: String(port), CCTV_SOURCE_URL: "", COGNEE_SERVICE_URL: "", BROWSER_USE_SERVICE_URL: "http://127.0.0.1:39128", BROWSER_USE_API_KEY: "test-token", MINDCLOUD_TOOL_EXECUTION_TOKEN: "mindcloud-test-execution-token", MINDCLOUD_MODEL_VERSION_WRITE_TOKEN: "mindcloud-version-write-test-token", MINDCLOUD_MODEL_VERSION_STORE: storePath, MINDCLOUD_TASK_WRITE_TOKEN: "mindcloud-task-write-test-token", MINDCLOUD_TASK_EVENT_STORE: taskEventStorePath, MINDCLOUD_EVIDENCE_WRITE_TOKEN: "mindcloud-evidence-write-test-token", MINDCLOUD_EVIDENCE_READ_TOKEN: "mindcloud-evidence-read-test-token", MINDCLOUD_EVIDENCE_GRAPH_STORE: evidenceGraphStorePath },
+    env: { ...process.env, NODE_ENV: "test", PORT: String(port), CCTV_SOURCE_URL: "", COGNEE_SERVICE_URL: "", BROWSER_USE_SERVICE_URL: "http://127.0.0.1:39128", BROWSER_USE_API_KEY: "test-token", MINDCLOUD_TOOL_EXECUTION_TOKEN: "mindcloud-test-execution-token", MINDCLOUD_MODEL_VERSION_WRITE_TOKEN: "mindcloud-version-write-test-token", MINDCLOUD_MODEL_VERSION_STORE: storePath, MINDCLOUD_TASK_WRITE_TOKEN: "mindcloud-task-write-test-token", MINDCLOUD_TASK_EVENT_STORE: taskEventStorePath, MINDCLOUD_EVIDENCE_WRITE_TOKEN: "mindcloud-evidence-write-test-token", MINDCLOUD_EVIDENCE_READ_TOKEN: "mindcloud-evidence-read-test-token", MINDCLOUD_EVIDENCE_GRAPH_STORE: evidenceGraphStorePath },
     stdio: ["ignore", "pipe", "pipe"]
   });
 
