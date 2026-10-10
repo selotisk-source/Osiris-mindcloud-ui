@@ -184,7 +184,8 @@ async function waitForHealth(child) {
     console.error(error);
     process.exitCode = 1;
   } finally {
-    child.kill("SIGTERM");
+    child.kill("SIGKILL");
+    mockAdapter.closeAllConnections?.();
     await new Promise(resolve => mockAdapter.close(resolve));
   }
 })();
