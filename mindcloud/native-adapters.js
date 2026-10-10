@@ -78,7 +78,7 @@ async function execute({id,operation,input={},requestId}) {
       const response=await fetch(endpoint,{...timeout,headers:{"accept":"application/json","user-agent":"MindCloud/1.0 (passive certificate-transparency lookup)"}});
       let rows=[]; try { rows=await response.json(); } catch {}
       if(!response.ok || !Array.isArray(rows)) return {ok:false,id,operation,status:response.status,error:"certificate_transparency_lookup_failed"};
-      const names=[...new Set(rows.flatMap(row=>String(row.name_value||"").split(/\r?\n/)).map(name=>name.trim().toLowerCase().replace(/^\*\./,"")).filter(name=>name===domain||name.endsWith("."+domain)))].sort();
+      const names=[...new Set(rows.flatMap(row=>String(row.name_value||"").split(/\r?\n/)).map(name=>name.trim().toLowerCase().replace(/^\*\./,"")).filter(name=>name!==domain&&name.endsWith("."+domain)))].sort();
       return {ok:true,id,operation,status:response.status,result:{domain,subdomains:names,count:names.length,method:"passive-certificate-transparency",provider:"crt.sh"},evidence:{source:"https://crt.sh/",retrievedAt:new Date().toISOString(),requestId}};
     }
     if(operation==="resolve") {
