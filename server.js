@@ -175,6 +175,31 @@ async function probeCctvSnapshot() {
   }
 }
 
+async function probeOverpassOperation() {
+  if (process.env.NODE_ENV === "test") return {status:"skipped-test-runtime",verified:false};
+  try {
+    const result = await adapters.execute({
+      id:"overpass-turbo",
+      operation:"query",
+      input:{query:"[out:json];node(1);out;"}
+    });
+    const valid = Boolean(result.ok && result.status >= 200 && result.status < 300 && Array.isArray(result.result?.elements) && result.evidence?.source && result.evidence?.requestId);
+    return {
+      status:valid ? "verified" : "failed",
+      verified:valid,
+      httpStatus:result.status || null,
+      elementCount:Array.isArray(result.result?.elements) ? result.result.elements.length : null,
+      source:result.evidence?.source || null,
+      requestId:result.requestId || result.evidence?.requestId || null,
+      attempts:result.execution?.attempts || null,
+      retries:result.execution?.retries || null,
+      ...(valid ? {} : {error:result.error || result.result?.remark || "overpass_operation_contract_failed"})
+    };
+  } catch (error) {
+    return {status:"failed",verified:false,error:error instanceof Error ? error.message : String(error)};
+  }
+}
+
 async function cogneeHealth() {
   const endpoint = (process.env.COGNEE_SERVICE_URL || "").replace(/\/$/, "");
   if (!endpoint) return {status:"not_configured",endpoint:null};
@@ -263,6 +288,7 @@ async function runMindcloudSelfTest() {
   const events = mindcloud.eventsFor(taskId);
   const cctvSnapshotProbe = await probeCctvSnapshot();
   cctvSnapshotState = cctvSnapshotProbe;
+  const overpassOperationProbe = await probeOverpassOperation();
   const memory = await cogneeHealth();
   const memoryRoundTrip = memory.status === "healthy" ? await cogneeMemoryRoundTrip() : {status:memory.status,persisted:false};
   const browserUse = await adapters.health("browser-use");
@@ -327,7 +353,7 @@ async function runMindcloudSelfTest() {
         message:browserExecution.result?.message || null
       }
     },
-    optional:{cctv:cctvResponse(),cctvSnapshotProbe},
+    optional:{cctv:cctvResponse(),cctvSnapshotProbe,overpassOperationProbe},
     timestamp:new Date().toISOString()
   };
 }
