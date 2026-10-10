@@ -113,7 +113,7 @@ async function getJson(path) {
   const selftest = await selftestResponse.json();
   assert.equal(selftestResponse.status, 200, "production MindCloud self-test must return HTTP 200: " + JSON.stringify(selftest));
   assert.equal(selftest.type, "mindcloud_e2e_selftest");
-  assert.equal(selftest.integrations?.memory?.status, "healthy", "Cognee health must pass in production");
+  assert.equal(selftest.integrations?.memory?.status, "healthy", "Cognee health must pass in production: " + JSON.stringify(selftest.integrations?.memory));
   assert.equal(selftest.integrations?.memoryRoundTrip?.status, "healthy",
     "Cognee write/readback round-trip must pass in production: " + JSON.stringify(selftest.integrations?.memoryRoundTrip));
   assert.equal(selftest.integrations.memoryRoundTrip.persisted, true,
