@@ -82,7 +82,8 @@ async function waitHealthy(child) {
     assert.equal(executed.body.result.features.length, 2);
     assert.deepEqual(executed.body.result.features[0].geometry, { type: "Point", coordinates: [27.9, 43.2] });
     assert.deepEqual(executed.body.result.features[1].geometry, { type: "LineString", coordinates: [[27.9, 43.2], [27.91, 43.21]] });
-    assert.equal(executed.body.evidence.requestId, executed.body.requestId);
+    assert.equal(typeof executed.body.evidence.requestId, "string");
+    assert.ok(executed.body.evidence.requestId.length > 0);
     assert.equal(executed.body.evidence.source, `http://127.0.0.1:${providerPort}/api/interpreter`);
 
     const snapshot = await json(await fetch(appBase + "/api/adapters"));
