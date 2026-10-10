@@ -160,8 +160,9 @@ async function cogneeHealth() {
 async function cogneeMemoryRoundTrip() {
   const endpoint = (process.env.COGNEE_SERVICE_URL || "").replace(/\/$/, "");
   if (!endpoint) return {status:"not_configured",persisted:false};
-  const sessionId = "mindcloud-e2e-persistence-probe";
-  const marker = "MINDCLOUD_PERSISTENCE_PROBE_V1";
+  const probeId = require("node:crypto").randomUUID();
+  const sessionId = "mindcloud-persistence-probe-" + probeId;
+  const marker = "MINDCLOUD_PERSISTENCE_PROBE_V1_" + probeId;
   const datasetName = process.env.COGNEE_MEMORY_DATASET || "mindcloud-selftest";
   const parseResponse = async response => {
     try { return await response.json(); }
@@ -178,10 +179,7 @@ async function cogneeMemoryRoundTrip() {
   };
   const containsMarker = body => JSON.stringify(body).includes(marker);
   try {
-    const existing = await recall();
-    if (existing.response.ok && containsMarker(existing.body)) {
-      return {status:"healthy",persisted:true,mode:"existing-readback",sessionId};
-    }
+    // A unique marker/session prevents stale data from masking a failed write.
     const form = new FormData();
     form.append("raw_data",marker);
     form.append("datasetName",datasetName);
@@ -198,16 +196,25 @@ async function cogneeMemoryRoundTrip() {
     if (!writeResponse.ok) {
       return {status:"degraded",persisted:false,mode:"write-failed",httpStatus:writeResponse.status,detail:writeBody};
     }
-    const readback = await recall();
-    const persisted = readback.response.ok && containsMarker(readback.body);
+    let readback = null;
+    let readbackAttempts = 0;
+    for (let attempt = 1; attempt <= 3; attempt++) {
+      readbackAttempts = attempt;
+      readback = await recall();
+      if (readback.response.ok && containsMarker(readback.body)) break;
+      if (attempt < 3) await new Promise(resolve => setTimeout(resolve, attempt * 500));
+    }
+    const persisted = Boolean(readback && readback.response.ok && containsMarker(readback.body));
     return {
       status:persisted ? "healthy" : "degraded",
       persisted,
       mode:"write-readback",
       writeHttpStatus:writeResponse.status,
-      readHttpStatus:readback.response.status,
+      readHttpStatus:readback ? readback.response.status : null,
+      readbackAttempts,
       sessionId,
-      ...(persisted ? {} : {detail:readback.body})
+      markerHash:require("node:crypto").createHash("sha256").update(marker).digest("hex"),
+      ...(persisted ? {} : {detail:readback ? readback.body : null})
     };
   } catch (error) {
     return {status:"offline",persisted:false,error:error instanceof Error ? error.message : String(error)};
