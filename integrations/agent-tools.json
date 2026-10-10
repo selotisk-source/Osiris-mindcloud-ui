@@ -12,65 +12,119 @@
       "source": "NanoNets/Graft",
       "layer": "CodeIntelligence",
       "integration": "Graft graph/context operations are exposed through the MindCore capability contract.",
-      "operations": ["init", "build", "ask", "grep", "map", "viz"],
-      "status": "adapter-ready"
+      "operations": [
+        "init",
+        "build",
+        "ask",
+        "grep",
+        "map",
+        "viz"
+      ],
+      "status": "planned"
     },
     {
       "id": "openmontage",
       "source": "calesthio/OpenMontage",
       "layer": "MediaPipeline",
       "integration": "OpenMontage is attached as a supervised production workspace; planning, research, scripting, rendering and validation remain auditable task operations.",
-      "operations": ["plan", "research", "script", "render", "validate"],
-      "status": "adapter-ready"
+      "operations": [
+        "plan",
+        "research",
+        "script",
+        "render",
+        "validate"
+      ],
+      "status": "planned"
     },
     {
       "id": "codebase-memory-mcp",
       "source": "DeusData/codebase-memory-mcp",
       "layer": "CodeIntelligence",
       "integration": "Local MCP code intelligence is exposed through typed structural-query operations; repository indexing is gated.",
-      "operations": ["search_graph", "trace_path", "architecture", "impact_analysis", "list_projects", "index_repository"],
+      "operations": [
+        "search_graph",
+        "trace_path",
+        "architecture",
+        "impact_analysis",
+        "list_projects",
+        "index_repository"
+      ],
       "transport": "stdio",
-      "status": "adapter-ready"
+      "status": "planned"
     },
     {
       "id": "browser-use",
       "source": "browser-use/browser-use",
       "layer": "ComputerAgent",
       "integration": "Supervised browser automation capability with isolated browser sessions and explicit action approval.",
-      "operations": ["browse", "navigate", "click", "type", "extract", "screenshot"],
-      "status": "adapter-ready"
+      "operations": [
+        "browse",
+        "navigate",
+        "click",
+        "type",
+        "extract",
+        "screenshot"
+      ],
+      "status": "planned"
     },
     {
       "id": "agentmemory",
       "source": "rohitg00/agentmemory",
       "layer": "AgentMemory",
       "integration": "Persistent cross-agent memory is exposed through typed memory operations; storage remains in the memory execution domain.",
-      "operations": ["remember", "observe", "smart_search", "context", "forget", "session_start", "session_end"],
-      "status": "adapter-ready"
+      "operations": [
+        "remember",
+        "observe",
+        "smart_search",
+        "context",
+        "forget",
+        "session_start",
+        "session_end"
+      ],
+      "status": "planned"
     },
     {
       "id": "scientific-agent-skills",
       "source": "K-Dense-AI/scientific-agent-skills",
       "layer": "ResearchAgent",
       "integration": "Agent Skills-compatible scientific workflows are discoverable and executable through a supervised research workspace.",
-      "operations": ["list_skills", "search_skill", "run_skill", "search_database", "analyze", "cite"],
-      "status": "adapter-ready"
+      "operations": [
+        "list_skills",
+        "search_skill",
+        "run_skill",
+        "search_database",
+        "analyze",
+        "cite"
+      ],
+      "status": "planned"
     },
     {
       "id": "diagram-design",
       "source": "cathrynlavery/diagram-design",
       "layer": "Visualization",
       "integration": "Editorial HTML/SVG diagram generation and redraws become evidence-linked visualization artifacts.",
-      "operations": ["generate", "redraw", "validate", "export"],
-      "status": "adapter-ready"
+      "operations": [
+        "generate",
+        "redraw",
+        "validate",
+        "export"
+      ],
+      "status": "planned"
     },
     {
       "id": "anthropic-cybersecurity-skills",
       "source": "mukul975/Anthropic-Cybersecurity-Skills",
       "layer": "SecurityResearch",
       "integration": "Structured security skills are available to authorized defensive and security-research workflows behind the admin approval gate.",
-      "operations": ["discover_skill", "assess", "hunt", "incident_response", "map_framework", "validate"],
-      "status": "adapter-ready",
+      "operations": [
+        "discover_skill",
+        "assess",
+        "hunt",
+        "incident_response",
+        "map_framework",
+        "validate"
+      ],
+      "status": "planned",
       "security": "authorized systems only; no unrestricted credentials or autonomous production changes"
     },
     {
@@ -78,16 +132,30 @@
       "source": "harness-engineer/awesome-harness-engineering",
       "layer": "HarnessEngineering",
       "integration": "Harness patterns are indexed as a reference layer for evaluating orchestration, context, tool design, constraints and safe autonomy.",
-      "operations": ["catalog", "inspect", "evaluate", "benchmark", "map_pattern"],
-      "status": "adapter-ready"
+      "operations": [
+        "catalog",
+        "inspect",
+        "evaluate",
+        "benchmark",
+        "map_pattern"
+      ],
+      "status": "planned"
     },
     {
       "id": "openviking",
       "source": "volcengine/OpenViking",
       "layer": "ContextDatabase",
       "integration": "Context is exposed through an inspectable filesystem-oriented interface for knowledge, memory and skills.",
-      "operations": ["ls", "tree", "read", "find", "retrieve", "import", "write"],
-      "status": "adapter-ready"
+      "operations": [
+        "ls",
+        "tree",
+        "read",
+        "find",
+        "retrieve",
+        "import",
+        "write"
+      ],
+      "status": "planned"
     }
   ]
 }
