@@ -2,36 +2,41 @@ const fs = require("node:fs");
 const path = require("node:path");
 
 const registryPath = path.join(__dirname, "agent-tools.json");
-const adapterDir = path.join(__dirname, "adapters");
+const adapterCandidates = id => [
+  path.join(__dirname, "adapters", String(id).replace(/[^a-zA-Z0-9._-]/g, "-") + ".js"),
+  path.join(__dirname, String(id).replace(/[^a-zA-Z0-9._-]/g, "-") + "-adapter.js")
+];
 
 function loadRegistry() {
   const registry = JSON.parse(fs.readFileSync(registryPath, "utf8"));
   return Array.isArray(registry.tools) ? registry.tools : [];
 }
 
-function adapterPath(id) {
-  return path.join(adapterDir, String(id).replace(/[^a-zA-Z0-9._-]/g, "-") + ".js");
-}
-
 function inspectTool(tool) {
-  const file = adapterPath(tool.id);
-  const hasAdapter = fs.existsSync(file);
+  const candidates = adapterCandidates(tool.id);
+  const adapter = candidates.find(file => fs.existsSync(file)) || null;
   const declaredOperations = Array.isArray(tool.operations) ? tool.operations : [];
-  if (hasAdapter) {
-    return {
-      ...tool,
-      implementationStatus: "implemented",
-      executable: true,
-      adapter: path.relative(path.join(__dirname, ".."), file),
-      operations: declaredOperations
-    };
+  let executable = false;
+  let loadError = null;
+  if (adapter) {
+    try {
+      const loaded = require(adapter);
+      executable = typeof loaded.execute === "function";
+    } catch (error) {
+      loadError = error instanceof Error ? error.message : String(error);
+    }
   }
+  let status = "DISCOVERY-ONLY";
+  if (executable) status = "IMPLEMENTED";
+  else if (adapter && !loadError) status = "ADAPTER-PRESENT";
+  else if (tool.status === "adapter-ready") status = "PLANNED";
   return {
     ...tool,
-    implementationStatus: "unimplemented",
-    executable: false,
-    adapter: null,
-    operations: declaredOperations
+    status,
+    executable,
+    adapter: adapter ? path.relative(path.join(__dirname, ".."), adapter) : null,
+    operations: declaredOperations,
+    loadError
   };
 }
 
@@ -39,11 +44,13 @@ function inspectAll() {
   const tools = loadRegistry().map(inspectTool);
   return {
     type: "mindcloud_tool_implementation_status",
-    policy: "A registry record never implies execution. Only a present adapter with declared operations is executable.",
+    policy: "Registry membership never implies execution. IMPLEMENTED requires a loadable adapter exporting execute().",
     counts: {
       total: tools.length,
-      implemented: tools.filter(t => t.implementationStatus === "implemented").length,
-      unimplemented: tools.filter(t => t.implementationStatus === "unimplemented").length
+      implemented: tools.filter(t => t.status === "IMPLEMENTED").length,
+      adapterPresent: tools.filter(t => t.status === "ADAPTER-PRESENT").length,
+      planned: tools.filter(t => t.status === "PLANNED").length,
+      discoveryOnly: tools.filter(t => t.status === "DISCOVERY-ONLY").length
     },
     tools
   };
