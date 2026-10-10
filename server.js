@@ -487,7 +487,7 @@ const server = http.createServer(async (req,res)=>{
   if(pathname==="/api/agent-tools"){sendJson(res,agentTools);return;}
   if(pathname==="/api/adapters"){sendJson(res,adapters.snapshot());return;}
   if(pathname.startsWith("/api/adapters/") && pathname.endsWith("/discover")){const id=pathname.split("/")[3];sendJson(res,adapters.discover(id));return;}
-  if(pathname.startsWith("/api/adapters/") && pathname.endsWith("/health")){const id=pathname.split("/")[3];adapters.health(id).then(result=>sendJson(res,result));return;}
+  if(pathname.startsWith("/api/adapters/") && pathname.endsWith("/health")){const id=pathname.split("/")[3];adapters.health(id).then(result=>{adapters.record(require("node:crypto").randomUUID(),{id,operation:"health",ok:Boolean(result?.ok),result});sendJson(res,result);});return;}
   if(pathname==="/api/approvals" && req.method==="GET") {
     if (!isExecutionAuthorized(req)) { sendJson(res,{error:"unauthorized"},401); return; }
     sendJson(res,{type:"mindcloud_approval_queue",requests:[...approvalRequests.values()],audit:approvalAudit});

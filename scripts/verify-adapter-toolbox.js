@@ -22,6 +22,8 @@ assert.match(html, /registered-only adapters are not presented as running applic
   "UI must distinguish a registry contract from a running adapter");
 assert.match(html, /adapterHealthCache\[id\]=result/, "health result must be retained in the UI");
 assert.match(html, /adapterDiscoveryCache\[id\]=result/, "discovery result must be retained in the UI");
+assert.match(html, /readinessLabel/, "toolbox must display the runtime readiness state");
+assert.match(html, /verificationText/, "toolbox must distinguish execution verification from registration and health");
 assert.doesNotMatch(html, /fetch\(['"]\/api\/adapters\/execute/, "browser UI must not call the protected execution endpoint or expose its token");
 
 const runtime = new AdapterRuntime(registry);
@@ -50,6 +52,22 @@ for (const adapter of snapshot.adapters) {
 assert.deepEqual(runtime.discover("overpass-turbo").adapter.operations,["query","export_geojson","health"]);
 assert.deepEqual(runtime.discover("shodan").adapter.operations,["host","search","dns","health"]);
 assert.deepEqual(runtime.discover("ruflo").adapter.operations,["discover_tools","health"]);
+
+const browserBeforeEvidence = runtime.discover("browser-use").adapter.runtime;
+assert.equal(browserBeforeEvidence.readiness, "registered-only");
+assert.equal(browserBeforeEvidence.healthStatus, "not-checked");
+assert.equal(browserBeforeEvidence.verification.status, "not-verified");
+runtime.record("health-evidence-test", {ok:true,id:"browser-use",operation:"health",result:{status:"healthy"}});
+const browserHealthy = runtime.discover("browser-use").adapter.runtime;
+assert.equal(browserHealthy.healthStatus, "healthy");
+assert.equal(browserHealthy.readiness, "healthy");
+runtime.record("execution-evidence-test", {ok:true,id:"browser-use",operation:"browse",result:{title:"Example Domain"}});
+const browserVerified = runtime.discover("browser-use").adapter.runtime;
+assert.equal(browserVerified.readiness, "verified");
+assert.equal(browserVerified.verification.status, "verified");
+assert.equal(browserVerified.verification.operation, "browse");
+assert.ok(browserVerified.verification.lastVerifiedAt);
+assert.equal(browserVerified.healthStatus, "healthy", "execution verification must not erase the separate health result");
 
 (async () => {
   const previousEndpoint = process.env.BROWSER_USE_SERVICE_URL;
