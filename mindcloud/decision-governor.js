@@ -96,6 +96,8 @@ function result(route, code, reasons, input) {
     actionType: input?.action?.type || null,
     executionAuthorized: false,
     executionPerformed: false,
+    mandateTrust: "caller_supplied_not_authenticated",
+    evidenceTrust: "caller_asserted_not_independently_verified",
     note: "This report routes a decision only. A separate trusted policy and execution gate must authorize any real-world action."
   };
 }
