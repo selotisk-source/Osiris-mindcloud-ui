@@ -247,7 +247,8 @@
       "status": "adapter-ready",
       "security": "explicitly authorized domains only; passive queries only",
       "cost_model": "free-public-endpoints-no-key",
-      "authentication": "none"
+      "authentication": "none",
+      "authorization_env": "MINDCLOUD_AUTHORIZED_DOMAINS"
     },
     {
       "id": "opensanctions",
