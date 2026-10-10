@@ -3,8 +3,8 @@ import { spawn } from "node:child_process";
 
 // Pin the known-good MCP server version: `latest` can drift and trigger expensive
 // native dependency rebuilds in CI before the protocol handshake even starts.
-const timeoutMs = Number(process.env.RUFLO_MCP_TIMEOUT_MS ?? 180000);
-const child = spawn("npx", ["-y", "ruflo@3.0.0", "mcp", "start"], {
+const timeoutMs = Number(process.env.RUFLO_MCP_TIMEOUT_MS ?? 240000);
+const child = spawn("npx", ["-y", "ruflo@3.56.3", "mcp", "start"], {
   stdio: ["pipe", "pipe", "pipe"],
   env: { ...process.env, NO_COLOR: "1" },
 });
@@ -67,7 +67,7 @@ try {
   if (!initialized?.serverInfo || toolCount < 1) {
     throw new Error(`MCP handshake succeeded but tool discovery was invalid (tools=${toolCount}).`);
   }
-  console.log(JSON.stringify({ ok: true, pinnedVersion: "3.0.0", server: initialized.serverInfo, protocolVersion: initialized.protocolVersion, toolCount }));
+  console.log(JSON.stringify({ ok: true, pinnedVersion: "3.56.3", server: initialized.serverInfo, protocolVersion: initialized.protocolVersion, toolCount }));
   clearTimeout(timer);
   child.kill("SIGTERM");
 } catch (error) {
