@@ -280,6 +280,79 @@
       "transport": "extension-local",
       "cost_model": "local-no-service-fee",
       "authentication": "browser permission per site"
+    },
+    {
+      "id": "watermelon-ui",
+      "source": "Watermelon UI (ui.watermelon.sh)",
+      "source_url": "https://ui.watermelon.sh/",
+      "layer": "DesignSystem",
+      "integration": "Open-source React UI components and page blocks; candidate for MindCloud interface redesign and reusable production components. Use copied components only after license and dependency checks.",
+      "operations": [
+        "catalog_components",
+        "inspect_license",
+        "evaluate_component",
+        "propose_ui_change"
+      ],
+      "status": "registered-only",
+      "transport": "reference-library",
+      "cost_model": "free-open-source",
+      "license": "MIT (verify repository license at integration time)",
+      "authentication": "none for public component reference",
+      "evidence_status": "official project page located; repository/API integration not yet verified"
+    },
+    {
+      "id": "watermelon-ai",
+      "source": "Watermelon AI",
+      "source_url": "https://www.watermelon.sh/",
+      "layer": "DesignWorkflow",
+      "integration": "Potential AI-assisted design workflow across Watermelon ecosystem. The official site describes Watermelon AI as in development; keep as research-only until a usable API or integration surface is documented.",
+      "operations": [
+        "inspect_capabilities",
+        "evaluate_integration"
+      ],
+      "status": "research-registered",
+      "transport": "not-verified",
+      "cost_model": "not-verified",
+      "authentication": "not-verified",
+      "evidence_status": "official site describes the product as in development; no executable endpoint verified"
+    },
+    {
+      "id": "manus-ai",
+      "source": "Manus AI",
+      "source_url": "https://www.manus.im/",
+      "api_docs": "https://open.manus.ai/docs/v2/introduction",
+      "layer": "ExternalAgent",
+      "integration": "Candidate delegated research and multi-step task execution provider. Official API supports task, project, file, webhook, skill and agent workflows; implement only through a supervised adapter with typed inputs, evidence capture, quotas and explicit approval for consequential actions.",
+      "operations": [
+        "create_task",
+        "send_message",
+        "retrieve_result",
+        "manage_project",
+        "health"
+      ],
+      "status": "parked-integration-review",
+      "transport": "rest-api",
+      "env": "MANUS_API_KEY",
+      "cost_model": "check-current-plan-and-API-pricing-before-enabling",
+      "authentication": "API key",
+      "security": "external task execution; scope inputs, restrict secrets, audit outputs and require approval before external writes",
+      "evidence_status": "official API documentation located; MindCloud adapter not implemented or live-tested"
+    },
+    {
+      "id": "punkt-ai",
+      "source": "Punkt AI (Rooom App)",
+      "source_url": "https://apps.apple.com/us/app/punkt-ai/id6444187351",
+      "layer": "GeoKnowledge",
+      "integration": "Candidate mobile app for saving places discovered on TikTok and Instagram to a personal map and guides. Potential workflow overlap with MindCloud Point Registry, but no public API or supported integration was verified; keep as discovery-only.",
+      "operations": [
+        "inspect_capabilities",
+        "evaluate_data_export"
+      ],
+      "status": "research-registered",
+      "transport": "not-verified",
+      "cost_model": "free-app-with-in-app-purchases (store listing; verify current terms)",
+      "authentication": "app account; API availability not verified",
+      "evidence_status": "App Store listing located; no public API or export contract verified"
     }
   ]
 }
