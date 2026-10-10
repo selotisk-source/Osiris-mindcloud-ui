@@ -186,8 +186,8 @@
       "role": "live geospatial OSINT atlas",
       "mindcloud_layer": "GeoOSINT",
       "priority": 1,
-      "integration": "typed external visualization adapter for cameras, flights, ships, infrastructure, events, markets and risk zones; future API/MCP connection is gated on official availability",
-      "status": "adapter-ready",
+      "integration": "Catalog entry only. Confirm an official API/MCP contract and real data access before building an executable adapter; do not present Argos Atlas as connected or runnable until endpoint, authentication, licence and response schema are verified.",
+      "status": "planned-adapter",
       "security": "public-source data only; no credentialed scraping; API/MCP contract must be verified before automation"
     },
     {
@@ -199,6 +199,15 @@
       "integration": "typed adapter boundary for Grounded API outputs such as SLAM, depth and hand-tracking data; feed validated spatial observations into OSIRIS Geo and ARGOS ATLAS",
       "status": "adapter-ready",
       "security": "endpoint and credentials are explicit deployment configuration; no undocumented API contract is assumed"
+    },
+    {
+      "id": "hivemind-orchestrator",
+      "source": "cohen-liel/hivemind",
+      "role": "external agent-team and DAG orchestration reference",
+      "mindcloud_layer": "Orchestration",
+      "priority": 2,
+      "integration": "Reference-only evaluation of LangGraph DAG execution, typed task contracts, retry policy, checkpointing and review gates. No runnable MindCloud adapter or authenticated API contract has been verified. Keep MindCore as the policy and evidence authority; require isolated workspaces, bounded retries, budget limits and explicit approval for writes.",
+      "status": "reference-only"
     }
   ],
   "shared_contracts": [
