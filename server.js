@@ -4,6 +4,7 @@ const path = require("node:path");
 const { createRouterNetwork } = require("./mindcore/router-network");
 const { MindCloudRuntime } = require("./mindcloud/runtime");
 const { AdapterRuntime } = require("./mindcloud/adapter-runtime");
+const { proxyCctvRequest } = require("./mindcloud/cctv-proxy");
 
 const routerNetwork = createRouterNetwork();
 const mindcloud = new MindCloudRuntime();
@@ -43,8 +44,9 @@ function cctvResponse() {
     endpoint: "/api/cctv",
     source: source ? "configured" : null,
     streamProtocol: protocol,
-    streamStatus: source ? "configured" : "unconfigured",
-    proxyStatus: "not_implemented",
+    streamStatus: source ? "unverified" : "unconfigured",
+    proxyStatus: "implemented",
+    proxyAuthStatus: process.env.CCTV_PROXY_TOKEN ? "configured" : "credentials-missing",
     access: source ? (publicAccess ? "public" : "osiris-controlled") : "unconfigured"
   };
 }
@@ -229,6 +231,39 @@ const server = http.createServer(async (req,res)=>{
   }
   if(pathname==="/api/capabilities"){sendJson(res,{type:"mindcloud_capability_registry",source:"MindCore",capabilities:routerNetwork.geospatialCapabilities.list()});return;}
   if(pathname==="/api/liveness/route"){sendJson(res,{type:"mindcloud_live_liveness",capability:"route-variation",status:"available",policy:"safety-first-accessibility-second-controlled-variation",humanApprovalRequired:true});return;}
+  if(pathname==="/api/cctv/stream" && req.method==="GET"){
+    const expectedToken = process.env.CCTV_PROXY_TOKEN || "";
+    const suppliedToken = (req.headers.authorization || "").replace(/^Bearer\\s+/i, "");
+    if (!expectedToken) { sendJson(res,{error:"cctv_proxy_token_not_configured"},503); return; }
+    if (!suppliedToken || suppliedToken.length !== expectedToken.length ||
+        !require("node:crypto").timingSafeEqual(Buffer.from(suppliedToken), Buffer.from(expectedToken))) {
+      sendJson(res,{error:"unauthorized"},401); return;
+    }
+    let resource = null;
+    const encodedResource = url.searchParams.get("resource");
+    if (encodedResource) {
+      try {
+        if (encodedResource.length > 8192) throw new Error("resource_too_long");
+        resource = Buffer.from(encodedResource, "base64url").toString("utf8");
+        if (!resource || !/^https?:\\/\\//i.test(resource)) throw new Error("invalid_resource");
+      } catch {
+        sendJson(res,{error:"cctv_resource_invalid_encoding"},400); return;
+      }
+    }
+    const result = await proxyCctvRequest({source:process.env.CCTV_SOURCE_URL || "",resource});
+    if (!result.body) {
+      sendJson(res,{error:result.error || "cctv_proxy_failed",...(result.upstreamStatus ? {upstreamStatus:result.upstreamStatus} : {}),...(result.contentType ? {contentType:result.contentType} : {})},result.status);
+      return;
+    }
+    res.writeHead(result.status, {
+      "content-type":result.contentType,
+      "cache-control":"no-store",
+      "x-content-type-options":"nosniff",
+      "content-security-policy":"default-src 'none'"
+    });
+    res.end(result.body);
+    return;
+  }
   if(pathname==="/api/cctv"){sendJson(res,cctvResponse());return;}
   if(pathname==="/api/memory/health"){cogneeHealth().then(result=>sendJson(res,result)).catch(error=>sendJson(res,{status:"error",error:String(error)},500));return;}
   if(pathname==="/api/runtime/status"){
