@@ -155,6 +155,14 @@ async function waitHealthy(child) {
     assert.equal(approvedDecision.status, 200);
     assert.equal(approvedDecision.body.request.status, "approved");
 
+    const mismatchedExecution = await json(await fetch(appBase + "/api/adapters/execute", {
+      method: "POST",
+      headers: { "content-type": "application/json", authorization: "Bearer " + token },
+      body: JSON.stringify({ id: "anthropic-cybersecurity-skills", operation: "assess", input: { target: "different-target" }, approvalId })
+    }));
+    assert.equal(mismatchedExecution.status, 200);
+    assert.equal(mismatchedExecution.body.error, "human_approval_required", "approval must reject input different from the approved payload");
+
     const approvedExecution = await json(await fetch(appBase + "/api/adapters/execute", {
       method: "POST",
       headers: { "content-type": "application/json", authorization: "Bearer " + token },
@@ -175,6 +183,7 @@ async function waitHealthy(child) {
     }));
     assert.equal(approvalQueue.status, 200);
     assert.ok(approvalQueue.body.audit.some(event => event.type === "approved" && event.approvalId === approvalId));
+    assert.ok(approvalQueue.body.audit.some(event => event.type === "input_mismatch" && event.approvalId === approvalId));
     assert.ok(approvalQueue.body.audit.some(event => event.type === "consumed" && event.approvalId === approvalId));
     console.log(JSON.stringify({
       status: "verified",
@@ -187,7 +196,8 @@ async function waitHealthy(child) {
         "adapter-audit-recorded",
         "subdomain-domain-allowlist-gate",
         "approval-ticket-requires-separate-approval-credential",
-        "approval-ticket-is-bound-to-tool-and-operation",
+        "approval-ticket-is-bound-to-tool-operation-and-canonical-input-hash",
+        "approval-ticket-rejects-modified-input-before-consumption",
         "approval-ticket-single-use-and-audited",
         "passive-certificate-transparency-discovery",
         "free-dns-over-https-resolution"
