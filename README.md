@@ -61,7 +61,7 @@ MindCore now registers a supervised **Grounded API / GroundedSLAM** adapter in t
 
 - Registration and free API tokens are acceptable; do not purchase a subscription or prepaid API credits without an explicit decision.
 - Prefer public, no-key endpoints or self-hosted/open-data alternatives where practical.
-- **Mapillary** is the default free street-level imagery alternative; it requires a registered application token but has no service fee according to its current FAQ.
-- **Subdomain discovery** uses passive Certificate Transparency via crt.sh and Cloudflare DNS-over-HTTPS; no paid scanning or active probing is performed.
+- **Mapillary** is the default free street-level imagery alternative; register an application, then set `MAPILLARY_ACCESS_TOKEN` in the deployment environment. It has no service fee according to its current FAQ.
+- **Subdomain discovery** uses passive Certificate Transparency via crt.sh and Cloudflare DNS-over-HTTPS; no paid scanning or active probing is performed. Set the server-side `MINDCLOUD_AUTHORIZED_DOMAINS` comma-separated allowlist before execution; client-supplied approval is not trusted.
 - **Cookie inspection** is local to the browser extension, user-initiated, scoped to the active tab, metadata-only, and never transmits cookie values.
 - Google Street View imagery, Shodan features requiring paid credits/plans, and the hosted OpenSanctions screening API remain parked pending a cost/licensing review. OpenSanctions bulk data is only a candidate for non-commercial use under its stated license; do not assume it is cleared for commercial use.
