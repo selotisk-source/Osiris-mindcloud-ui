@@ -6,9 +6,11 @@ const fs = require("node:fs");
 const path = require("node:path");
 const os = require("node:os");
 const { VersionHistory } = require("../mindcloud/version-history");
+const { MindCloudRuntime } = require("../mindcloud/runtime");
 const storeDir = fs.mkdtempSync(path.join(os.tmpdir(), "mindcloud-versions-"));
 const storePath = path.join(storeDir, "versions.json");
 const unitStorePath = path.join(storeDir, "unit-versions.json");
+const taskEventStorePath = path.join(storeDir, "task-events.json");
 
 const port = 39127;
 const base = `http://127.0.0.1:${port}`;
@@ -53,7 +55,7 @@ async function waitForHealth(child) {
   await new Promise(resolve => mockAdapter.listen(39128,"127.0.0.1",resolve));
   const child = spawn(process.execPath, ["server.js"], {
     cwd: root,
-    env: { ...process.env, PORT: String(port), CCTV_SOURCE_URL: "", COGNEE_SERVICE_URL: "", BROWSER_USE_SERVICE_URL: "http://127.0.0.1:39128", BROWSER_USE_API_KEY: "test-token", MINDCLOUD_TOOL_EXECUTION_TOKEN: "mindcloud-test-execution-token", MINDCLOUD_MODEL_VERSION_WRITE_TOKEN: "mindcloud-version-write-test-token", MINDCLOUD_MODEL_VERSION_STORE: storePath },
+    env: { ...process.env, PORT: String(port), CCTV_SOURCE_URL: "", COGNEE_SERVICE_URL: "", BROWSER_USE_SERVICE_URL: "http://127.0.0.1:39128", BROWSER_USE_API_KEY: "test-token", MINDCLOUD_TOOL_EXECUTION_TOKEN: "mindcloud-test-execution-token", MINDCLOUD_MODEL_VERSION_WRITE_TOKEN: "mindcloud-version-write-test-token", MINDCLOUD_MODEL_VERSION_STORE: storePath, MINDCLOUD_TASK_WRITE_TOKEN: "mindcloud-task-write-test-token", MINDCLOUD_TASK_EVENT_STORE: taskEventStorePath },
     stdio: ["ignore", "pipe", "pipe"]
   });
 
@@ -68,7 +70,10 @@ async function waitForHealth(child) {
     assert.equal(health.body.status, "ok");
 
     const taskId = "e2e-test-" + Date.now();
-    const routed = await post("/api/mindcloud/route",{taskId,kind:"research",goal:"evidence validation"});
+    const unauthenticatedRoute = await post("/api/mindcloud/route",{taskId:"blocked-task",kind:"research",goal:"should be blocked"});
+    assert.equal(unauthenticatedRoute.status,401);
+    assert.equal(unauthenticatedRoute.body.error,"unauthorized");
+    const routed = await post("/api/mindcloud/route",{taskId,kind:"research",goal:"evidence validation"},"mindcloud-task-write-test-token");
     assert.equal(routed.status,200);
     assert.equal(routed.body.status,"routed");
     assert.equal(routed.body.taskId,taskId);
@@ -76,6 +81,14 @@ async function waitForHealth(child) {
     assert.ok(taskStatus.body.tasks.some(task=>task.taskId===taskId));
     const taskEvents = await get("/api/mindcloud/events?taskId="+encodeURIComponent(taskId));
     assert.ok(taskEvents.body.events.some(event=>event.taskId===taskId && event.type==="complete"));
+
+    const durableRuntime = new MindCloudRuntime({storePath:taskEventStorePath});
+    const durableTaskId = "durable-task-" + Date.now();
+    durableRuntime.route({taskId:durableTaskId,kind:"research",goal:"persist event test"});
+    const reopenedRuntime = new MindCloudRuntime({storePath:taskEventStorePath});
+    assert.ok(reopenedRuntime.snapshot().tasks.some(task=>task.taskId===durableTaskId));
+    assert.ok(reopenedRuntime.eventsFor(durableTaskId).some(event=>event.type==="complete"));
+    assert.equal(reopenedRuntime.snapshot().eventCount,durableRuntime.snapshot().eventCount);
 
     const persistedHistory = new VersionHistory({name:"test-model"},{storePath:unitStorePath});
     const persistedVersion = persistedHistory.create({model:{durable:true},rationale:"Persist for restart test",evidenceRefs:["test:durable"]});
@@ -222,7 +235,7 @@ async function waitForHealth(child) {
       checks: [
         "health",
         "router",
-        "task-route-readback-events",
+        "task-route-readback-events",\n        "task-event-store-persists-across-runtime-restart",\n        "task-route-write-requires-dedicated-token",
         "model-version-history-rationale-parent-hash-readback",
         "version-history-disk-persistence-and-reload",
         "model-version-write-api-requires-dedicated-token",
