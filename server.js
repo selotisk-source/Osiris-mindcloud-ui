@@ -2,6 +2,8 @@ const http = require("node:http");
 const fs = require("node:fs");
 const path = require("node:path");
 const { createRouterNetwork } = require("./mindcore/router-network");
+const { createAgentCluster } = require("./mindcore/agent-cluster");
+const agentCluster = createAgentCluster();
 const { MindCloudRuntime } = require("./mindcloud/runtime");
 const { AdapterRuntime } = require("./mindcloud/adapter-runtime");
 const { proxyCctvRequest } = require("./mindcloud/cctv-proxy");
@@ -548,6 +550,24 @@ const server = http.createServer(async (req,res)=>{
   }
   if(pathname==="/api/mindcloud/events"){sendJson(res,{type:"mindcloud_events",events:mindcloud.eventsFor(url.searchParams.get("taskId")||undefined)});return;}
   if(pathname==="/api/router"){const kind=url.searchParams.get("kind")||"general";sendJson(res,{network:routerNetwork.snapshot(),route:routerNetwork.route({taskId:"ui-route",kind})});return;}
+  if(pathname==="/api/mindcloud/agent-cluster/plan" && req.method==="POST") {
+    if (!isExecutionAuthorized(req)) { sendJson(res,{error:"unauthorized"},401); return; }
+    try {
+      const request = await readJson(req);
+      const plan = agentCluster.plan({
+        goal: request?.goal,
+        depth: request?.depth,
+        requestedAgents: request?.requestedAgents,
+        tokenBudget: request?.tokenBudget,
+        constraints: request?.constraints
+      });
+      sendJson(res,plan);
+    } catch(error) {
+      const code = error?.code === "agent_cluster_goal_required" ? 400 : 400;
+      sendJson(res,{error:error?.code || "agent_cluster_plan_failed",message:error instanceof Error?error.message:String(error)},code);
+    }
+    return;
+  }
   if(pathname==="/api/agent-tools"){sendJson(res,agentTools);return;}
   if(pathname==="/api/adapters"){sendJson(res,adapters.snapshot());return;}
   if(pathname.startsWith("/api/adapters/") && pathname.endsWith("/discover")){const id=pathname.split("/")[3];sendJson(res,adapters.discover(id));return;}
