@@ -1,3 +1,4 @@
+const rufloMcp = require("./ruflo-mcp");
 const NATIVE = new Set(["overpass-turbo","google-street-view","shodan","opensanctions","subdomain-finder","mapillary","agentmemory","ruflo"]);
 
 function state(id) {
