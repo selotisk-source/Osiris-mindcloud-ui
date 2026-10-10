@@ -276,6 +276,7 @@ async function runMindcloudSelfTest() {
       browserExecution:browserExecutionOk ? {
         status:"executed",
         attempts:browserExecutionAttempts,
+        adapterExecution:browserExecution.execution || null,
         httpStatus:browserExecution.result.httpStatus,
         title:browserExecution.result.title,
         url:browserExecution.result.url,
