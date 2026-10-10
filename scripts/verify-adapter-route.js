@@ -122,6 +122,25 @@ async function waitHealthy(child) {
     assert.match(observation.content.resultHash,/^[a-f0-9]{64}$/);
     assert.equal(observation.content.validation.status,"unvalidated");
 
+    const dispatchDenied = await json(await fetch(appBase + "/api/mindcloud/dispatch", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ id: "overpass-turbo", operation: "query", input: { query: "[out:json];out;" } })
+    }));
+    assert.equal(dispatchDenied.status, 401, "shared dispatch route must use the same execution-token boundary");
+
+    const dispatched = await json(await fetch(appBase + "/api/mindcloud/dispatch", {
+      method: "POST",
+      headers: { "content-type": "application/json", authorization: "Bearer " + token },
+      body: JSON.stringify({ id: "overpass-turbo", operation: "query", input: { query: "[out:json];out;" } })
+    }));
+    assert.equal(dispatched.status, 200);
+    assert.equal(dispatched.body.ok, true, "MindCloud dispatch must use the same live adapter runtime");
+    assert.equal(dispatched.body.result.elements.length, 2);
+    assert.equal(dispatched.body.execution.inputValidation, "typed");
+    assert.equal(dispatched.body.execution.inputContractVersion, "1.0");
+    assert.ok(dispatched.body.evidenceGraph?.nodeId, "dispatch results must share evidence capture");
+
     const blockedScope = await json(await fetch(appBase + "/api/adapters/execute", {
       method: "POST",
       headers: { "content-type": "application/json", authorization: "Bearer " + token },
@@ -150,7 +169,7 @@ async function waitHealthy(child) {
     assert.equal(resolved.body.result.answers[0].data, "203.0.113.12");
     const snapshot = await json(await fetch(appBase + "/api/adapters"));
     assert.equal(snapshot.status, 200);
-    assert.ok([4, 5].includes(snapshot.body.auditCount), "audit count may include one optional evidence-graph record");
+    assert.ok([5, 6].includes(snapshot.body.auditCount), "audit count includes the common dispatch execution and may include one optional evidence-graph record");
 
     const approvalRequest = await json(await fetch(appBase + "/api/approvals/request", {
       method: "POST",
