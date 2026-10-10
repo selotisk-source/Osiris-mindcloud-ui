@@ -56,3 +56,12 @@ The integration deliberately stops at the official public surface until ARGOS AT
 ## Grounded Spatial Intelligence
 
 MindCore now registers a supervised **Grounded API / GroundedSLAM** adapter in the Spatial Intelligence layer. The intended flow is validated spatial output (SLAM/depth/related signals) → OSIRIS Geo → ARGOS ATLAS. The adapter does not assume undocumented endpoints; live API use requires an explicitly configured GROUNDED_API_ENDPOINT and verified authentication/schema.
+
+## Cost-aware integration policy
+
+- Registration and free API tokens are acceptable; do not purchase a subscription or prepaid API credits without an explicit decision.
+- Prefer public, no-key endpoints or self-hosted/open-data alternatives where practical.
+- **Mapillary** is the default free street-level imagery alternative; it requires a registered application token but has no service fee according to its current FAQ.
+- **Subdomain discovery** uses passive Certificate Transparency via crt.sh and Cloudflare DNS-over-HTTPS; no paid scanning or active probing is performed.
+- **Cookie inspection** is local to the browser extension, user-initiated, scoped to the active tab, metadata-only, and never transmits cookie values.
+- Google Street View imagery, Shodan features requiring paid credits/plans, and the hosted OpenSanctions screening API remain parked pending a cost/licensing review. OpenSanctions bulk data is only a candidate for non-commercial use under its stated license; do not assume it is cleared for commercial use.
