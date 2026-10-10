@@ -6,7 +6,7 @@ const calls = [];
 global.fetch = async (url, options={}) => {
   const urlText=String(url);
   calls.push({url:urlText,options});
-  const unavailable=urlText.includes("overpass-primary.test");
+  const unavailable=urlText.includes("overpass-primary");
   const failureStatus=urlText.includes("overpass-primary-500.test")?500:502;
   return {
     ok:!unavailable,status:unavailable?failureStatus:200,
