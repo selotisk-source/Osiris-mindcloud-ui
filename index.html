@@ -76,7 +76,7 @@ body{overflow:hidden}.app{height:100%;display:flex;flex-direction:column}
  </div>
 </section>\n<main class="workspace" id="workspace">
 <section class="station coordinator" data-station="1"><div class="station-head"><span class="handle">⠿</span><span class="station-title">MindCore</span><span class="station-role">Coordinator</span></div><div class="content">
-  <div class="metrics"><div class="metric"><b>4</b><small>stations</small></div><div class="metric"><b>12</b><small>active nodes</small></div><div class="metric"><b class="ok">OK</b><small>fabric</small></div></div>  <div class="card"><h3>Orchestration</h3><p>Shared context, routing and task state across the four live stations.</p></div><div class="card" style="border-color:#6f8fb5"><h3>Security Boundary</h3><p><b>Agent identity ≠ security identity.</b> Each agent is routed into an explicit execution domain with its own policy, credentials, browser session and file scope.</p><div class="metrics" style="margin-top:9px"><div class="metric"><b>ISOLATED</b><small>execution domain</small></div><div class="metric"><b>POLICY</b><small>capability gate</small></div><div class="metric"><b>EVIDENCE</b><small>audit boundary</small></div></div></div>
+  <div class="metrics"><div class="metric"><b id="runtimeHealth">—</b><small>runtime API</small></div><div class="metric"><b id="runtimeTasks">—</b><small>tasks in runtime</small></div><div class="metric"><b id="runtimeEvents">—</b><small>events in runtime</small></div></div>  <div class="card"><h3>Orchestration</h3><p>Shared context, routing and task state across the four live stations.</p></div><div class="card" style="border-color:#6f8fb5"><h3>Security Boundary</h3><p><b>Agent identity ≠ security identity.</b> Each agent is routed into an explicit execution domain with its own policy, credentials, browser session and file scope.</p><div class="metrics" style="margin-top:9px"><div class="metric"><b>ISOLATED</b><small>execution domain</small></div><div class="metric"><b>POLICY</b><small>capability gate</small></div><div class="metric"><b>EVIDENCE</b><small>audit boundary</small></div></div></div>
   <div class="card" style="border-color:#6f8fb5"><h3>Evidence Record — Gaza, women and girls</h3><p><b>UN Women estimate:</b> more than 38,000 women and girls were killed in Gaza between October 2023 and December 2025, including more than 22,000 women and 16,000 girls.</p><p style="margin-top:7px">Method: UN Women statistical estimate. The organization states the actual number is likely higher because bodies remain under rubble and health-information systems collapsed.</p><p style="margin-top:7px"><b>Source date:</b> 17 April 2026 · <a href="https://www.unwomen.org/en/news-stories/press-release/2026/04/more-than-38000-women-and-girls-were-killed-in-gaza-between-october-2023-and-december-2025-un-women" target="_blank" rel="noopener" style="color:var(--accent)">UN Women</a></p><p style="margin-top:7px;color:var(--muted)">Evidence status: sourced estimate · preserved in MindCloud</p></div><div class="graph"><div class="node" style="left:46%;top:42%">CORE</div><div class="node" style="left:17%;top:22%">GEO</div><div class="node" style="left:72%;top:23%">SENSOR</div><div class="node" style="left:68%;top:70%">GOV</div><div class="node" style="left:18%;top:68%">R&amp;D</div><div class="edge" style="left:28%;top:35%;width:19%;transform:rotate(18deg)"></div><div class="edge" style="left:58%;top:36%;width:18%;transform:rotate(-17deg)"></div><div class="edge" style="left:57%;top:60%;width:17%;transform:rotate(24deg)"></div><div class="edge" style="left:29%;top:60%;width:19%;transform:rotate(-22deg)"></div></div>
 </div><span class="footer">drag modules here</span></section>
 <section class="station media-station" data-station="2"><div class="station-head"><span class="handle">⠿</span><span class="station-title">Sensor Fabric</span><span class="station-role">Image / CCTV</span></div><div class="content">
@@ -85,7 +85,7 @@ body{overflow:hidden}.app{height:100%;display:flex;flex-direction:column}
   <div class="card"><h3>Camera pipe</h3><p id="cameraMeta">/api/cctv → source → stream → proxy</p></div>
 </div><span class="footer">live media station</span></section>
 <section class="station" data-station="3"><div class="station-head"><span class="handle">⠿</span><span class="station-title">GEO / Heritage</span><span class="station-role">Cyprus · Varna · Sweden</span></div><div class="content"><div class="geo-toolbar"><button class="btn active" data-geo-region="global">GLOBAL MAP</button><button class="btn" data-geo-region="varna">VARNA</button><button class="btn" data-geo-region="sweden">SWEDEN</button><button class="btn" data-geo-region="cyprus">CYPRUS</button><a class="btn" id="varnaDigitalMuseum" href="https://archaeo.museumvarna.com/" target="_blank" rel="noopener" style="text-decoration:none">VARNA DIGITAL MUSEUM ↗</a><button class="btn" id="geoReset">RESET</button></div><div id="geoStatus" class="geo-status">Loading geographic map and heritage locations…</div><div id="heritageMap" class="heritage-map" role="application" aria-label="Interactive heritage map"></div><div id="geoResults" class="geo-results"></div><div class="card" style="margin-top:8px"><h3>Heritage Fabric · GEO layer</h3><p>Global map → region → place → institutional source. Starter locations are navigation records, not yet evidence-verified archaeological claims. Each object will carry provenance and one of four evidence labels: VERIFIED, HYPOTHESIS, TRADITION or UNCLEAR.</p><p style="margin-top:7px"><a href="https://archaeo.museumvarna.com/" target="_blank" rel="noopener" style="color:var(--accent)">Open Varna Archaeological Museum digital collection ↗</a></p></div></div><span class="footer">geographic station</span></section>
-<section class="station" data-station="4"><div class="station-head"><span class="handle">⠿</span><span class="station-title">God's Eye View</span><span class="station-role">Global Graph</span></div><div class="content"><div class="godview"><div class="gv-core">MINDCORE</div><div class="gv-node gv-a">SENSOR</div><div class="gv-node gv-b">GEO</div><div class="gv-node gv-c">RESEARCH</div><div class="gv-node gv-d">SENSORS</div></div><div class="card"><h3>System overview</h3><p>Global state, relationships and active stations in one view.</p></div><div class="card"><h3>Execution security</h3><p>Security follows the execution domain: browser session, files, credentials and tools are scoped independently of agent role.</p></div></div><span class="footer">god's eye view</span></section>
+<section class="station" data-station="4"><div class="station-head"><span class="handle">⠿</span><span class="station-title">God's Eye View</span><span class="station-role">Global Graph</span></div><div class="content"><div class="card"><h3>Live service checks</h3><p>These rows are populated from real API responses. “Responding” means the endpoint answered; it does not claim an external worker or camera is running.</p><div id="godLiveChecks"><p>Checking live endpoints…</p></div></div><div class="card"><h3>Execution security</h3><p>Security follows the execution domain: browser session, files, credentials and tools are scoped independently of agent role.</p></div></div><span class="footer">god's eye view</span></section>
 </main>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script><script>
@@ -129,7 +129,10 @@ document.getElementById('godBtn').onclick=()=>document.querySelector('[data-stat
     try{
       const s=await fetch('/api/mindcloud/status',{cache:'no-store'}).then(r=>r.json());
       const e=await fetch('/api/mindcloud/events',{cache:'no-store'}).then(r=>r.json());
-      document.getElementById('runtimeLive').innerHTML='<div class="metrics"><div class="metric"><b>'+s.tasks.length+'</b><small>tasks</small></div><div class="metric"><b>'+s.eventCount+'</b><small>events</small></div><div class="metric"><b class="ok">'+s.health.toUpperCase()+'</b><small>runtime</small></div></div><p style="margin-top:8px">Live event stream: '+e.events.length+' events · topology: '+s.topology.topology+'</p>';
+      document.getElementById('runtimeLive').innerHTML='<p>MindCore runtime API is responding. Topology: '+safeText(s.topology?.topology||'not reported')+'.</p><p>Counts below come from the current runtime snapshot; they are not counts of active agents or workers.</p>';
+      document.getElementById('runtimeHealth').textContent=String(s.health||'unknown').toUpperCase();
+      document.getElementById('runtimeTasks').textContent=Array.isArray(s.tasks)?s.tasks.length:'—';
+      document.getElementById('runtimeEvents').textContent=Number.isFinite(s.eventCount)?s.eventCount:(Array.isArray(e.events)?e.events.length:'—');
     }catch(err){document.getElementById('runtimeLive').textContent='Runtime unavailable'}
   }
   refresh(); setInterval(refresh,3000);
@@ -248,6 +251,30 @@ else {const r=await fetch('/api/agent-tools').then(r=>r.json());const found=(r.t
   if(station){new MutationObserver(()=>{if(station.offsetParent!==null)map.invalidateSize();}).observe(station,{attributes:true,attributeFilter:['style','class']});}
   showRegion('global');
 })();
+</script>
+<script>
+(function(){
+ const target=document.getElementById('godLiveChecks'); if(!target)return;
+ const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+ const checks=[
+  {name:'MindCore runtime',url:'/api/mindcloud/status',detail:x=>'health: '+(x.health||'not reported')},
+  {name:'Tool registry API',url:'/api/agent-tools',detail:x=>'registry records: '+(Array.isArray(x.tools)?x.tools.length:'unknown')+'; record presence is not proof that tools execute'},
+  {name:'CCTV connector',url:'/api/cctv',detail:x=>'source: '+(x.status||'unknown')+' · stream: '+(x.streamStatus||'unknown')+' · proxy: '+(x.proxyStatus||'unknown')},
+  {name:'GEO capability API',url:'/api/capabilities',detail:x=>'capabilities returned: '+(Array.isArray(x.capabilities)?x.capabilities.length:'unknown')},
+  {name:'MindCore capability graph',url:'/api/mindcloud/capabilities',detail:x=>'layers: '+Object.keys(x.layers||{}).length+' · recipes: '+(Array.isArray(x.recipes)?x.recipes.length:'unknown')}
+ ];
+ async function refresh(){
+  const rows=await Promise.all(checks.map(async c=>{
+   try{const r=await fetch(c.url,{cache:'no-store'});if(!r.ok)throw Error('HTTP '+r.status);const x=await r.json();return '<div class="card" style="margin-top:7px"><b>'+esc(c.name)+'</b><p><span class="tool-status">RESPONDING</span></p><small>'+esc(c.detail(x))+'</small></div>'}
+   catch(e){return '<div class="card" style="margin-top:7px"><b>'+esc(c.name)+'</b><p><span class="tool-status">UNAVAILABLE</span></p><small>'+esc(String(e.message||e))+'</small></div>'}
+  }));
+  target.innerHTML=rows.join('');
+ }
+ refresh();setInterval(refresh,15000);
+})();
+</script>
+<script>
+function safeText(s){return String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
 </script>
 </body>
 </html>;
