@@ -24,6 +24,7 @@ for (const id of required) {
   if (!tool.layer) throw new Error(`missing layer: ${id}`);
   if (!tool.cost_model) throw new Error(`missing cost model: ${id}`);
   if (id === "subdomain-finder" && tool.cost_model !== "free-public-endpoints-no-key") throw new Error("subdomain finder must remain on free public endpoints");
+  if (id === "subdomain-finder" && tool.authorization_env !== "MINDCLOUD_AUTHORIZED_DOMAINS") throw new Error("subdomain finder must require a server-owned domain allowlist");
   if (id === "mapillary" && tool.cost_model !== "free-no-subscription") throw new Error("Mapillary alternative must remain subscription-free");
   if (id === "google-street-view" && tool.status !== "parked-cost-review") throw new Error("Google Street View must remain parked pending cost review");
   if (id === "shodan" && tool.status !== "parked-cost-review") throw new Error("Shodan must remain parked pending cost review");
