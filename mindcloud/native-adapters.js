@@ -1,10 +1,11 @@
-const NATIVE = new Set(["overpass-turbo","google-street-view","shodan","opensanctions","subdomain-finder"]);
+const NATIVE = new Set(["overpass-turbo","google-street-view","shodan","opensanctions","subdomain-finder","mapillary"]);
 
 function state(id) {
   if (id === "overpass-turbo" || id === "subdomain-finder") return {configured:true,mode:id === "subdomain-finder" ? "passive-public-data" : "native-http"};
   if (id === "google-street-view") return {configured:Boolean(process.env.GOOGLE_MAPS_API_KEY),required:process.env.GOOGLE_MAPS_API_KEY?undefined:"GOOGLE_MAPS_API_KEY"};
   if (id === "shodan") return {configured:Boolean(process.env.SHODAN_API_KEY),required:process.env.SHODAN_API_KEY?undefined:"SHODAN_API_KEY"};
   if (id === "opensanctions") return {configured:Boolean(process.env.OPENSANCTIONS_API_KEY),required:process.env.OPENSANCTIONS_API_KEY?undefined:"OPENSANCTIONS_API_KEY"};
+  if (id === "mapillary") return {configured:Boolean(process.env.MAPILLARY_ACCESS_TOKEN),required:process.env.MAPILLARY_ACCESS_TOKEN?undefined:"MAPILLARY_ACCESS_TOKEN"};
   return null;
 }
 function supports(id) { return NATIVE.has(id); }
@@ -14,6 +15,7 @@ async function health(id) {
   if (!s) return null;
   if (!s.configured) return {ok:false,status:"credentials-missing",required:s.required};
   if (id === "subdomain-finder") return {ok:true,status:"configured",mode:"passive-public-data",providers:["crt.sh","Cloudflare DNS-over-HTTPS"]};
+  if (id === "mapillary") return {ok:true,status:"configured",mode:"free-street-level-imagery",provider:"Mapillary"};
   if (id !== "overpass-turbo") return {ok:true,status:"configured",mode:"native-http"};
   const endpoint=process.env.OVERPASS_API_URL||"https://overpass-api.de/api/interpreter";
   try {
@@ -49,7 +51,26 @@ async function readResponse(response) {
 async function execute({id,operation,input={},requestId}) {
   const timeout={signal:AbortSignal.timeout(15000)};
   let endpoint, response, headers={"accept":"application/json"};
-  if(id==="subdomain-finder") {
+  if(id==="mapillary") {
+    if(!process.env.MAPILLARY_ACCESS_TOKEN) return {ok:false,error:"adapter_credentials_missing",required:"MAPILLARY_ACCESS_TOKEN"};
+    let endpoint, response;
+    const headers={accept:"application/json",authorization:"OAuth "+process.env.MAPILLARY_ACCESS_TOKEN};
+    if(operation==="search") {
+      const raw=String(input.bbox||"");
+      const bbox=raw.split(",").map(v=>Number(v.trim()));
+      if(bbox.length!==4||bbox.some(v=>!Number.isFinite(v))||bbox[0]<-180||bbox[2]>180||bbox[1]<-90||bbox[3]>90||bbox[0]>=bbox[2]||bbox[1]>=bbox[3]) return {ok:false,error:"valid_bbox_required",format:"minLon,minLat,maxLon,maxLat"};
+      const params=new URLSearchParams({fields:"id,thumb_1024_url,geometry,captured_at,compass_angle,is_pano",bbox:bbox.join(","),limit:String(Math.max(1,Math.min(Number(input.limit)||20,100)))});
+      endpoint="https://graph.mapillary.com/images?"+params.toString();
+    } else if(operation==="image") {
+      const imageId=String(input.id||"");
+      if(!/^\d+$/.test(imageId)) return {ok:false,error:"numeric_mapillary_image_id_required"};
+      const params=new URLSearchParams({fields:"id,thumb_1024_url,geometry,captured_at,compass_angle,is_pano"});
+      endpoint="https://graph.mapillary.com/"+encodeURIComponent(imageId)+"?"+params.toString();
+    } else return {ok:false,error:"operation_not_supported",id,operation};
+    response=await fetch(endpoint,{...timeout,headers});
+    const result=await readResponse(response);
+    return {ok:response.ok,id,operation,status:response.status,result,evidence:{source:"https://graph.mapillary.com/",retrievedAt:new Date().toISOString(),requestId,provider:"Mapillary",costModel:"free-no-subscription"}};
+  } else if(id==="subdomain-finder") {
     const domain=String(input.domain||"").trim().toLowerCase().replace(/\.$/,"");
     if(!domain || domain.length>253 || !/^(?=.{1,253}$)(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,63}$/.test(domain)) return {ok:false,error:"valid_domain_required"};
     if(operation==="discover") {
