@@ -20,6 +20,7 @@ const newsletterHtml = fs.readFileSync(path.join(__dirname, "newsletter.html"), 
 const agentTools = JSON.parse(fs.readFileSync(path.join(__dirname, "integrations", "agent-tools.json"), "utf8"));
 const approvalRequests = new Map();
 const approvalAudit = [];
+const metanoiaReports = new Map();
 
 function tokenMatches(supplied, expected) {
   if (!supplied || !expected || supplied.length !== expected.length) return false;
@@ -32,10 +33,22 @@ function isExecutionAuthorized(req) {
 function isApprovalAuthorized(req) {
   return tokenMatches(bearerToken(req), process.env.MINDCLOUD_APPROVAL_TOKEN || "");
 }
+function canonicalApprovalInput(value) {
+  if (Array.isArray(value)) return value.map(canonicalApprovalInput);
+  if (value && typeof value === "object") {
+    return Object.fromEntries(Object.keys(value).sort().map(key => [key, canonicalApprovalInput(value[key])]));
+  }
+  return value;
+}
+function approvalInputHash(input) {
+  const canonical = JSON.stringify(canonicalApprovalInput(input ?? {}));
+  return require("node:crypto").createHash("sha256").update(canonical).digest("hex");
+}
 function createApprovalRequest(tool, operation, input) {
   const id = require("node:crypto").randomUUID();
   const createdAt = new Date().toISOString();
-  const ticket = {id,toolId:tool.id,operation,inputSummary:JSON.stringify(input || {}).slice(0,1000),status:"pending",createdAt,expiresAt:new Date(Date.now()+10*60*1000).toISOString()};
+  const normalizedInput = input === undefined ? {} : input;
+  const ticket = {id,toolId:tool.id,operation,inputHash:approvalInputHash(normalizedInput),inputSummary:JSON.stringify(normalizedInput).slice(0,1000),status:"pending",createdAt,expiresAt:new Date(Date.now()+10*60*1000).toISOString()};
   approvalRequests.set(id,ticket);
   approvalAudit.push({type:"requested",approvalId:id,toolId:tool.id,operation,timestamp:createdAt});
   return ticket;
@@ -56,9 +69,13 @@ function decideApproval(id, decision, reason) {
   approvalAudit.push({type:decision,approvalId:id,toolId:ticket.toolId,operation:ticket.operation,reason:ticket.reason,timestamp:ticket.decidedAt});
   return ticket;
 }
-function consumeApproval(id, toolId, operation) {
+function consumeApproval(id, toolId, operation, input) {
   const ticket = approvalRequests.get(String(id || ""));
   if (!ticket || ticket.status !== "approved" || ticket.toolId !== toolId || ticket.operation !== operation) return false;
+  if (!ticket.inputHash || ticket.inputHash !== approvalInputHash(input === undefined ? {} : input)) {
+    approvalAudit.push({type:"input_mismatch",approvalId:ticket.id,toolId,operation,timestamp:new Date().toISOString()});
+    return false;
+  }
   if (Date.now() > Date.parse(ticket.expiresAt)) {
     ticket.status="expired";
     approvalAudit.push({type:"expired",approvalId:ticket.id,timestamp:new Date().toISOString()});
@@ -271,9 +288,54 @@ const server = http.createServer(async (req,res)=>{
   if(pathname==="/api/mindcloud/metanoia/evaluate" && req.method==="POST"){
     try {
       const input = await readJson(req);
-      sendJson(res, evaluateMetanoia(input));
+      const report = evaluateMetanoia(input);
+      metanoiaReports.set(report.reportHash, report);
+      while (metanoiaReports.size > 100) metanoiaReports.delete(metanoiaReports.keys().next().value);
+      sendJson(res, report);
     } catch (error) {
       sendJson(res,{error:error instanceof Error ? error.message : String(error)},Number.isInteger(error.statusCode) ? error.statusCode : 400);
+    }
+    return;
+  }
+  if(pathname==="/api/mindcloud/metanoia/approve" && req.method==="POST"){
+    if (!isApprovalAuthorized(req)) { sendJson(res,{error:"approval_authorization_required"},401); return; }
+    try {
+      const input = await readJson(req);
+      if (typeof input.reportHash !== "string" || !/^[a-f0-9]{64}$/.test(input.reportHash)) {
+        sendJson(res,{error:"metanoia_report_hash_required"},400); return;
+      }
+      const report = metanoiaReports.get(input.reportHash);
+      if (!report || report.status !== "review_required") {
+        sendJson(res,{error:"metanoia_review_not_found_or_not_eligible"},409); return;
+      }
+      const versions = mindcloud.versionHistory.list();
+      const previousVersion = versions[versions.length - 1];
+      if (!previousVersion || input.expectedPreviousVersionId !== previousVersion.id) {
+        sendJson(res,{error:"metanoia_previous_version_conflict",expectedPreviousVersionId:previousVersion?.id || null},409); return;
+      }
+      if (!Array.isArray(input.evidenceRefs) ||
+          input.evidenceRefs.some(ref => typeof ref !== "string" || !report.evidenceRefs.includes(ref))) {
+        sendJson(res,{error:"metanoia_evidence_refs_not_in_review"},400); return;
+      }
+      if (!mindcloud.versionHistory.storePath) {
+        sendJson(res,{error:"model_version_store_not_configured"},503); return;
+      }
+      const newVersion = mindcloud.createModelVersion({
+        model:input.proposedModel,
+        rationale:input.rationale,
+        changeType:"metanoia-revalidation",
+        evidenceRefs:input.evidenceRefs
+      });
+      metanoiaReports.delete(input.reportHash);
+      sendJson(res,{
+        type:"mindcloud_metanoia_version_transition",
+        reportHash:report.reportHash,
+        previousVersion:mindcloud.versionHistory.get(previousVersion.id),
+        newVersion
+      },201);
+    } catch(error) {
+      const message = error instanceof Error ? error.message : String(error);
+      sendJson(res,{error:message},Number.isInteger(error.statusCode) ? error.statusCode : 400);
     }
     return;
   }
@@ -396,7 +458,7 @@ const server = http.createServer(async (req,res)=>{
       // Client-provided approval is never trusted. Passive subdomain lookups are allowed
       // only when the requested root is covered by the server-owned domain allowlist.
       const passiveScopeApproved = tool.id === "subdomain-finder" && isAuthorizedSubdomainScope(task.input?.domain);
-      const ticketApproved = Boolean(tool.security && consumeApproval(task.approvalId,tool.id,task.operation));
+      const ticketApproved = Boolean(tool.security && consumeApproval(task.approvalId,tool.id,task.operation,task.input));
       const approved = !tool.security || passiveScopeApproved || ticketApproved;
       sendJson(res,await adapters.execute({...task,approved}));
     } catch(error) {

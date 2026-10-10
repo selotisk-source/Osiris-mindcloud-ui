@@ -1,0 +1,37 @@
+name: Independent security contracts
+
+on:
+  pull_request:
+    paths:
+      - "tests/security/**"
+      - "server.js"
+      - "mindcloud/**"
+      - "integrations/agent-tools.json"
+      - ".github/workflows/security-contract-tests.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  approval-gate:
+    name: Approval gate contract
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Run independent approval gate grader
+        run: node tests/security/approval-gate.test.js
+
+  metanoia-version-chain:
+    name: Metanoia version chain contract
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Run independent Metanoia grader
+        run: node tests/security/metanoia-version-chain.test.js
