@@ -83,7 +83,7 @@ const server = http.createServer(async (req,res)=>{
   if(pathname==="/api/agent-tools/health"){sendJson(res,inspectToolHealth());return;}
   if(pathname==="/api/agent-tools/execute" && req.method==="POST"){
     const expectedToken = process.env.MINDCLOUD_TOOL_EXECUTION_TOKEN || "";
-    const suppliedToken = (req.headers.authorization || "").replace(/^Bearer\\s+/i, "");
+    const suppliedToken = (req.headers.authorization || "").replace(/^Bearer\s+/i, "");
     if (!expectedToken) return sendJson(res,{error:"tool_execution_disabled",reason:"execution_token_not_configured"},503);
     const expected = Buffer.from(expectedToken);
     const supplied = Buffer.from(suppliedToken);
