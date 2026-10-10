@@ -125,7 +125,8 @@ async function getJson(path) {
     status: "production-smoke-passed",
     base,
     checks: [
-      "health-http-200",\n      "arena-production-post-and-fail-closed-contract",
+      "health-http-200",
+      "arena-production-post-and-fail-closed-contract",
       "mindcloud-status-json",
       "adapter-registry-and-lifecycle",
       "cctv-explicit-state",
