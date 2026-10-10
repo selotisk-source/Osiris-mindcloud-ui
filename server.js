@@ -479,7 +479,46 @@ const server = http.createServer(async (req,res)=>{
       const passiveScopeApproved = tool.id === "subdomain-finder" && isAuthorizedSubdomainScope(task.input?.domain);
       const ticketApproved = Boolean(tool.security && consumeApproval(task.approvalId,tool.id,task.operation,task.input));
       const approved = !tool.security || passiveScopeApproved || ticketApproved;
-      sendJson(res,await adapters.execute({...task,approved}));
+      const execution = await adapters.execute({...task,approved});
+      if (execution.ok && execution.evidence && typeof execution.evidence === "object") {
+        const capturedAt = new Date().toISOString();
+        const source = typeof execution.evidence.source === "string" && execution.evidence.source.trim()
+          ? execution.evidence.source.trim()
+          : `adapter://${task.id}/${task.operation}`;
+        const sha256 = value => require("node:crypto").createHash("sha256").update(value).digest("hex");
+        try {
+          const node = evidenceGraph.addNode({
+            type:"tool-observation",
+            label:`${task.id} ${task.operation} observation`,
+            sourceRef:source,
+            content:{
+              schemaVersion:1,
+              kind:"adapter-observation",
+              validationStatus:"unvalidated",
+              toolId:task.id,
+              operation:task.operation,
+              requestId:execution.evidence.requestId || null,
+              source,
+              retrievedAt:execution.evidence.retrievedAt || capturedAt,
+              capturedAt,
+              inputHash:sha256(JSON.stringify(task.input ?? {})),
+              resultHash:sha256(JSON.stringify(execution.result ?? null)),
+              provider:execution.evidence.provider || null,
+              provenance:execution.evidence,
+              validation:{status:"unvalidated",reason:"Adapter output is an observation, not a verified claim."}
+            }
+          });
+          execution.evidenceGraph = {
+            status:evidenceGraph.storePath ? "persisted" : "in-memory",
+            nodeId:node.id,
+            contentHash:node.contentHash,
+            validationStatus:"unvalidated"
+          };
+        } catch {
+          execution.evidenceGraph = {status:"write-failed",error:"evidence_graph_write_failed",validationStatus:"unlinked"};
+        }
+      }
+      sendJson(res,execution);
     } catch(error) {
       sendJson(res,{ok:false,error:error instanceof Error?error.message:String(error)},400);
     }
