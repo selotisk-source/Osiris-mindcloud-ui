@@ -30,10 +30,22 @@ function isExecutionAuthorized(req) {
 function isApprovalAuthorized(req) {
   return tokenMatches(bearerToken(req), process.env.MINDCLOUD_APPROVAL_TOKEN || "");
 }
+function canonicalizeForHash(value) {
+  if (Array.isArray(value)) return value.map(canonicalizeForHash);
+  if (value && typeof value === "object") {
+    return Object.fromEntries(Object.keys(value).sort().map(key => [key, canonicalizeForHash(value[key])]));
+  }
+  return value;
+}
+function hashApprovalInput(input) {
+  const canonical = JSON.stringify(canonicalizeForHash(input === undefined ? {} : input));
+  return require("node:crypto").createHash("sha256").update(canonical).digest("hex");
+}
 function createApprovalRequest(tool, operation, input) {
   const id = require("node:crypto").randomUUID();
   const createdAt = new Date().toISOString();
-  const ticket = {id,toolId:tool.id,operation,inputSummary:JSON.stringify(input || {}).slice(0,1000),status:"pending",createdAt,expiresAt:new Date(Date.now()+10*60*1000).toISOString()};
+  const normalizedInput = input === undefined ? {} : input;
+  const ticket = {id,toolId:tool.id,operation,inputHash:hashApprovalInput(normalizedInput),inputSummary:JSON.stringify(normalizedInput).slice(0,1000),status:"pending",createdAt,expiresAt:new Date(Date.now()+10*60*1000).toISOString()};
   approvalRequests.set(id,ticket);
   approvalAudit.push({type:"requested",approvalId:id,toolId:tool.id,operation,timestamp:createdAt});
   return ticket;
@@ -54,9 +66,15 @@ function decideApproval(id, decision, reason) {
   approvalAudit.push({type:decision,approvalId:id,toolId:ticket.toolId,operation:ticket.operation,reason:ticket.reason,timestamp:ticket.decidedAt});
   return ticket;
 }
-function consumeApproval(id, toolId, operation) {
+function consumeApproval(id, toolId, operation, input) {
   const ticket = approvalRequests.get(String(id || ""));
   if (!ticket || ticket.status !== "approved" || ticket.toolId !== toolId || ticket.operation !== operation) return false;
+  // An approval is a one-time authorization for the exact canonical input reviewed by the human.
+  // Never consume the ticket when the submitted input differs from the approved payload.
+  if (!ticket.inputHash || ticket.inputHash !== hashApprovalInput(input === undefined ? {} : input)) {
+    approvalAudit.push({type:"scope-mismatch",approvalId:ticket.id,toolId,operation,timestamp:new Date().toISOString()});
+    return false;
+  }
   if (Date.now() > Date.parse(ticket.expiresAt)) {
     ticket.status="expired";
     approvalAudit.push({type:"expired",approvalId:ticket.id,timestamp:new Date().toISOString()});
@@ -369,7 +387,7 @@ const server = http.createServer(async (req,res)=>{
       // Client-provided approval is never trusted. Passive subdomain lookups are allowed
       // only when the requested root is covered by the server-owned domain allowlist.
       const passiveScopeApproved = tool.id === "subdomain-finder" && isAuthorizedSubdomainScope(task.input?.domain);
-      const ticketApproved = Boolean(tool.security && consumeApproval(task.approvalId,tool.id,task.operation));
+      const ticketApproved = Boolean(tool.security && consumeApproval(task.approvalId,tool.id,task.operation,task.input));
       const approved = !tool.security || passiveScopeApproved || ticketApproved;
       sendJson(res,await adapters.execute({...task,approved}));
     } catch(error) {
