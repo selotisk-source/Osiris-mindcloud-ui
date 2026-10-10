@@ -6,10 +6,21 @@ const fs = require("node:fs");
 const path = require("node:path");
 const os = require("node:os");
 
-const appPort = 39130;
-const memoryPort = 39131;
-const appBase = "http://127.0.0.1:" + appPort;
-const memoryBase = "http://127.0.0.1:" + memoryPort;
+let appPort;
+let memoryPort;
+let appBase;
+let memoryBase;
+
+async function freePort() {
+  const probe = http.createServer();
+  await new Promise((resolve, reject) => {
+    probe.once("error", reject);
+    probe.listen(0, "127.0.0.1", resolve);
+  });
+  const port = probe.address().port;
+  await new Promise((resolve, reject) => probe.close(error => error ? reject(error) : resolve()));
+  return port;
+}
 const root = path.resolve(__dirname, "..");
 const storeDir = fs.mkdtempSync(path.join(os.tmpdir(), "mindcloud-cognee-probe-"));
 const records = new Map();
@@ -39,6 +50,10 @@ async function waitHealthy(child) {
 }
 
 (async () => {
+  appPort = await freePort();
+  do { memoryPort = await freePort(); } while (memoryPort === appPort);
+  appBase = "http://127.0.0.1:" + appPort;
+  memoryBase = "http://127.0.0.1:" + memoryPort;
   const memory = http.createServer(async (req, res) => {
     try {
       if (req.method === "GET" && req.url === "/health") { json(res, 200, { status: "healthy" }); return; }
