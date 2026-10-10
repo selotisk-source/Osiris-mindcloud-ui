@@ -14,7 +14,7 @@ assert.equal(report.status,"verified_winner");
 assert.equal(report.winnerId,"candidate-b");
 assert.equal(report.candidates.find(c=>c.id==="candidate-a").eligible,false);
 assert.equal(report.promotion.allowed,false);
-assert.throws(()=>promoteArenaSkill({report,approved:true,revalidationPassed:true,skillId:"transform-skill"}),/arena_explicit_approval_required/);
+assert.throws(()=>promoteArenaSkill({report,approved:false,revalidationPassed:true,skillId:"transform-skill"}),/arena_explicit_approval_required/);
 assert.throws(()=>promoteArenaSkill({report,approved:true,revalidationPassed:false,skillId:"transform-skill"}),/arena_revalidation_required/);
 const proposal = promoteArenaSkill({report,approved:true,revalidationPassed:true,skillId:"transform-skill",evidenceRefs:["test://arena/input-valid","test://arena/output-valid"]});
 assert.equal(proposal.status,"approved_for_registry");
