@@ -11,7 +11,8 @@ const required = [
   "shodan",
   "subdomain-finder",
   "opensanctions",
-  "cookies-viewer"
+  "cookies-viewer",
+  "agentmemory"
 ];
 
 for (const id of required) {
@@ -30,6 +31,9 @@ for (const id of required) {
   if (id === "shodan" && tool.status !== "parked-cost-review") throw new Error("Shodan must remain parked pending cost review");
   if (id === "opensanctions" && tool.status !== "parked-cost-review") throw new Error("OpenSanctions hosted API must remain parked pending license/cost review");
   if (id === "cookies-viewer" && tool.transport !== "extension-local") throw new Error("cookie viewer must remain local to the browser extension");
+  if (id === "agentmemory" && tool.transport !== "native-http") throw new Error("AgentMemory must use the native Cognee HTTP adapter");
+  if (id === "agentmemory" && JSON.stringify(tool.operations) !== JSON.stringify(["remember","observe","smart_search","context"])) throw new Error("AgentMemory must advertise only implemented memory operations");
+  if (id === "agentmemory" && tool.env !== "COGNEE_SERVICE_URL") throw new Error("AgentMemory must use the existing Cognee service URL");
   if (["shodan","subdomain-finder","cookies-viewer"].includes(id) && !tool.security) {
     throw new Error(`missing security policy: ${id}`);
   }
@@ -40,4 +44,4 @@ if (!extensionManifest.optional_host_permissions?.includes("https://*/*")) throw
 if (!sidepanel.includes("chrome.cookies.getAll({url:tab.url})")) throw new Error("cookie viewer must scope to the active tab URL");
 if (!sidepanel.includes("cookies.map(({name,domain,path,secure,httpOnly,sameSite,session,expirationDate})")) throw new Error("cookie viewer must expose metadata only");
 if (sidepanel.includes("cookie.value")) throw new Error("cookie values must never be read into UI output");
-console.log(`integration-contracts: verified ${required.length} tool contracts and local cookie privacy policy`);
+console.log(`integration-contracts: verified ${required.length} tool contracts, AgentMemory/Cognee wiring and local cookie privacy policy`);
