@@ -14,8 +14,14 @@ const { AdapterRuntime } = require("../mindcloud/adapter-runtime");
     let body = "";
     req.on("data", chunk => { body += chunk; });
     req.on("end", () => {
-      const status = 503;
-      res.writeHead(status, { "content-type": "application/json" });
+      let payload = {};
+      try { payload = JSON.parse(body); } catch {}
+      if (payload.input?.target === "success-fixture") {
+        res.writeHead(200, { "content-type": "application/json" });
+        res.end(JSON.stringify({ ok: true, result: { target: "success-fixture", verifiedBy: "mock-provider" } }));
+        return;
+      }
+      res.writeHead(503, { "content-type": "application/json" });
       res.end(JSON.stringify({ error: "provider_temporarily_unavailable" }));
     });
   });
@@ -77,14 +83,18 @@ const { AdapterRuntime } = require("../mindcloud/adapter-runtime");
     assert.equal(runtime.audit[1].id, "test-adapter-two");
     assert.equal(runtime.audit[1].ok, false);
 
-    // Historical execution success must not hide a later failed health probe.
-    runtime.audit.push({
+    // A real successful provider response should verify this adapter.
+    const successResult = await runtime.execute({
       id: "test-adapter",
       operation: "inspect",
-      ok: true,
-      requestId: "historical-success",
-      timestamp: new Date().toISOString()
+      input: { target: "success-fixture" }
     });
+    assert.equal(providerCalls, 3);
+    assert.equal(successResult.ok, true);
+    assert.equal(successResult.result.verifiedBy, "mock-provider");
+    assert.equal(runtime.snapshot().adapters.find(adapter => adapter.id === "test-adapter").runtime.verification.status, "verified");
+
+    // Historical execution success must not hide a later failed health probe.
     runtime.audit.push({
       id: "test-adapter",
       operation: "health",
@@ -104,11 +114,13 @@ const { AdapterRuntime } = require("../mindcloud/adapter-runtime");
         "provider-failure-returned-as-structured-result",
         "failed-execution-audited-with-matching-request-id",
         "failed-execution-not-marked-verified",
+        "successful-execution-promotes-adapter-to-verified",
         "later-health-failure-overrides-readiness",
         "historical-verification-evidence-is-preserved",
         "non-idempotent-operation-not-retried"
       ],
       adaptersTested: 2,
+      successfulExecutions: 1,
       providerCalls,
       auditCount: runtime.snapshot().auditCount,
       httpStatuses: [result.status, secondResult.status]
