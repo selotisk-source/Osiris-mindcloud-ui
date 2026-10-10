@@ -5,6 +5,7 @@ const { createRouterNetwork } = require("./mindcore/router-network");
 const { MindCloudRuntime } = require("./mindcloud/runtime");
 const { AdapterRuntime } = require("./mindcloud/adapter-runtime");
 const { proxyCctvRequest } = require("./mindcloud/cctv-proxy");
+const { evaluateMetanoia } = require("./mindcloud/metanoia-engine");
 
 const routerNetwork = createRouterNetwork();
 const mindcloud = new MindCloudRuntime();
@@ -241,6 +242,15 @@ const server = http.createServer(async (req,res)=>{
   if(pathname==="/trading"||pathname==="/trading/"){res.writeHead(200,{"content-type":"text/html; charset=utf-8"});res.end(tradingHtml);return;}
   if(pathname==="/newsletter"||pathname==="/newsletter/"||pathname==="/briefing"||pathname==="/briefing/"||pathname==="/nyheter"||pathname==="/nyheter/"){res.writeHead(200,{"content-type":"text/html; charset=utf-8"});res.end(newsletterHtml);return;}
   if(pathname==="/health"){sendJson(res,{status:"ok",service:"osiris-mindcloud-ui"});return;}
+  if(pathname==="/api/mindcloud/metanoia/evaluate" && req.method==="POST"){
+    try {
+      const input = await readJson(req);
+      sendJson(res, evaluateMetanoia(input));
+    } catch (error) {
+      sendJson(res,{error:error instanceof Error ? error.message : String(error)},Number.isInteger(error.statusCode) ? error.statusCode : 400);
+    }
+    return;
+  }
   if(pathname==="/api/mindcloud/status"){sendJson(res,mindcloud.snapshot());return;}
   if(pathname==="/api/mindcloud/versions" && req.method==="GET"){
     sendJson(res,{type:"mindcloud_model_version_history",versions:mindcloud.versionHistory.list()});
