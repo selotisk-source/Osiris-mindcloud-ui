@@ -7,6 +7,7 @@ const path = require("node:path");
 const os = require("node:os");
 const { VersionHistory } = require("../mindcloud/version-history");
 const { MindCloudRuntime } = require("../mindcloud/runtime");
+const { evaluateMetanoia } = require("../mindcloud/metanoia-engine");
 const storeDir = fs.mkdtempSync(path.join(os.tmpdir(), "mindcloud-versions-"));
 const storePath = path.join(storeDir, "versions.json");
 const unitStorePath = path.join(storeDir, "unit-versions.json");
@@ -64,6 +65,41 @@ async function waitForHealth(child) {
 
   try {
     await waitForHealth(child);
+
+    const metanoiaReport = evaluateMetanoia({
+      claims:[
+        {subject:"sensor-A",predicate:"status",value:"active",source:"test-a",evidenceRef:"test:source-a"},
+        {subject:"sensor-A",predicate:"status",value:"offline",source:"test-b",evidenceRef:"test:source-b"},
+        {subject:"sensor-B",predicate:"temperature",value:42,confidence:0.3,evidenceRequired:true}
+      ],
+      evidenceRefs:["test:source-a","test:source-b"],
+      affectedNodeIds:["sensor-A","temperature-model"]
+    });
+    assert.equal(metanoiaReport.type,"mindcloud_metanoia_report");
+    assert.equal(metanoiaReport.status,"review_required");
+    assert.equal(metanoiaReport.findings.contradictions.length,1);
+    assert.ok(metanoiaReport.alternativeHypotheses.length >= 2);
+    assert.ok(metanoiaReport.counterfactualTests.length >= 2);
+    assert.deepEqual(metanoiaReport.affectedNodeIds,["sensor-A","temperature-model"]);
+    assert.equal(metanoiaReport.proposal.modelMutationPerformed,false);
+    assert.equal(metanoiaReport.proposal.versionCreated,false);
+    assert.equal(metanoiaReport.proposal.writesPerformed,false);
+    assert.equal(metanoiaReport.proposal.humanApprovalRequired,true);
+    assert.match(metanoiaReport.reportHash,/^[a-f0-9]{64}$/);
+    assert.throws(()=>evaluateMetanoia({claims:[{subject:"broken",predicate:"claim"}]}),/metanoia_claims_invalid/);
+
+    const metanoiaApi = await post("/api/mindcloud/metanoia/evaluate",{
+      claims:[
+        {subject:"runtime",predicate:"health",value:"ok",source:"source-1"},
+        {subject:"runtime",predicate:"health",value:"degraded",source:"source-2"}
+      ],
+      evidenceRefs:["test:runtime"],
+      affectedNodeIds:["runtime-health"]
+    });
+    assert.equal(metanoiaApi.status,200);
+    assert.equal(metanoiaApi.body.status,"review_required");
+    assert.equal(metanoiaApi.body.proposal.writesPerformed,false);
+    assert.equal(metanoiaApi.body.proposal.humanApprovalRequired,true);
 
     const health = await get("/health");
     assert.equal(health.status, 200);
