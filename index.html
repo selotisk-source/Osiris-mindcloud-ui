@@ -36,6 +36,61 @@ body{overflow:hidden}.app{height:100%;display:flex;flex-direction:column}
 .module-panel{position:absolute;z-index:40;inset:64px 10px 10px;overflow:auto;background:#0d131c;border:1px solid #35506f;border-radius:10px;box-shadow:0 18px 50px #0009;padding:14px}
 .module-panel h2{font-size:16px}.module-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.module-note{border:1px solid #26384c;border-radius:8px;background:#0a1018;padding:12px}.module-note h3{margin:0 0 7px;font-size:13px}.module-note p{margin:5px 0;color:#aeb9c8}.module-actions{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}.module-actions a{color:var(--accent);text-decoration:none;border:1px solid #2a3d54;border-radius:6px;padding:6px 9px}
 @media(max-width:700px){.app-nav{padding:6px}.module-panel{inset:108px 6px 6px;padding:9px}.module-grid{grid-template-columns:1fr}}
+
+/* MindCloud UI refinement — reusable layout and toolbox patterns */
+:root{--panel-raised:#111a27;--line-strong:#34465d;--focus:#a5d0ff;--radius-panel:12px}
+button,a,input{ -webkit-tap-highlight-color:transparent }
+:where(button,a,input):focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.topbar{min-height:58px;height:auto;flex-wrap:wrap;padding:10px 14px;background:linear-gradient(180deg,#0c121b,#090d14);gap:10px}
+.brand{font-size:14px;letter-spacing:.12em;white-space:nowrap}
+.status{padding:5px 9px;border:1px solid #223247;border-radius:999px;background:#0b1119}
+.actions{display:flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.btn{min-height:32px;transition:border-color .15s ease,background-color .15s ease,color .15s ease}
+.btn:disabled{opacity:.55;cursor:wait}
+.app-nav{padding:8px 12px;background:#0b1119;gap:7px;scrollbar-width:thin}
+.app-nav a,.app-nav button{min-height:32px;border-color:#29394e;background:#101824;border-radius:8px}
+.app-nav a:focus-visible,.app-nav button:focus-visible{outline-offset:1px}
+.workspace{padding:12px;gap:12px}
+.station{border-radius:var(--radius-panel);border-color:#26364a;box-shadow:0 8px 24px #00000012;transition:border-color .16s ease,box-shadow .16s ease}
+.station:hover{border-color:#354b65}
+.station.coordinator{border-color:#3a6088;box-shadow:inset 0 1px #79b8ff12,0 8px 24px #00000018}
+.station-head{min-height:44px;background:linear-gradient(90deg,#121d2b,#101824);border-bottom-color:#29394d}
+.station-role{font-size:10px;letter-spacing:.1em}
+.content{padding:13px}
+.card,.metric,.module-note,.tool-item{border-radius:10px}
+.card{border-color:#26364a;background:linear-gradient(145deg,#111a26,#0f1620)}
+.empty{border-color:#34445a;background:#0b1119;min-height:100px;padding:16px;text-align:center}
+.toolbox{left:12px;right:12px;top:calc(var(--mindcloud-top-offset, 112px));max-height:calc(100dvh - var(--mindcloud-top-offset, 112px) - 12px);padding:16px;border-color:#3b5878;border-radius:14px;background:linear-gradient(160deg,#101925,#0b1119 72%);box-shadow:0 24px 70px #000b}
+.toolbox-head{position:sticky;top:-16px;z-index:2;margin:-16px -16px 0;padding:14px 16px;background:#0d141f;border-bottom:1px solid var(--line);border-radius:14px 14px 0 0}
+.toolbox-head h2{font-size:16px;letter-spacing:-.02em;white-space:nowrap}
+.tool-search{min-width:140px;min-height:36px;border-radius:9px;padding:8px 11px}
+.tool-search::placeholder{color:#788aa0}
+.tool-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:16px;margin-top:14px}
+.tool-section{min-width:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));align-content:start;gap:9px}
+.tool-section>h3,.tool-section>.quipro-sub,.tool-section>.empty{grid-column:1/-1}
+.tool-section>h3{margin:0;padding-bottom:8px;border-bottom:1px solid #27374b;font-size:13px;letter-spacing:.02em}
+.tool-section>.quipro-sub{margin:0 0 2px;max-width:100%;line-height:1.5}
+.tool-item{min-width:0;margin:0;padding:12px;border-color:#29394e;background:linear-gradient(145deg,#121c29,#0d141e);box-shadow:0 3px 12px #00000012;overflow-wrap:anywhere}
+.tool-item:hover{border-color:#405a78}
+.tool-item>b{padding-right:3px;font-size:12px;letter-spacing:.01em;overflow-wrap:anywhere}
+.tool-item>small{display:block;margin-top:5px;line-height:1.45}
+.tool-item>p{margin:9px 0;color:#aab8c9;font-size:12px;line-height:1.5}
+.tool-status{max-width:100%;float:none;display:inline-flex;align-items:center;width:max-content;max-width:100%;margin:0 0 8px;padding:3px 7px;border-radius:999px;background:#0b121b;font-size:9px;line-height:1.35;letter-spacing:.035em;overflow-wrap:anywhere}
+.tool-actions{align-items:center;margin-top:11px;padding-top:9px;border-top:1px solid #243246}
+.tool-actions .btn{font-size:10px;min-height:30px}
+.tool-live-result{max-height:180px;overflow:auto;border-color:#29394e;border-radius:8px;line-height:1.5}
+.tool-live-result[hidden]{display:none}
+@media(max-width:1050px){.tool-section{grid-template-columns:repeat(2,minmax(0,1fr))}.actions{justify-content:flex-start}}
+@media(max-width:700px){
+ .topbar{padding:9px;gap:8px}.status{font-size:11px}.actions{width:100%;justify-content:flex-start}.actions .btn{flex:0 0 auto}
+ .app-nav{padding:7px 9px}.workspace{padding:8px;gap:8px}.station-head{padding:0 9px}.content{padding:9px}
+ .toolbox{left:6px;right:6px;top:8px;max-height:calc(100dvh - 16px);padding:12px}
+ .toolbox-head{top:-12px;margin:-12px -12px 0;padding:11px 12px;gap:7px;flex-wrap:wrap}
+ .toolbox-head h2{width:100%}.tool-search{flex:1 1 150px}.tool-section{grid-template-columns:minmax(0,1fr)}
+ .tool-section>h3,.tool-section>.quipro-sub,.tool-section>.empty{grid-column:1}
+}
+@media(prefers-reduced-motion:reduce){.btn,.station{transition:none}html{scroll-behavior:auto}}
+
 </style>
 </head>
 <body>
