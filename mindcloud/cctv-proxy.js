@@ -4,6 +4,7 @@ const MAX_PLAYLIST_BYTES = 2 * 1024 * 1024;
 const MAX_SEGMENT_BYTES = 12 * 1024 * 1024;
 const PLAYLIST_TYPES = /(?:application\/vnd\.apple\.mpegurl|application\/x-mpegurl|audio\/mpegurl|audio\/x-mpegurl|text\/plain)/i;
 const MEDIA_TYPES = /(?:video\/mp2t|video\/mp4|audio\/mp4|application\/octet-stream|application\/mp2t)/i;
+const IMAGE_TYPES = /^(?:image\/jpeg|image\/png|image\/webp)$/i;
 
 function localTestSource(url) {
   return process.env.NODE_ENV === "test" &&
@@ -93,13 +94,18 @@ async function proxyCctvRequest({ source, resource, signal }) {
 
   const contentType = (upstream.headers.get("content-type") || "").split(";")[0].trim();
   const isPlaylist = /\.m3u8?$/i.test(parsedResource.url.pathname) || PLAYLIST_TYPES.test(contentType);
+  const isImage = IMAGE_TYPES.test(contentType) || /\.(?:jpe?g|png|webp)$/i.test(parsedResource.url.pathname);
   const limit = isPlaylist ? MAX_PLAYLIST_BYTES : MAX_SEGMENT_BYTES;
   const declaredLength = Number(upstream.headers.get("content-length") || 0);
   if (declaredLength > limit) {
     await upstream.body?.cancel().catch(() => {});
     return { status: 413, error: "cctv_upstream_resource_too_large" };
   }
-  if (!isPlaylist && contentType && !MEDIA_TYPES.test(contentType) && !/\.m4s?$|\.mp4$/i.test(parsedResource.url.pathname)) {
+  if (isImage && contentType && !IMAGE_TYPES.test(contentType)) {
+    await upstream.body?.cancel().catch(() => {});
+    return { status: 415, error: "cctv_unsupported_image_type", contentType };
+  }
+  if (!isPlaylist && !isImage && contentType && !MEDIA_TYPES.test(contentType) && !/\.m4s?$|\.mp4$/i.test(parsedResource.url.pathname)) {
     await upstream.body?.cancel().catch(() => {});
     return { status: 415, error: "cctv_unsupported_media_type", contentType };
   }
@@ -111,6 +117,17 @@ async function proxyCctvRequest({ source, resource, signal }) {
     return { status: 502, error: "cctv_upstream_read_failed", detail: error instanceof Error ? error.message : String(error) };
   }
   if (bytes.length > limit) return { status: 413, error: "cctv_upstream_resource_too_large" };
+
+  if (isImage) {
+    const type = contentType || (parsedResource.url.pathname.toLowerCase().endsWith(".png") ? "image/png" : parsedResource.url.pathname.toLowerCase().endsWith(".webp") ? "image/webp" : "image/jpeg");
+    const validImage = type === "image/jpeg"
+      ? bytes.length >= 4 && bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[bytes.length - 2] === 0xff && bytes[bytes.length - 1] === 0xd9
+      : type === "image/png"
+        ? bytes.length >= 20 && bytes.subarray(0, 8).equals(Buffer.from([137, 80, 78, 71, 13, 10, 26, 10])) && bytes.subarray(-8, -4).toString("ascii") === "IEND"
+        : bytes.length >= 12 && bytes.subarray(0, 4).toString("ascii") === "RIFF" && bytes.subarray(8, 12).toString("ascii") === "WEBP";
+    if (!validImage) return { status: 502, error: "cctv_invalid_image_payload", contentType: type };
+    return { status: 200, contentType: type, body: bytes, isImage: true };
+  }
 
   if (isPlaylist) {
     const body = bytes.toString("utf8");
