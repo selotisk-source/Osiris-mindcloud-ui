@@ -54,7 +54,7 @@ const { AdapterRuntime } = require("../mindcloud/adapter-runtime");
     const snapshot = runtime.snapshot();
     assert.equal(snapshot.auditCount, 1, "failed execution must be recorded in audit");
     assert.equal(snapshot.readinessSummary.configured, 2, "both configured adapters remain configured; a failed operation alone is not a health probe");
-    assert.equal(snapshot.readinessSummary.executionNotVerified, 1);
+    assert.equal(snapshot.readinessSummary.executionNotVerified, 2, "neither configured adapter has a successful execution yet");
     const entry = runtime.audit[0];
     assert.equal(entry.ok, false);
     assert.equal(entry.requestId, result.requestId);
