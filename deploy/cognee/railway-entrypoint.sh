@@ -21,6 +21,7 @@ set_env() {
   fi
 }
 set_env EMBEDDING_BATCH_SIZE 1
+set_env GRAPH_EXTRACTOR llm
 set_env GLINER_INFERENCE_THREADS 1
 set_env AUTO_FEEDBACK false
 set_env IMPROVE_AUTO_ENABLED false
