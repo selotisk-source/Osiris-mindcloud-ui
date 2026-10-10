@@ -20,7 +20,7 @@ function tokenMatches(supplied, expected) {
   if (!supplied || !expected || supplied.length !== expected.length) return false;
   return require("node:crypto").timingSafeEqual(Buffer.from(supplied), Buffer.from(expected));
 }
-function bearerToken(req) { return (req.headers.authorization || "").replace(/^Bearer\\s+/i, ""); }
+function bearerToken(req) { return (req.headers.authorization || "").replace(/^Bearer\s+/i, ""); }
 function isExecutionAuthorized(req) {
   return tokenMatches(bearerToken(req), process.env.MINDCLOUD_TOOL_EXECUTION_TOKEN || "");
 }
