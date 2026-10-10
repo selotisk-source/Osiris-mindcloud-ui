@@ -71,17 +71,17 @@
       "id": "agentmemory",
       "source": "rohitg00/agentmemory",
       "layer": "AgentMemory",
-      "integration": "Persistent cross-agent memory is exposed through typed memory operations; storage remains in the memory execution domain.",
+      "integration": "Persistent AgentMemory operations use the deployed Cognee memory service. Writes and recalls are session-scoped and return request provenance; unsupported lifecycle/delete operations are intentionally not advertised.",
       "operations": [
         "remember",
         "observe",
         "smart_search",
-        "context",
-        "forget",
-        "session_start",
-        "session_end"
+        "context"
       ],
-      "status": "adapter-ready"
+      "status": "adapter-ready",
+      "env": "COGNEE_SERVICE_URL",
+      "transport": "native-http",
+      "cost_model": "existing-self-hosted-memory-service; no additional paid provider"
     },
     {
       "id": "scientific-agent-skills",
