@@ -1,45 +1,80 @@
 {
   "date": "2026-10-10",
-  "title": "Briefing · Odessos: Sankt Athanasius och de romerska termerna",
-  "subtitle": "Ett nytt prioriterat forskningsspår binder samman kyrkohistoria, antik stadsarkitektur och underjordiska strukturer i Varna.",
-  "status": "AKTUELLT SPÅR",
+  "title": "Briefing · Odessos och Bulgariens historiska lager",
+  "subtitle": "Den aktuella Varna-briefingen samlar nu både dagens Odessos-spår och den tidigare katalogiseringen av guld, fyndmiljöer och vävkultur.",
+  "status": "AKTUELLT · UPPDATERAD",
   "sections": [
     {
       "category": "KULTURARV",
       "headline": "Sankt Athanasius blir ett prioriterat forskningsnav",
-      "text": "MindCloud prioriterar Sankt Athanasius i Varna som ett centralt nav för forskning om Odessos, kyrkohistoria och det levande kulturarvet i det tidigare grekiska kvarteret.",
+      "text": "Sankt Athanasius i Varna behandlas som ett centralt nav för forskning om Odessos, kyrkohistoria och det levande kulturarvet nära de romerska termerna.",
       "implication": "Fortsatt kartläggning kan samordnas kring kyrkan, närliggande arkeologi och institutionella källor.",
       "evidence": "Dokumenterad historisk plats; prioriteringen är MindClouds redaktionella och forskningsmässiga beslut."
     },
     {
       "category": "ARKEOLOGI",
-      "headline": "Romerska termerna och de underjordiska strukturerna",
-      "text": "De romerska termerna i Odessos är ett dokumenterat arkeologiskt komplex med bevarade underjordiska delar. Närheten till Sankt Athanasius gör området särskilt intressant för en sammanhängande historisk kartläggning.",
-      "implication": "Nästa steg är att jämföra arkeologiska planer, dokumenterade gångar och kyrkans historiska byggnadsfaser.",
-      "evidence": "Dokumenterat av regional arkeologisk forskning och Varna-museets material. Ingen specifik underjordisk förbindelse mellan kyrkan och termerna betraktas som bevisad."
+      "headline": "Romerska termerna och Odessos",
+      "text": "Roman Thermae är ett dokumenterat arkeologiskt komplex i antika Odessos. Närheten till Sankt Athanasius gör området relevant för en lager-för-lager-kartläggning, men någon specifik underjordisk förbindelse mellan platserna betraktas inte som bevisad.",
+      "implication": "Nästa steg är att jämföra arkeologiska planer, dokumenterade strukturer och kyrkans historiska byggnadsfaser.",
+      "evidence": "Dokumenterat arkeologiskt material; geografisk närhet är inte i sig bevis för fysisk förbindelse."
     },
     {
       "category": "KYRKOHISTORIA",
-      "headline": "Den så kallade Sankt Theodor i Basilica Thermarum",
-      "text": "Forskningen beskriver en kyrklig tolkning i den basilikaformade delen av termerna, ofta benämnd den 'så kallade Sankt Theodor'. Detta ska förstås som en arkeologisk och historisk identifiering, inte som en separat bevarad kyrkobyggnad med säker modern planlösning.",
-      "implication": "Sankt Theodor kan bli en viktig länk när vi studerar hur den antika stadsanläggningen återanvändes i den kristna perioden.",
-      "evidence": "Scholarly interpretation; kartan markerar därför denna del som tolkning och inte som fullt verifierad separat byggnad."
+      "headline": "Sankt Theodor / Basilica Thermarum",
+      "text": "Den möjliga kyrkliga tolkningen i basilica thermarum återges som en historisk identifiering med lägre evidensgrad än själva termerna. Den ska inte presenteras som en säker separat bevarad byggnad.",
+      "implication": "Spåret kan användas för att undersöka återanvändning av antika stadsanläggningar under kristen tid.",
+      "evidence": "Föreslagen historisk tolkning; alternativa tolkningar ska behållas synliga."
     },
     {
-      "category": "FÄLTOBSERVATION",
-      "headline": "Ett underjordiskt växtspår ska dokumenteras separat",
-      "text": "En observation har rapporterats av ett underjordiskt rum där växtlighet eller frukt uppges förekomma under Sankt Athanasius. Observationen är intressant men har ännu inte verifierats arkeologiskt och behandlas därför som en separat hypotes.",
-      "implication": "Om spåret ska följas vidare görs det genom säkra, tillåtna och dokumenterade källor — inte genom att beträda avspärrade eller osäkra utrymmen.",
-      "evidence": "Rapporterad observation; ännu inte oberoende verifierad."
+      "category": "VARNA-GULDET",
+      "headline": "Den äldre guldkatalogen är tillbaka i briefingen",
+      "text": "Den tidigare Varna Heritage Map registrerade den kalkolitiska Varna-nekropolen, daterad till cirka 4600–4200 f.Kr., med mer än 3 000 guldföremål och över cirka 6 kg guld i projektets sammanställning. Föremålstyper som katalogiserats visuellt omfattar bland annat pärlor, ringar, skivor, spiraler och stav-/cylinderformer.",
+      "implication": "Detta blir ett eget historiskt lager i stället för att försvinna bakom de nyare Gallery 33- och Odessos-spåren.",
+      "evidence": "Tidigare projektkatalog/Heritage Map; mängder och klassificeringar bör vid behov återkontrolleras mot primärkällor."
+    },
+    {
+      "category": "THRAKISKT ARV",
+      "headline": "Regionala fyndmiljöer hålls separerade",
+      "text": "Den äldre katalogiseringen omfattar thrakiska grav- och fyndmiljöer med guld, silver, vapen, smycken och hästutrustning, bland annat Golemanite, Devnya, Provadia och Sveshtari i det bredare regionala materialet.",
+      "implication": "Platserna ska behandlas som separata fynd- och kulturmiljöspår, inte som en enda verifierad depå eller organisation.",
+      "evidence": "Tidigare projektkatalogisering; varje enskild plats behöver egen källkontroll."
+    },
+    {
+      "category": "DEPÅER · SKATTER",
+      "headline": "Värdedepåer blir ett öppet forskningsspår",
+      "text": "Projektet har tidigare arbetat med begrepp som depåer, skatter och värdeföremål i samband med grottor och andra kulturmiljöer. I den återfunna Varna-katalogen finns inte tillräckligt underlag för att kalla en specifik plats en verifierad värdedepå.",
+      "implication": "När specifika depåfynd återförs ska de registreras med plats, datering, föremål, källa och evidensnivå i separata poster.",
+      "evidence": "Forskningsspår; ingen specifik värdedepå fastställs av detta material."
+    },
+    {
+      "category": "TEXTILKULTUR",
+      "headline": "Bulgariens väv- och mönstertradition återinförs",
+      "text": "Den tidigare Heritage Map innehöll ett särskilt textilspår med vävning, broderi, regionala mönster, bälten och dräkter. Materialet behandlar mönster och färger som bärare av identitet och överförd kulturkunskap.",
+      "implication": "Vävkulturen blir ett eget kulturhistoriskt lager och ska inte automatiskt ges en äldre religiös eller organisatorisk betydelse utan källstöd.",
+      "evidence": "Tidigare projektvisualisering och kulturhistorisk sammanställning; symboltolkningar kräver separat källkontroll."
+    },
+    {
+      "category": "TIDSLINJE",
+      "headline": "Historiska lagret ligger nu parallellt med dagens forskning",
+      "text": "Briefingen följer nu en sammanhängande tidslinje: Varna-kulturen ca 4600–4200 f.Kr.; bronsålder; thrakiska och romerska lager; Roman Odessos; tidigkristna och medeltida lager; senare textiltraditioner; och därefter de moderna observationerna från 2024–2026.",
+      "implication": "Vi kan gå bakåt i tiden utan att blanda ihop kronologi, platsobservationer och hypoteser.",
+      "evidence": "Redaktionell forskningsstruktur byggd från tidigare projektmaterial och den aktuella Varna-briefingen."
+    },
+    {
+      "category": "GALLERY 33",
+      "headline": "Det moderna symbolspåret hålls separat",
+      "text": "Gallery 33 fortsätter som ett separat modernt spår: fasad, 33, dubbelhövdad örn, öga och rutmönster är dokumenterade som bild-/platsobservationer med symboliska paralleller, medan exakt ursprung och organisatorisk koppling fortfarande är obekräftade.",
+      "implication": "Det nya materialet kan jämföras med historiska lager utan att en symbolisk likhet görs till ett historiskt samband.",
+      "evidence": "Bildobservation och platsobservation; organisationskoppling är obekräftad."
     }
   ],
   "editorial": {
     "framework": [
       "VAD VI VET",
       "VAD SOM ÄR TOLKNING",
+      "ÄLDRE FORSKNING",
       "NYA SPÅR",
       "EVIDENSLÄGE",
-      "VARFÖR DET ÄR INTRESSANT",
       "NÄSTA STEG"
     ]
   }
