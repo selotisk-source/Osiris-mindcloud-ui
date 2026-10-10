@@ -129,7 +129,7 @@ async function waitHealthy(child) {
     assert.equal(resolved.body.result.answers[0].data, "203.0.113.12");
     const snapshot = await json(await fetch(appBase + "/api/adapters"));
     assert.equal(snapshot.status, 200);
-    assert.equal(snapshot.body.auditCount, 4);
+    assert.equal(snapshot.body.auditCount, 5);
 
     const approvalRequest = await json(await fetch(appBase + "/api/approvals/request", {
       method: "POST",
