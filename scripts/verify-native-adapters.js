@@ -22,6 +22,7 @@ global.fetch = async (url, options={}) => {
   process.env.SHODAN_API_KEY="test-shodan-key";
   process.env.OPENSANCTIONS_API_KEY="test-sanctions-key";
   process.env.MAPILLARY_ACCESS_TOKEN="test-mapillary-token";
+  process.env.COGNEE_SERVICE_URL="http://cognee.test";
 
   const registry=[
     {id:"overpass-turbo",operations:["query","export_geojson"]},
@@ -29,7 +30,8 @@ global.fetch = async (url, options={}) => {
     {id:"mapillary",operations:["search","image"]},
     {id:"google-street-view",operations:["metadata","image"]},
     {id:"shodan",operations:["host","search","dns"]},
-    {id:"opensanctions",operations:["search","match"]}
+    {id:"opensanctions",operations:["search","match"]},
+    {id:"agentmemory",operations:["remember","observe","smart_search","context"]}
   ];
   assert.equal(native.supports("overpass-turbo"),true);
   assert.equal(native.state("overpass-turbo").configured,true);
@@ -108,5 +110,26 @@ global.fetch = async (url, options={}) => {
   assert.equal(calls[13].url,"https://overpass-primary-500.test/api/interpreter");
   assert.equal(calls[14].url,"https://overpass.test/api/interpreter");
 
-  console.log("native-adapters: verified Overpass mirror failover, free passive subdomain/DNS, Mapillary and credential-gated API contracts");
+  assert.equal(native.supports("agentmemory"),true);
+  assert.equal(native.state("agentmemory").configured,true);
+  assert.deepEqual(native.state("agentmemory").operations,["remember","observe","smart_search","context"]);
+  const memoryHealth=await native.health("agentmemory");
+  assert.equal(memoryHealth.status,"healthy");
+  assert.equal(calls.at(-1).url,"http://cognee.test/health");
+  const memoryWrite=await native.execute({id:"agentmemory",operation:"remember",input:{content:"adapter memory test",sessionId:"agentmemory-test",datasetName:"mindcloud-tests"},requestId:"test-memory-write"});
+  assert.equal(memoryWrite.ok,true);
+  assert.equal(calls.at(-1).url,"http://cognee.test/api/v1/remember");
+  assert.ok(calls.at(-1).options.body instanceof FormData);
+  assert.equal(calls.at(-1).options.body.get("raw_data"),"adapter memory test");
+  assert.equal(calls.at(-1).options.body.get("session_id"),"agentmemory-test");
+  const memoryRecall=await native.execute({id:"agentmemory",operation:"smart_search",input:{query:"adapter memory test",sessionId:"agentmemory-test",limit:8},requestId:"test-memory-recall"});
+  assert.equal(memoryRecall.ok,true);
+  assert.equal(calls.at(-1).url,"http://cognee.test/api/v1/recall");
+  assert.deepEqual(JSON.parse(calls.at(-1).options.body),{query:"adapter memory test",session_id:"agentmemory-test",scope:"session",only_context:true,top_k:8});
+  const missingMemory=await native.execute({id:"agentmemory",operation:"remember",input:{},requestId:"test-memory-empty"});
+  assert.equal(missingMemory.error,"memory_content_required");
+  const unsupportedMemory=await native.execute({id:"agentmemory",operation:"forget",input:{},requestId:"test-memory-forget"});
+  assert.equal(unsupportedMemory.error,"operation_not_supported");
+
+  console.log("native-adapters: verified Overpass failover, free passive subdomain/DNS, Mapillary, credential-gated APIs and Cognee-backed AgentMemory");
 })().catch(error=>{console.error(error);process.exitCode=1;}).finally(()=>{global.fetch=originalFetch;});
