@@ -1,5 +1,5 @@
 {
-  "schema_version": "0.2",
+  "schema_version": "0.3",
   "project": "MindCloud / MindCore",
   "policy": {
     "mode": "supervised-adapter",
@@ -12,7 +12,14 @@
       "source": "NanoNets/Graft",
       "layer": "CodeIntelligence",
       "integration": "Graft graph/context operations are exposed through the MindCore capability contract.",
-      "operations": ["init", "build", "ask", "grep", "map", "viz"],
+      "operations": [
+        "init",
+        "build",
+        "ask",
+        "grep",
+        "map",
+        "viz"
+      ],
       "status": "adapter-ready"
     },
     {
@@ -20,7 +27,13 @@
       "source": "calesthio/OpenMontage",
       "layer": "MediaPipeline",
       "integration": "OpenMontage is attached as a supervised production workspace; planning, research, scripting, rendering and validation remain auditable task operations.",
-      "operations": ["plan", "research", "script", "render", "validate"],
+      "operations": [
+        "plan",
+        "research",
+        "script",
+        "render",
+        "validate"
+      ],
       "status": "adapter-ready"
     },
     {
@@ -28,7 +41,14 @@
       "source": "DeusData/codebase-memory-mcp",
       "layer": "CodeIntelligence",
       "integration": "Local MCP code intelligence is exposed through typed structural-query operations; repository indexing is gated.",
-      "operations": ["search_graph", "trace_path", "architecture", "impact_analysis", "list_projects", "index_repository"],
+      "operations": [
+        "search_graph",
+        "trace_path",
+        "architecture",
+        "impact_analysis",
+        "list_projects",
+        "index_repository"
+      ],
       "transport": "stdio",
       "status": "adapter-ready"
     },
@@ -37,7 +57,14 @@
       "source": "browser-use/browser-use",
       "layer": "ComputerAgent",
       "integration": "Supervised browser automation capability with isolated browser sessions and explicit action approval.",
-      "operations": ["browse", "navigate", "click", "type", "extract", "screenshot"],
+      "operations": [
+        "browse",
+        "navigate",
+        "click",
+        "type",
+        "extract",
+        "screenshot"
+      ],
       "status": "adapter-ready"
     },
     {
@@ -45,7 +72,15 @@
       "source": "rohitg00/agentmemory",
       "layer": "AgentMemory",
       "integration": "Persistent cross-agent memory is exposed through typed memory operations; storage remains in the memory execution domain.",
-      "operations": ["remember", "observe", "smart_search", "context", "forget", "session_start", "session_end"],
+      "operations": [
+        "remember",
+        "observe",
+        "smart_search",
+        "context",
+        "forget",
+        "session_start",
+        "session_end"
+      ],
       "status": "adapter-ready"
     },
     {
@@ -53,7 +88,14 @@
       "source": "K-Dense-AI/scientific-agent-skills",
       "layer": "ResearchAgent",
       "integration": "Agent Skills-compatible scientific workflows are discoverable and executable through a supervised research workspace.",
-      "operations": ["list_skills", "search_skill", "run_skill", "search_database", "analyze", "cite"],
+      "operations": [
+        "list_skills",
+        "search_skill",
+        "run_skill",
+        "search_database",
+        "analyze",
+        "cite"
+      ],
       "status": "adapter-ready"
     },
     {
@@ -61,7 +103,12 @@
       "source": "cathrynlavery/diagram-design",
       "layer": "Visualization",
       "integration": "Editorial HTML/SVG diagram generation and redraws become evidence-linked visualization artifacts.",
-      "operations": ["generate", "redraw", "validate", "export"],
+      "operations": [
+        "generate",
+        "redraw",
+        "validate",
+        "export"
+      ],
       "status": "adapter-ready"
     },
     {
@@ -69,7 +116,14 @@
       "source": "mukul975/Anthropic-Cybersecurity-Skills",
       "layer": "SecurityResearch",
       "integration": "Structured security skills are available to authorized defensive and security-research workflows behind the admin approval gate.",
-      "operations": ["discover_skill", "assess", "hunt", "incident_response", "map_framework", "validate"],
+      "operations": [
+        "discover_skill",
+        "assess",
+        "hunt",
+        "incident_response",
+        "map_framework",
+        "validate"
+      ],
       "status": "adapter-ready",
       "security": "authorized systems only; no unrestricted credentials or autonomous production changes"
     },
@@ -78,7 +132,13 @@
       "source": "harness-engineer/awesome-harness-engineering",
       "layer": "HarnessEngineering",
       "integration": "Harness patterns are indexed as a reference layer for evaluating orchestration, context, tool design, constraints and safe autonomy.",
-      "operations": ["catalog", "inspect", "evaluate", "benchmark", "map_pattern"],
+      "operations": [
+        "catalog",
+        "inspect",
+        "evaluate",
+        "benchmark",
+        "map_pattern"
+      ],
       "status": "adapter-ready"
     },
     {
@@ -86,8 +146,111 @@
       "source": "volcengine/OpenViking",
       "layer": "ContextDatabase",
       "integration": "Context is exposed through an inspectable filesystem-oriented interface for knowledge, memory and skills.",
-      "operations": ["ls", "tree", "read", "find", "retrieve", "import", "write"],
+      "operations": [
+        "ls",
+        "tree",
+        "read",
+        "find",
+        "retrieve",
+        "import",
+        "write"
+      ],
       "status": "adapter-ready"
+    },
+    {
+      "id": "overpass-turbo",
+      "source": "OpenStreetMap / Overpass",
+      "layer": "GeoOSINT",
+      "integration": "Query OpenStreetMap through Overpass; results become provenance-linked geospatial evidence and Point Registry candidates.",
+      "operations": [
+        "query",
+        "export_geojson",
+        "health"
+      ],
+      "env": "OVERPASS_TURBO_URL",
+      "status": "adapter-ready"
+    },
+    {
+      "id": "geohints",
+      "source": "GeoHints",
+      "layer": "GeoOSINT",
+      "integration": "Geographic hints and visual geolocation support routed through the shared Point Registry and evidence contract.",
+      "operations": [
+        "search",
+        "resolve",
+        "health"
+      ],
+      "env": "GEOHINTS_URL",
+      "status": "adapter-ready"
+    },
+    {
+      "id": "google-street-view",
+      "source": "Google Maps Platform / Street View",
+      "layer": "GeoOSINT",
+      "integration": "Street View metadata and permitted imagery workflows become evidence-linked geospatial observations.",
+      "operations": [
+        "metadata",
+        "image",
+        "health"
+      ],
+      "env": "GOOGLE_STREET_VIEW_URL",
+      "status": "adapter-ready"
+    },
+    {
+      "id": "shodan",
+      "source": "Shodan",
+      "layer": "SecurityResearch",
+      "integration": "Authorized internet-exposure research with explicit scope, rate controls, credentials and audit trail.",
+      "operations": [
+        "host",
+        "search",
+        "dns",
+        "health"
+      ],
+      "env": "SHODAN_URL",
+      "status": "adapter-ready",
+      "security": "authorized targets and scopes only"
+    },
+    {
+      "id": "subdomain-finder",
+      "source": "Subdomain discovery service",
+      "layer": "SecurityResearch",
+      "integration": "Scoped DNS/subdomain discovery with allowlists, rate limits and provenance.",
+      "operations": [
+        "discover",
+        "resolve",
+        "health"
+      ],
+      "env": "SUBDOMAIN_FINDER_URL",
+      "status": "adapter-ready",
+      "security": "authorized domains only"
+    },
+    {
+      "id": "opensanctions",
+      "source": "OpenSanctions",
+      "layer": "EntityIntelligence",
+      "integration": "Entity, sanctions and PEP screening with source attribution and licensing controls.",
+      "operations": [
+        "search",
+        "match",
+        "health"
+      ],
+      "env": "OPENSANCTIONS_URL",
+      "status": "adapter-ready"
+    },
+    {
+      "id": "cookies-viewer",
+      "source": "Browser cookie inspection",
+      "layer": "ComputerAgent",
+      "integration": "Inspect cookies only inside explicitly authorized isolated browser contexts; cookie values must never enter audit logs.",
+      "operations": [
+        "list",
+        "inspect",
+        "health"
+      ],
+      "env": "COOKIES_VIEWER_URL",
+      "status": "adapter-ready",
+      "security": "authorized browser contexts only"
     }
   ]
 }
