@@ -118,6 +118,26 @@ async function waitForHealth(child) {
     assert.equal(metanoiaApi.body.proposal.writesPerformed,false);
     assert.equal(metanoiaApi.body.proposal.humanApprovalRequired,true);
 
+    const governorApi = await post("/api/mindcloud/decision-governor/evaluate",{
+      action:{type:"refresh-status",risk:"low",reversible:true},
+      context:{uncertainty:0.01,evidence:[{ref:"test://verified",verified:true}]},
+      mandate:{automaticActions:["refresh-status"],conditionalActions:[],minimumVerifiedEvidence:1,maximumUncertainty:0.1}
+    });
+    assert.equal(governorApi.status,200);
+    assert.equal(governorApi.body.type,"mindcloud_decision_governor_report");
+    assert.equal(governorApi.body.route,"AUTO_WITHIN_MANDATE");
+    assert.equal(governorApi.body.executionAuthorized,false);
+    assert.equal(governorApi.body.executionPerformed,false);
+
+    const escalatedGovernorApi = await post("/api/mindcloud/decision-governor/evaluate",{
+      action:{type:"delete-data",risk:"critical",irreversible:true},
+      context:{uncertainty:0.01,evidence:[{ref:"test://verified",verified:true}]},
+      mandate:{automaticActions:["delete-data"],conditionalActions:[],minimumVerifiedEvidence:1,maximumUncertainty:0.1}
+    });
+    assert.equal(escalatedGovernorApi.status,200);
+    assert.equal(escalatedGovernorApi.body.route,"ESCALATE");
+    assert.equal(escalatedGovernorApi.body.executionAuthorized,false);
+
     const arenaApi = await post("/api/mindcloud/arena/evaluate",{
       task:"End-to-end Arena API pilot",
       candidates:[
