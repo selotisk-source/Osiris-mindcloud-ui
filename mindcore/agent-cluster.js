@@ -36,8 +36,9 @@ function createAgentCluster(config = {}) {
     }
 
     const maxDepth = Math.min(limits.maxDepth, boundedInteger(depth, 2, 1, limits.maxDepth));
-    const requestedCount = Math.min(limits.maxAgents, boundedInteger(requestedAgents, 4, 1, limits.maxAgents));\n    const agentCount = Math.min(requestedCount, Math.max(1, Math.floor(totalBudget / 128)));
     const totalBudget = Math.min(limits.maxTokens, boundedInteger(tokenBudget, limits.maxTokens, 256, limits.maxTokens));
+    const requestedCount = Math.min(limits.maxAgents, boundedInteger(requestedAgents, 4, 1, limits.maxAgents));
+    const agentCount = Math.min(requestedCount, Math.max(1, Math.floor(totalBudget / 128)));
     const budgetPerAgent = Math.min(limits.maxTokensPerAgent, Math.max(128, Math.floor(totalBudget / agentCount)));
     const taskSpecs = [
       { role: "coordinator", goal: "Decompose the goal into bounded, independently checkable tasks." },
