@@ -208,7 +208,7 @@ async function cogneeHealth() {
   const endpoint = (process.env.COGNEE_SERVICE_URL || "").replace(/\/$/, "");
   if (!endpoint) return {status:"not_configured",endpoint:null};
   try {
-    const response = await fetch(endpoint + "/health", {signal:AbortSignal.timeout(2500)});
+    const response = await fetch(endpoint + "/health", {signal:AbortSignal.timeout(10000)});
     return {status:response.ok ? "healthy" : "degraded",endpoint,httpStatus:response.status};
   } catch (error) {
     return {status:"offline",endpoint,error:error instanceof Error ? error.message : String(error)};
@@ -230,8 +230,8 @@ async function cogneeMemoryRoundTrip() {
     const response = await fetch(endpoint + "/api/v1/recall", {
       method:"POST",
       headers:{"content-type":"application/json","accept":"application/json"},
-      body:JSON.stringify({query:marker,session_id:sessionId,scope:["session"],only_context:true,top_k:5}),
-      signal:AbortSignal.timeout(20000)
+      body:JSON.stringify({query:marker,session_id:sessionId,scope:["session"],query_type:"CHUNKS_LEXICAL",only_context:true,top_k:5}),
+      signal:AbortSignal.timeout(15000)
     });
     return {response,body:await parseResponse(response)};
   };
@@ -248,7 +248,8 @@ async function cogneeMemoryRoundTrip() {
       method:"POST",
       headers:{accept:"application/json"},
       body:form,
-      signal:AbortSignal.timeout(20000)
+      // Cognee can finish persisting the marker before its full response completes on the 1 GB runtime.
+      signal:AbortSignal.timeout(45000)
     });
     const writeBody = await parseResponse(writeResponse);
     if (!writeResponse.ok) {
