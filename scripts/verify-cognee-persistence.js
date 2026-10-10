@@ -27,6 +27,8 @@ for (const setting of [
 }
 assert.ok(cogneeEntrypoint.indexOf("set_env EMBEDDING_BATCH_SIZE 1") < cogneeEntrypoint.indexOf("exec su -p"),
   "Cognee defaults must be patched before the upstream entrypoint starts");
+assert.ok(cogneeEntrypoint.includes('grep -q "^${key}="'), "Cognee env patcher must expand the key variable");
+assert.ok(cogneeEntrypoint.includes('sed -i "s|^${key}=.*|${key}=${value}|" "$ENV_FILE"'), "Cognee env patcher must replace blank values in place");
 const storeDir = fs.mkdtempSync(path.join(os.tmpdir(), "mindcloud-cognee-probe-"));
 const records = new Map();
 
