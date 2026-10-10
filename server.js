@@ -6,9 +6,11 @@ const { MindCloudRuntime } = require("./mindcloud/runtime");
 const { AdapterRuntime } = require("./mindcloud/adapter-runtime");
 const { proxyCctvRequest } = require("./mindcloud/cctv-proxy");
 const { evaluateMetanoia } = require("./mindcloud/metanoia-engine");
+const { EvidenceGraph } = require("./mindcloud/evidence-graph");
 
 const routerNetwork = createRouterNetwork();
 const mindcloud = new MindCloudRuntime();
+const evidenceGraph = new EvidenceGraph();
 const port = Number(process.env.PORT || 3000);
 const html = fs.readFileSync(path.join(__dirname, "index.html"), "utf8");
 const tradingHtml = fs.readFileSync(path.join(__dirname, "trading.html"), "utf8");
@@ -248,6 +250,24 @@ const server = http.createServer(async (req,res)=>{
       sendJson(res, evaluateMetanoia(input));
     } catch (error) {
       sendJson(res,{error:error instanceof Error ? error.message : String(error)},Number.isInteger(error.statusCode) ? error.statusCode : 400);
+    }
+    return;
+  }
+  if(pathname==="/api/mindcloud/evidence-graph" && req.method==="GET"){
+    sendJson(res,evidenceGraph.snapshot());
+    return;
+  }
+  if((pathname==="/api/mindcloud/evidence-graph/nodes" || pathname==="/api/mindcloud/evidence-graph/edges") && req.method==="POST"){
+    const expectedToken = process.env.MINDCLOUD_EVIDENCE_WRITE_TOKEN || "";
+    if (!expectedToken) { sendJson(res,{error:"mindcloud_evidence_write_token_not_configured"},503); return; }
+    if (!tokenMatches(bearerToken(req), expectedToken)) { sendJson(res,{error:"unauthorized"},401); return; }
+    try {
+      const input = await readJson(req);
+      if (pathname.endsWith("/nodes")) sendJson(res,{type:"mindcloud_evidence_node_created",node:evidenceGraph.addNode(input)},201);
+      else sendJson(res,{type:"mindcloud_evidence_edge_created",edge:evidenceGraph.addEdge(input)},201);
+    } catch(error) {
+      const message = error instanceof Error ? error.message : String(error);
+      sendJson(res,{error:message},Number.isInteger(error.statusCode) ? error.statusCode : 500);
     }
     return;
   }
