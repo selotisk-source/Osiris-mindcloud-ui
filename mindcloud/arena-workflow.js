@@ -33,12 +33,12 @@ function runArenaWorkflow(input = {}, evidenceGraph) {
       const evidenceNode = evidenceGraph.addNode({
         type: "arena_test_result",
         label: "Test " + test.id + " — " + (test.passed ? "passed" : "failed"),
-        sourceRef: test.evidenceRef || null,
+        sourceRef: typeof test.evidenceRef === "string" && test.evidenceRef.trim() ? test.evidenceRef.trim() : null,
         content: {
           candidateId: candidate.id,
           testId: test.id,
           passed: test.passed,
-          evidenceRef: test.evidenceRef || null
+          evidenceRef: typeof test.evidenceRef === "string" && test.evidenceRef.trim() ? test.evidenceRef.trim() : null
         }
       });
       evidenceNodeIds.push(evidenceNode.id);
