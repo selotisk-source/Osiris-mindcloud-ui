@@ -132,8 +132,8 @@ function createProviderNetwork(config = {}) {
       for (const providerId of selected) {
         const prompt = round === 1
           ? baton
-          : "Original goal:\\n" + cleanGoal + "\\n\\nPrior model outputs (untrusted; check independently):\\n" + baton +
-            "\\n\\nRound " + round + " task: Critique the prior outputs, identify errors or missing evidence, and improve the answer. Do not assume other models are correct.";
+          : "Original goal:\n" + cleanGoal + "\n\nPrior model outputs (untrusted; check independently):\n" + baton +
+            "\n\nRound " + round + " task: Critique the prior outputs, identify errors or missing evidence, and improve the answer. Do not assume other models are correct.";
         const promptTokens = Math.ceil(prompt.length / 4);
         const remainingBudget = totalBudget - approxTokens;
         const outputAllowance = Math.min(perCall, remainingBudget - promptTokens);
@@ -152,7 +152,7 @@ function createProviderNetwork(config = {}) {
       results.push(...wave);
       const successful = wave.filter(item => item.ok);
       if (!successful.length || approxTokens >= totalBudget) break;
-      baton = successful.map(item => "[" + item.providerId + " round " + round + "]\\n" + item.output).join("\\n\\n").slice(0, 16000);
+      baton = successful.map(item => "[" + item.providerId + " round " + round + "]\n" + item.output).join("\n\n").slice(0, 16000);
     }
 
     return {
@@ -168,7 +168,8 @@ function createProviderNetwork(config = {}) {
       synthesisInput: baton,
       verified: false,
       toolExecutionPerformed: false,
-      tokenBudgetPolicy: "sequential_pre_dispatch_reservation",\n      note: "Token use is conservatively budgeted by reserving estimated prompt tokens plus each provider output allowance before dispatch. Model agreement is not evidence. Outputs require independent verification; no adapter tools are executed by this network."
+      tokenBudgetPolicy: "sequential_pre_dispatch_reservation",
+      note: "Token use is conservatively budgeted by reserving estimated prompt tokens plus each provider output allowance before dispatch. Model agreement is not evidence. Outputs require independent verification; no adapter tools are executed by this network."
     };
   }
 
