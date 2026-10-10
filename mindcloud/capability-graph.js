@@ -1,4 +1,4 @@
-const { toolingCatalog } = require("../mindcore/catalog");
+const toolingCatalog = require("../mindcore/catalog.json");
 
 const recipes = [
   { id:"research-to-evidence", name:"Research → Evidence", layers:["Research","WebResearch","EvidenceIntegrity","Knowledge"], purpose:"Collect research, normalize findings and preserve provenance." },

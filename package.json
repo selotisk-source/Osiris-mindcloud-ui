@@ -4,7 +4,7 @@
   "version": "0.1.0",
   "scripts": {
     "start": "node server.js",
-    "verify": "node scripts/verify-runtime.js && node mindcore/cognee-request.test.js"
+    "verify": "node scripts/verify-runtime.js && node extension/evidence-validation.test.js && node mindcore/cognee-request.test.js"
   },
   "engines": {
     "node": ">=20"
