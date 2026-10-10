@@ -60,6 +60,8 @@ const native = require("../mindcloud/native-adapters");
     assert.equal(health.ok,false);
     assert.equal(health.result.status,"credentials-missing");
     assert.equal(health.execution.retryPolicy,"health-probe","health must use the common lifecycle, not a provider operation");
+    assert.ok(health.requestId,"every adapter response must expose its correlation request ID");
+    assert.equal(runtime.audit.at(-1).requestId,health.requestId,"returned request ID must match the audit record");
     assert.equal(runtime.runtimeState({id:"ruflo",transport:"stdio-mcp"}).transport,"stdio-mcp-readonly","native transport mode must not be mislabeled as HTTP");
   } finally {
     native.health=oldHealth;
