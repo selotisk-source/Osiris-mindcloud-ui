@@ -1,7 +1,8 @@
-const NATIVE = new Set(["overpass-turbo","google-street-view","shodan","opensanctions","subdomain-finder","mapillary"]);
+const NATIVE = new Set(["overpass-turbo","google-street-view","shodan","opensanctions","subdomain-finder","mapillary","agentmemory"]);
 
 function state(id) {
   if (id === "overpass-turbo" || id === "subdomain-finder") return {configured:true,mode:id === "subdomain-finder" ? "passive-public-data" : "native-http"};
+  if (id === "agentmemory") return {configured:Boolean(process.env.COGNEE_SERVICE_URL),required:process.env.COGNEE_SERVICE_URL?undefined:"COGNEE_SERVICE_URL",mode:"cognee-persistent-memory",operations:["remember","observe","smart_search","context"]};
   if (id === "google-street-view") return {configured:Boolean(process.env.GOOGLE_MAPS_API_KEY),required:process.env.GOOGLE_MAPS_API_KEY?undefined:"GOOGLE_MAPS_API_KEY"};
   if (id === "shodan") return {configured:Boolean(process.env.SHODAN_API_KEY),required:process.env.SHODAN_API_KEY?undefined:"SHODAN_API_KEY"};
   if (id === "opensanctions") return {configured:Boolean(process.env.OPENSANCTIONS_API_KEY),required:process.env.OPENSANCTIONS_API_KEY?undefined:"OPENSANCTIONS_API_KEY"};
@@ -14,6 +15,16 @@ async function health(id) {
   const s=state(id);
   if (!s) return null;
   if (!s.configured) return {ok:false,status:"credentials-missing",required:s.required};
+  if (id === "agentmemory") {
+    const endpoint=process.env.COGNEE_SERVICE_URL.replace(/\/$/,"");
+    try {
+      const response=await fetch(endpoint+"/health",{headers:{accept:"application/json"},signal:AbortSignal.timeout(3000)});
+      let details={};try{details=await response.json();}catch{}
+      return {ok:response.ok,status:response.ok?"healthy":"degraded",httpStatus:response.status,endpoint,mode:"cognee-persistent-memory",details};
+    } catch(error) {
+      return {ok:false,status:"offline",endpoint,mode:"cognee-persistent-memory",error:error instanceof Error?error.message:String(error)};
+    }
+  }
   if (id === "subdomain-finder") return {ok:true,status:"configured",mode:"passive-public-data",providers:["crt.sh","Cloudflare DNS-over-HTTPS"]};
   if (id === "mapillary") return {ok:true,status:"configured",mode:"free-street-level-imagery",provider:"Mapillary"};
   if (id !== "overpass-turbo") return {ok:true,status:"configured",mode:"native-http"};
@@ -75,7 +86,29 @@ async function readResponse(response) {
 async function execute({id,operation,input={},requestId}) {
   const timeout={signal:AbortSignal.timeout(15000)};
   let endpoint, response, headers={"accept":"application/json"};
-  if(id==="mapillary") {
+  if(id==="agentmemory") {
+    const base=(process.env.COGNEE_SERVICE_URL||"").replace(/\/$/,"");
+    if(!base)return {ok:false,error:"adapter_not_configured",required:"COGNEE_SERVICE_URL"};
+    const sessionId=String(input.sessionId||input.session_id||"mindcloud-default").slice(0,200);
+    const datasetName=String(input.datasetName||input.dataset_name||process.env.MINDCLOUD_MEMORY_DATASET||"mindcloud-agents").slice(0,200);
+    if(operation==="remember"||operation==="observe") {
+      const content=String(input.content??input.text??input.observation??"").trim();
+      if(!content)return {ok:false,error:"memory_content_required"};
+      const form=new FormData();
+      form.append("raw_data",content);
+      form.append("datasetName",datasetName);
+      form.append("session_id",sessionId);
+      form.append("self_improvement","false");
+      form.append("run_in_background","false");
+      response=await fetch(base+"/api/v1/remember",{method:"POST",headers:{accept:"application/json"},body:form,signal:AbortSignal.timeout(20000)});
+    } else if(operation==="smart_search"||operation==="context") {
+      const query=String(input.query??input.text??input.context??"").trim();
+      if(!query)return {ok:false,error:"memory_query_required"};
+      response=await fetch(base+"/api/v1/recall",{method:"POST",headers:{"content-type":"application/json",accept:"application/json"},body:JSON.stringify({query,session_id:sessionId,scope:"session",only_context:true,top_k:Math.max(1,Math.min(Number(input.limit)||5,20))}),signal:AbortSignal.timeout(15000)});
+    } else return {ok:false,error:"operation_not_supported",id,operation,supportedOperations:["remember","observe","smart_search","context"]};
+    const result=await readResponse(response);
+    return {ok:response.ok,id,operation,status:response.status,result,evidence:{source:base+"/api/v1/"+((operation==="remember"||operation==="observe")?"remember":"recall"),retrievedAt:new Date().toISOString(),requestId,sessionId,datasetName,storage:"Cognee persistent memory service"}};
+  } else if(id==="mapillary") {
     if(!process.env.MAPILLARY_ACCESS_TOKEN) return {ok:false,error:"adapter_credentials_missing",required:"MAPILLARY_ACCESS_TOKEN"};
     let endpoint, response;
     const headers={accept:"application/json",authorization:"OAuth "+process.env.MAPILLARY_ACCESS_TOKEN};
