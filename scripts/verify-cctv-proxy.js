@@ -6,6 +6,7 @@ assert.doesNotMatch(dashboardHtml, /The camera proxy is not implemented yet/, "d
 assert.match(dashboardHtml, /proxyAuthStatus/, "dashboard must display proxy credential readiness");
 assert.match(dashboardHtml, /frameStatus/, "dashboard must distinguish frame status");
 assert.match(dashboardHtml, /evidenceStatus/, "dashboard must distinguish evidence verification");
+assert.match(dashboardHtml, /snapshotStatus/, "dashboard must display snapshot probe state");
 const { spawn } = require("node:child_process");
 const http = require("node:http");
 
@@ -94,7 +95,8 @@ function encoded(url) {
     assert.equal(status.streamStatus, "unverified", "configuration must not be mistaken for stream verification");
     assert.equal(status.proxyAuthStatus, "configured", "test proxy token must be reported as configured");
     assert.equal(status.frameStatus, "not_implemented", "configured HLS source must not imply a verified frame");
-    assert.equal(status.evidenceStatus, "not_verified", "configured source must not imply verified evidence");
+    assert.equal(status.evidenceStatus, "not_verified", "configured HLS source must not imply verified snapshot evidence");
+    assert.equal(status.snapshotStatus, "not_a_snapshot", "HLS playlist must not be mistaken for an image snapshot");
 
     const manifestResponse = await fetch(appBase + "/api/cctv/stream", {
       headers: { authorization: "Bearer " + token }

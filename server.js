@@ -128,6 +128,8 @@ function isAuthorizedSubdomainScope(domain) {
   const allowed = (process.env.MINDCLOUD_AUTHORIZED_DOMAINS || "").split(",").map(item => item.trim().toLowerCase().replace(/\.$/, "")).filter(Boolean);
   return allowed.some(root => value === root || value.endsWith("." + root));
 }
+let cctvSnapshotState = {status:"not_checked",verified:false};
+
 function cctvResponse() {
   const source = process.env.CCTV_SOURCE_URL || null;
   let protocol = null;
@@ -141,8 +143,13 @@ function cctvResponse() {
     streamStatus: source ? "unverified" : "unconfigured",
     proxyStatus: "implemented",
     proxyAuthStatus: process.env.CCTV_PROXY_TOKEN ? "configured" : "credentials-missing",
-    frameStatus: source ? (/\.(?:jpe?g|png|webp)(?:\?|$)/i.test(source) ? "unverified" : "not_implemented") : "unconfigured",
-    evidenceStatus: source ? "not_verified" : "unavailable",
+    frameStatus: !source ? "unconfigured" : cctvSnapshotState.verified ? "verified" : (/\.(?:jpe?g|png|webp)(?:\?|$)/i.test(source) ? "unverified" : "not_implemented"),
+    evidenceStatus: !source ? "unavailable" : cctvSnapshotState.verified ? "snapshot-hash-recorded" : "not_verified",
+    snapshotStatus: source ? cctvSnapshotState.status : "not_configured",
+    snapshotCheckedAt: cctvSnapshotState.checkedAt || null,
+    snapshotContentType: cctvSnapshotState.contentType || null,
+    snapshotByteLength: cctvSnapshotState.byteLength || null,
+    snapshotSha256: cctvSnapshotState.sha256 || null,
     access: source ? "osiris-controlled" : "unconfigured"
   };
 }
@@ -255,6 +262,7 @@ async function runMindcloudSelfTest() {
   const snapshot = mindcloud.snapshot();
   const events = mindcloud.eventsFor(taskId);
   const cctvSnapshotProbe = await probeCctvSnapshot();
+  cctvSnapshotState = cctvSnapshotProbe;
   const memory = await cogneeHealth();
   const memoryRoundTrip = memory.status === "healthy" ? await cogneeMemoryRoundTrip() : {status:memory.status,persisted:false};
   const browserUse = await adapters.health("browser-use");
