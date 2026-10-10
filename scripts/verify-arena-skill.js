@@ -2,6 +2,8 @@
 "use strict";
 const assert = require("node:assert/strict");
 const { evaluateArena, promoteArenaSkill } = require("../mindcore/arena-skill");
+const { toolingCatalog } = require("../mindcore/catalog");
+const { recipes, suggest } = require("../mindcloud/capability-graph");
 const candidates = [
  {id:"candidate-b",approach:"Complete implementation",tests:[{id:"input-valid",passed:true,evidenceRef:"test://arena/input-valid"},{id:"output-valid",passed:true,evidenceRef:"test://arena/output-valid"}],requiredChecks:[{id:"red-team",passed:true},{id:"regression",passed:true}]},
  {id:"candidate-a",approach:"Faster but incomplete implementation",tests:[{id:"input-valid",passed:true,evidenceRef:"test://arena/input-valid-a"},{id:"output-valid",passed:false,evidenceRef:"test://arena/output-invalid-a"}],requiredChecks:[{id:"red-team",passed:true}]}
@@ -23,4 +25,9 @@ assert.equal(noWinner.winnerId,null);
 assert.throws(()=>promoteArenaSkill({report:noWinner,approved:true,revalidationPassed:true,skillId:"no-winner"}),/arena_no_verified_winner/);
 assert.throws(()=>evaluateArena({task:"bad",candidates:[candidates[0]]}),/arena_requires_competing_candidates/);
 assert.throws(()=>evaluateArena({task:"bad",candidates:[{...candidates[0],id:"duplicate"},{...candidates[1],id:"duplicate"}]}),/arena_candidate_ids_must_be_unique/);
-console.log("MindCloud Arena Skill: all 11 assertions passed.");
+const missingEvidence = evaluateArena({task:"Missing evidence must fail closed",candidates:candidates.map((c,i)=>({...c,id:"evidence-"+i,tests:c.tests.map(t=>({...t,evidenceRef:""}))}))});
+assert.equal(missingEvidence.status,"no_qualified_winner");
+assert.ok(toolingCatalog.some(tool=>tool.id==="mindcloud-arena-skill" && tool.status==="runtime"));
+assert.ok(recipes.some(recipe=>recipe.id==="arena-compare-verify-promote"));
+assert.ok(suggest({goal:"Evaluation and verification"}).recipes.some(recipe=>recipe.id==="arena-compare-verify-promote"));
+console.log("MindCloud Arena Skill: all 15 assertions passed.");
