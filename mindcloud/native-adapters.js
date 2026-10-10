@@ -24,7 +24,7 @@ function supports(id) { return NATIVE.has(id); }
 async function health(id) {
   const s=state(id);
   if (!s) return null;
-  if (!s.configured) return {ok:false,status:id === "ruflo" ? "disabled" : "credentials-missing",required:s.required};
+  if (!s.configured) return {ok:false,status:id === "ruflo" ? "disabled" : id === "subdomain-finder" ? "authorization-scope-missing" : "credentials-missing",required:s.required};
   if (id === "ruflo") {
     try { const result=await rufloMcp.discoverTools(); return {ok:true,status:"healthy",mode:"stdio-mcp-readonly",server:result.server,protocolVersion:result.protocolVersion,toolCount:result.toolCount,executionEnabled:false}; }
     catch(error) { return {ok:false,status:"offline",mode:"stdio-mcp-readonly",error:error instanceof Error?error.message:String(error),executionEnabled:false}; }
