@@ -44,3 +44,14 @@ jobs:
           node-version: "20"
       - name: Run independent Metanoia grader
         run: node tests/security/metanoia-version-chain.test.js
+
+  mindcloud-regression:
+    name: MindCloud end-to-end regression
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Run existing end-to-end and integration suite
+        run: npm run verify
