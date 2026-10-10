@@ -44,13 +44,28 @@ async function waitForHealth(child) {
 }
 
 (async () => {
+  const selftestAttempts = new Map();
   const mockAdapter = http.createServer((req,res) => {
     res.setHeader("content-type","application/json; charset=utf-8");
     if (req.method === "GET" && req.url === "/health") { res.writeHead(200); res.end(JSON.stringify({status:"healthy",browserEngine:"browserless-chromium",persistentSessions:true})); return; }
     if (req.method === "POST" && req.url === "/v1/run" && req.headers.authorization === "Bearer test-token") {
       let body = "";
       req.on("data", chunk => { body += chunk; });
-      req.on("end", () => { const received=JSON.parse(body); res.writeHead(200); res.end(JSON.stringify({status:"executed",httpStatus:200,url:received.input?.url||"https://example.com",title:"Example Domain",ok:true,received})); });
+      req.on("end", () => {
+        const received=JSON.parse(body);
+        const sessionId=received.input?.sessionId || "";
+        if (sessionId.startsWith("mindcloud-e2e-selftest-")) {
+          const count=(selftestAttempts.get(sessionId)||0)+1;
+          selftestAttempts.set(sessionId,count);
+          if (count === 1) {
+            res.writeHead(502);
+            res.end(JSON.stringify({error:"browser_execution_failed",message:"goto: Target page, context or browser has been closed"}));
+            return;
+          }
+        }
+        res.writeHead(200);
+        res.end(JSON.stringify({status:"executed",httpStatus:200,url:received.input?.url||"https://example.com",title:"Example Domain",ok:true,received}));
+      });
       return;
     }
     res.writeHead(404); res.end(JSON.stringify({error:"not_found"}));
@@ -102,6 +117,26 @@ async function waitForHealth(child) {
     assert.equal(metanoiaApi.body.status,"review_required");
     assert.equal(metanoiaApi.body.proposal.writesPerformed,false);
     assert.equal(metanoiaApi.body.proposal.humanApprovalRequired,true);
+
+    const governorApi = await post("/api/mindcloud/decision-governor/evaluate",{
+      action:{type:"refresh-status",risk:"low",reversible:true},
+      context:{uncertainty:0.01,evidence:[{ref:"test://verified",verified:true}]},
+      mandate:{automaticActions:["refresh-status"],conditionalActions:[],minimumVerifiedEvidence:1,maximumUncertainty:0.1}
+    });
+    assert.equal(governorApi.status,200);
+    assert.equal(governorApi.body.type,"mindcloud_decision_governor_report");
+    assert.equal(governorApi.body.route,"AUTO_WITHIN_MANDATE");
+    assert.equal(governorApi.body.executionAuthorized,false);
+    assert.equal(governorApi.body.executionPerformed,false);
+
+    const escalatedGovernorApi = await post("/api/mindcloud/decision-governor/evaluate",{
+      action:{type:"delete-data",risk:"critical",irreversible:true},
+      context:{uncertainty:0.01,evidence:[{ref:"test://verified",verified:true}]},
+      mandate:{automaticActions:["delete-data"],conditionalActions:[],minimumVerifiedEvidence:1,maximumUncertainty:0.1}
+    });
+    assert.equal(escalatedGovernorApi.status,200);
+    assert.equal(escalatedGovernorApi.body.route,"ESCALATE");
+    assert.equal(escalatedGovernorApi.body.executionAuthorized,false);
 
     const arenaApi = await post("/api/mindcloud/arena/evaluate",{
       task:"End-to-end Arena API pilot",
@@ -334,6 +369,11 @@ async function waitForHealth(child) {
     assert.ok(selftest.body.integrations.checks.some(check=>check.id==="cognee-memory-health" && !check.ok));
     assert.ok(selftest.body.integrations.checks.some(check=>check.id==="cognee-memory-persistence" && !check.ok));
     assert.ok(selftest.body.integrations.checks.some(check=>check.id==="browser-use-execution" && check.ok));
+    assert.equal(selftest.body.integrations.browserExecution.status,"executed");
+    assert.equal(selftest.body.integrations.browserExecution.attempts,1,"the shared adapter retry should recover inside the first self-test attempt");
+    assert.equal(selftest.body.integrations.browserExecution.adapterExecution.attempts,2,"the adapter contract should report both provider attempts");
+    assert.equal(selftest.body.integrations.browserExecution.adapterExecution.retries,1);
+    assert.equal(selftest.body.integrations.browserExecution.adapterExecution.recovered,true);
 
     const unknownApi = await get("/api/internal/does-not-exist");
     assert.equal(unknownApi.status,404);

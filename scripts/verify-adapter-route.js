@@ -69,7 +69,10 @@ async function waitHealthy(child) {
       CLOUDFLARE_DNS_URL: `http://127.0.0.1:${providerPort}/dns-query`,
       MINDCLOUD_AUTHORIZED_DOMAINS: "example.com",
       MINDCLOUD_TOOL_EXECUTION_TOKEN: token,
-      MINDCLOUD_APPROVAL_TOKEN: "mindcloud-approval-test-token"
+      MINDCLOUD_APPROVAL_TOKEN: "mindcloud-approval-test-token",
+      MINDCLOUD_EVIDENCE_READ_TOKEN: "mindcloud-evidence-read-test-token",
+      MINDCLOUD_EVIDENCE_WRITE_TOKEN: "mindcloud-evidence-write-test-token",
+      MINDCLOUD_EVIDENCE_GRAPH_STORE: ""
     },
     stdio: ["ignore", "pipe", "pipe"]
   });
@@ -100,6 +103,24 @@ async function waitHealthy(child) {
     assert.equal(typeof executed.body.evidence.requestId, "string");
     assert.ok(executed.body.evidence.requestId.length > 0);
     assert.equal(executed.body.evidence.source, `http://127.0.0.1:${providerPort}/api/interpreter`);
+    assert.equal(executed.body.evidenceGraph.status,"in-memory");
+    assert.equal(executed.body.evidenceGraph.validationStatus,"unvalidated");
+    assert.match(executed.body.evidenceGraph.nodeId,/^evn-/);
+    assert.match(executed.body.evidenceGraph.contentHash,/^[a-f0-9]{64}$/);
+    const graphResponse = await json(await fetch(appBase + "/api/mindcloud/evidence-graph", {
+      headers:{authorization:"Bearer mindcloud-evidence-read-test-token"}
+    }));
+    assert.equal(graphResponse.status,200);
+    const observation = graphResponse.body.nodes.find(node=>node.id===executed.body.evidenceGraph.nodeId);
+    assert.ok(observation,"successful native adapter output must be linked into the evidence graph");
+    assert.equal(observation.type,"tool-observation");
+    assert.equal(observation.content.validationStatus,"unvalidated");
+    assert.equal(observation.content.toolId,"overpass-turbo");
+    assert.equal(observation.content.operation,"export_geojson");
+    assert.equal(observation.content.source,executed.body.evidence.source);
+    assert.match(observation.content.inputHash,/^[a-f0-9]{64}$/);
+    assert.match(observation.content.resultHash,/^[a-f0-9]{64}$/);
+    assert.equal(observation.content.validation.status,"unvalidated");
 
     const blockedScope = await json(await fetch(appBase + "/api/adapters/execute", {
       method: "POST",

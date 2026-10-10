@@ -6,6 +6,7 @@ const { MindCloudRuntime } = require("./mindcloud/runtime");
 const { AdapterRuntime } = require("./mindcloud/adapter-runtime");
 const { proxyCctvRequest } = require("./mindcloud/cctv-proxy");
 const { evaluateMetanoia } = require("./mindcloud/metanoia-engine");
+const { evaluateDecision } = require("./mindcloud/decision-governor");
 const { evaluateArena } = require("./mindcore/arena-skill");
 const { runArenaWorkflow } = require("./mindcloud/arena-workflow");
 const { EvidenceGraph } = require("./mindcloud/evidence-graph");
@@ -21,6 +22,20 @@ const agentTools = JSON.parse(fs.readFileSync(path.join(__dirname, "integrations
 const approvalRequests = new Map();
 const approvalAudit = [];
 const metanoiaReports = new Map();
+const METANOIA_REPORT_TTL_MS = 10 * 60 * 1000;
+function rememberMetanoiaReport(report) {
+  const now = Date.now();
+  for (const [hash, entry] of metanoiaReports) {
+    if (now > entry.expiresAt) metanoiaReports.delete(hash);
+  }
+  while (metanoiaReports.size >= 100) metanoiaReports.delete(metanoiaReports.keys().next().value);
+  metanoiaReports.set(report.reportHash, {
+    report: structuredClone(report),
+    createdAt: now,
+    expiresAt: now + METANOIA_REPORT_TTL_MS,
+    consumed: false
+  });
+}
 
 function tokenMatches(supplied, expected) {
   if (!supplied || !expected || supplied.length !== expected.length) return false;
@@ -212,9 +227,26 @@ async function runMindcloudSelfTest() {
   const memory = await cogneeHealth();
   const memoryRoundTrip = memory.status === "healthy" ? await cogneeMemoryRoundTrip() : {status:memory.status,persisted:false};
   const browserUse = await adapters.health("browser-use");
-  const browserExecution = browserUse.status === "healthy"
-    ? await adapters.execute({id:"browser-use",operation:"browse",input:{url:"https://example.com",sessionId:"mindcloud-e2e-selftest",waitUntil:"domcontentloaded",timeout:15000}})
-    : {ok:false,error:"browser_use_not_healthy"};
+  let browserExecutionAttempts = 0;
+  let browserExecution = {ok:false,error:"browser_use_not_healthy"};
+  if (browserUse.status === "healthy") {
+    for (let attempt = 1; attempt <= 2; attempt++) {
+      browserExecutionAttempts = attempt;
+      browserExecution = await adapters.execute({
+        id:"browser-use",
+        operation:"browse",
+        input:{url:"https://example.com",sessionId:"mindcloud-e2e-selftest-" + taskId,waitUntil:"domcontentloaded",timeout:15000}
+      });
+      const succeeded = Boolean(browserExecution.ok && browserExecution.result?.status === "executed" && browserExecution.result?.httpStatus >= 200 && browserExecution.result?.httpStatus < 400);
+      if (succeeded) break;
+      const status = Number(browserExecution.status ?? browserExecution.result?.httpStatus);
+      const detail = [browserExecution.error,browserExecution.result?.error,browserExecution.result?.message].filter(Boolean).join(" ");
+      const transient = [408,429,500,502,503,504].includes(status) ||
+        /target page, context or browser has been closed|browser_execution_failed|temporarily unavailable/i.test(detail);
+      if (attempt === 2 || !transient) break;
+      await new Promise(resolve => setTimeout(resolve, 500));
+    }
+  }
   const browserExecutionOk = Boolean(browserExecution.ok && browserExecution.result?.status === "executed" && browserExecution.result?.httpStatus >= 200 && browserExecution.result?.httpStatus < 400);
   const coreChecks = [
     {id:"task-routed",ok:Boolean(routeResult && routeResult.taskId === taskId && routeResult.status === "routed")},
@@ -226,7 +258,7 @@ async function runMindcloudSelfTest() {
     {id:"cognee-memory-health",ok:memory.status === "healthy",status:memory.status},
     {id:"cognee-memory-persistence",ok:memoryRoundTrip.status === "healthy" && memoryRoundTrip.persisted === true,status:memoryRoundTrip.status,mode:memoryRoundTrip.mode || null},
     {id:"browser-use-health",ok:browserUse.status === "healthy",status:browserUse.status,browserEngine:browserUse.browserEngine || null},
-    {id:"browser-use-execution",ok:browserExecutionOk,status:browserExecution.ok ? "executed" : browserExecution.error || "failed",httpStatus:browserExecution.result?.httpStatus ?? browserExecution.status ?? null}
+    {id:"browser-use-execution",ok:browserExecutionOk,status:browserExecutionOk ? "executed" : browserExecution.error || browserExecution.result?.error || "failed",httpStatus:browserExecution.result?.httpStatus ?? browserExecution.status ?? null,attempts:browserExecutionAttempts}
   ];
   const coreOk = coreChecks.every(check => check.ok);
   const integrationsOk = integrationChecks.every(check => check.ok);
@@ -243,12 +275,15 @@ async function runMindcloudSelfTest() {
       browserUse,
       browserExecution:browserExecutionOk ? {
         status:"executed",
+        attempts:browserExecutionAttempts,
+        adapterExecution:browserExecution.execution || null,
         httpStatus:browserExecution.result.httpStatus,
         title:browserExecution.result.title,
         url:browserExecution.result.url,
         sessionId:browserExecution.result.sessionId
       } : {
         status:"failed",
+        attempts:browserExecutionAttempts,
         error:browserExecution.error || browserExecution.result?.error || "browser_execution_failed",
         message:browserExecution.result?.message || null
       }
@@ -285,12 +320,20 @@ const server = http.createServer(async (req,res)=>{
     }
     return;
   }
+  if(pathname==="/api/mindcloud/decision-governor/evaluate" && req.method==="POST"){
+    try {
+      const input = await readJson(req);
+      sendJson(res, evaluateDecision(input));
+    } catch (error) {
+      sendJson(res,{error:error instanceof Error ? error.message : String(error)},Number.isInteger(error.statusCode) ? error.statusCode : 400);
+    }
+    return;
+  }
   if(pathname==="/api/mindcloud/metanoia/evaluate" && req.method==="POST"){
     try {
       const input = await readJson(req);
       const report = evaluateMetanoia(input);
-      metanoiaReports.set(report.reportHash, report);
-      while (metanoiaReports.size > 100) metanoiaReports.delete(metanoiaReports.keys().next().value);
+      rememberMetanoiaReport(report);
       sendJson(res, report);
     } catch (error) {
       sendJson(res,{error:error instanceof Error ? error.message : String(error)},Number.isInteger(error.statusCode) ? error.statusCode : 400);
@@ -301,20 +344,37 @@ const server = http.createServer(async (req,res)=>{
     if (!isApprovalAuthorized(req)) { sendJson(res,{error:"approval_authorization_required"},401); return; }
     try {
       const input = await readJson(req);
-      if (typeof input.reportHash !== "string" || !/^[a-f0-9]{64}$/.test(input.reportHash)) {
-        sendJson(res,{error:"metanoia_report_hash_required"},400); return;
+      if (!input || typeof input !== "object" || Array.isArray(input)) {
+        sendJson(res,{error:"invalid_metanoia_approval"},400); return;
       }
-      const report = metanoiaReports.get(input.reportHash);
-      if (!report || report.status !== "review_required") {
-        sendJson(res,{error:"metanoia_review_not_found_or_not_eligible"},409); return;
+      if (typeof input.reportHash !== "string" || !/^[a-f0-9]{64}$/.test(input.reportHash) ||
+          typeof input.expectedPreviousVersionId !== "string" || !input.expectedPreviousVersionId) {
+        sendJson(res,{error:"report_hash_and_expected_previous_version_required"},400); return;
+      }
+      const reportEntry = metanoiaReports.get(input.reportHash);
+      if (!reportEntry || reportEntry.consumed || Date.now() > reportEntry.expiresAt) {
+        sendJson(res,{error:"metanoia_report_missing_expired_or_consumed"},409); return;
+      }
+      const report = reportEntry.report;
+      if (report.reportHash !== input.reportHash || report.status !== "review_required" ||
+          (!report.findings?.contradictions?.length && !report.findings?.anomalies?.length)) {
+        sendJson(res,{error:"metanoia_report_not_eligible_for_approval"},409); return;
       }
       const versions = mindcloud.versionHistory.list();
       const previousVersion = versions[versions.length - 1];
       if (!previousVersion || input.expectedPreviousVersionId !== previousVersion.id) {
         sendJson(res,{error:"metanoia_previous_version_conflict",expectedPreviousVersionId:previousVersion?.id || null},409); return;
       }
+      if (!input.proposedModel || typeof input.proposedModel !== "object" || Array.isArray(input.proposedModel)) {
+        sendJson(res,{error:"proposed_model_object_required"},400); return;
+      }
+      if (typeof input.rationale !== "string" || input.rationale.trim().length < 8) {
+        sendJson(res,{error:"rationale_required_min_8_chars"},400); return;
+      }
+      const findingEvidenceRefs = (report.findings?.contradictions || []).flatMap(item => item.evidenceRefs || []);
+      const permittedEvidenceRefs = new Set([...(report.evidenceRefs || []), ...findingEvidenceRefs]);
       if (!Array.isArray(input.evidenceRefs) ||
-          input.evidenceRefs.some(ref => typeof ref !== "string" || !report.evidenceRefs.includes(ref))) {
+          input.evidenceRefs.some(ref => typeof ref !== "string" || !permittedEvidenceRefs.has(ref))) {
         sendJson(res,{error:"metanoia_evidence_refs_not_in_review"},400); return;
       }
       if (!mindcloud.versionHistory.storePath) {
@@ -322,11 +382,11 @@ const server = http.createServer(async (req,res)=>{
       }
       const newVersion = mindcloud.createModelVersion({
         model:input.proposedModel,
-        rationale:input.rationale,
+        rationale:input.rationale.trim(),
         changeType:"metanoia-revalidation",
         evidenceRefs:input.evidenceRefs
       });
-      metanoiaReports.delete(input.reportHash);
+      reportEntry.consumed = true;
       sendJson(res,{
         type:"mindcloud_metanoia_version_transition",
         reportHash:report.reportHash,
@@ -460,7 +520,46 @@ const server = http.createServer(async (req,res)=>{
       const passiveScopeApproved = tool.id === "subdomain-finder" && isAuthorizedSubdomainScope(task.input?.domain);
       const ticketApproved = Boolean(tool.security && consumeApproval(task.approvalId,tool.id,task.operation,task.input));
       const approved = !tool.security || passiveScopeApproved || ticketApproved;
-      sendJson(res,await adapters.execute({...task,approved}));
+      const execution = await adapters.execute({...task,approved});
+      if (execution.ok && execution.evidence && typeof execution.evidence === "object") {
+        const capturedAt = new Date().toISOString();
+        const source = typeof execution.evidence.source === "string" && execution.evidence.source.trim()
+          ? execution.evidence.source.trim()
+          : `adapter://${task.id}/${task.operation}`;
+        const sha256 = value => require("node:crypto").createHash("sha256").update(value).digest("hex");
+        try {
+          const node = evidenceGraph.addNode({
+            type:"tool-observation",
+            label:`${task.id} ${task.operation} observation`,
+            sourceRef:source,
+            content:{
+              schemaVersion:1,
+              kind:"adapter-observation",
+              validationStatus:"unvalidated",
+              toolId:task.id,
+              operation:task.operation,
+              requestId:execution.evidence.requestId || null,
+              source,
+              retrievedAt:execution.evidence.retrievedAt || capturedAt,
+              capturedAt,
+              inputHash:sha256(JSON.stringify(task.input ?? {})),
+              resultHash:sha256(JSON.stringify(execution.result ?? null)),
+              provider:execution.evidence.provider || null,
+              provenance:execution.evidence,
+              validation:{status:"unvalidated",reason:"Adapter output is an observation, not a verified claim."}
+            }
+          });
+          execution.evidenceGraph = {
+            status:evidenceGraph.storePath ? "persisted" : "in-memory",
+            nodeId:node.id,
+            contentHash:node.contentHash,
+            validationStatus:"unvalidated"
+          };
+        } catch {
+          execution.evidenceGraph = {status:"write-failed",error:"evidence_graph_write_failed",validationStatus:"unlinked"};
+        }
+      }
+      sendJson(res,execution);
     } catch(error) {
       sendJson(res,{ok:false,error:error instanceof Error?error.message:String(error)},400);
     }

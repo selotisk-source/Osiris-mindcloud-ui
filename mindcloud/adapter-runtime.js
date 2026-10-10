@@ -23,7 +23,7 @@ class AdapterRuntime {
   runtimeState(tool) {
     const nativeState = native.state(tool.id);
     const configured = nativeState ? nativeState.configured : Boolean(this.endpointFor(tool.id));
-    return {state:configured?"configured":"registered-only",executable:configured,transport:nativeState?"native-http":(tool.transport||"external-runtime"),operations:tool.operations||[],...(nativeState?.required?{required:nativeState.required}:{})};
+    return {state:configured?"configured":"registered-only",executable:configured,transport:nativeState?(nativeState.mode||"native-http"):(tool.transport||"external-runtime"),operations:tool.operations||[],...(nativeState?.required?{required:nativeState.required}:{})};
   }
 
   discover(id) {
@@ -53,10 +53,14 @@ class AdapterRuntime {
     const tool=this.registry.tools.find(item=>item.id===id);
     if(!tool)return this.record(requestId,{ok:false,error:"adapter_not_found",id,operation});
     if(!tool.operations?.includes(operation))return this.record(requestId,{ok:false,error:"operation_not_allowed",id,operation});
+    if(operation==="health") {
+      const result=await this.health(id);
+      return this.record(requestId,{ok:Boolean(result?.ok),id,operation,result,execution:{contractVersion:"1.0",attempts:1,retries:0,retryPolicy:"health-probe",recovered:false}});
+    }
     if(tool.security&&!approved)return this.record(requestId,{ok:false,error:"human_approval_required",id,operation});
     if(native.supports(id)) {
-      try { const result=await native.execute({id,operation,input,requestId}); return this.record(requestId,result); }
-      catch(error) { return this.record(requestId,{ok:false,id,operation,error:error instanceof Error?error.message:String(error)}); }
+      const run = await require("./adapter-policy").executeWithRetry(operation, () => native.execute({id,operation,input,requestId}));
+      return this.record(requestId,{id,operation,...(run.value || {ok:false,error:"adapter_execution_failed"}),execution:run.execution});
     }
     const endpoint=this.endpointFor(id);
     if(!endpoint)return this.record(requestId,{ok:false,error:"adapter_not_configured",id,operation});
@@ -64,15 +68,16 @@ class AdapterRuntime {
     if(isBrowserUse&&!token)return this.record(requestId,{ok:false,error:"adapter_credentials_missing",id,operation});
     const headers={"content-type":"application/json"};
     if(isBrowserUse)headers.authorization="Bearer "+token;
-    try {
+    const run = await require("./adapter-policy").executeWithRetry(operation, async () => {
       const response=await fetch(endpoint+(isBrowserUse?"/v1/run":"/execute"),{method:"POST",headers,body:JSON.stringify({requestId,operation,input}),signal:AbortSignal.timeout(30000)});
       const contentType=response.headers.get("content-type")||"";
       let result;
       if(contentType.includes("application/json")){const text=await response.text();try{result=JSON.parse(text);}catch{result={raw:text};}}
       else if(contentType.startsWith("image/"))result={contentType,base64:Buffer.from(await response.arrayBuffer()).toString("base64")};
       else result={contentType,raw:await response.text()};
-      return this.record(requestId,{ok:response.ok,id,operation,status:response.status,result});
-    } catch(error) { return this.record(requestId,{ok:false,id,operation,error:error instanceof Error?error.message:String(error)}); }
+      return {ok:response.ok,id,operation,status:response.status,result};
+    });
+    return this.record(requestId,{id,operation,...(run.value || {ok:false,error:"adapter_execution_failed"}),execution:run.execution});
   }
 
   record(requestId,result){this.audit.push({requestId,timestamp:new Date().toISOString(),...result});return result;}
