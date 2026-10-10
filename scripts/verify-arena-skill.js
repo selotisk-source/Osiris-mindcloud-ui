@@ -27,7 +27,9 @@ assert.throws(()=>evaluateArena({task:"bad",candidates:[candidates[0]]}),/arena_
 assert.throws(()=>evaluateArena({task:"bad",candidates:[{...candidates[0],id:"duplicate"},{...candidates[1],id:"duplicate"}]}),/arena_candidate_ids_must_be_unique/);
 const missingEvidence = evaluateArena({task:"Missing evidence must fail closed",candidates:candidates.map((c,i)=>({...c,id:"evidence-"+i,tests:c.tests.map(t=>({...t,evidenceRef:""}))}))});
 assert.equal(missingEvidence.status,"no_qualified_winner");
+const malformedEvidence = evaluateArena({task:"Evidence references must be strings",candidates:[{id:"valid",approach:"Valid evidence",tests:[{id:"valid-test",passed:true,evidenceRef:"test://valid"}]},{id:"malformed",approach:"Object reference is not evidence",tests:[{id:"bad-test",passed:true,evidenceRef:{uri:"test://fake"}}]}]});
+assert.equal(malformedEvidence.candidates.find(c=>c.id==="malformed").eligible,false);
 assert.ok(toolingCatalog.some(tool=>tool.id==="mindcloud-arena-skill" && tool.status==="runtime"));
 assert.ok(recipes.some(recipe=>recipe.id==="arena-compare-verify-promote"));
 assert.ok(suggest({goal:"Evaluation and verification"}).recipes.some(recipe=>recipe.id==="arena-compare-verify-promote"));
-console.log("MindCloud Arena Skill: all 18 assertions passed.");
+console.log("MindCloud Arena Skill: all 19 assertions passed.");
