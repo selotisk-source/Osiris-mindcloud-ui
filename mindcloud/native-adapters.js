@@ -46,7 +46,7 @@ async function health(id) {
 function overpassEndpoints() {
   const primary = process.env.OVERPASS_API_URL || "https://overpass-api.de/api/interpreter";
   const configured = (process.env.OVERPASS_API_FALLBACKS || "").split(",").map(value => value.trim()).filter(Boolean);
-  const defaults = ["https://overpass-api.de/api/interpreter", "https://overpass.private.coffee/api/interpreter", "https://maps.mail.ru/osm/tools/overpass/api/interpreter", "https://overpass.osm.jp/api/interpreter"];
+  const defaults = ["https://overpass-api.de/api/interpreter", "https://overpass.private.coffee/api/interpreter", "https://maps.mail.ru/osm/tools/overpass/api/interpreter", "https://overpass.osm.jp/api/interpreter", "https://z.overpass-api.de/api/interpreter", "https://lz4.overpass-api.de/api/interpreter"];
   return [...new Set([primary, ...configured, ...defaults])];
 }
 
@@ -66,8 +66,18 @@ async function fetchOverpass(query, timeoutMs=15000) {
         body:new URLSearchParams({data:query}).toString(),
         signal:AbortSignal.timeout(timeoutMs)
       });
+      if(response.ok) {
+        let validOverpassJson=false;
+        try {
+          const payload=await response.clone().json();
+          validOverpassJson=Array.isArray(payload?.elements);
+        } catch {}
+        if(validOverpassJson || index===endpoints.length-1) return {response,endpoint};
+        await response.body?.cancel().catch(()=>{});
+        continue;
+      }
       const retryable=[429,500,502,503,504].includes(response.status);
-      if(response.ok || !retryable || index===endpoints.length-1) return {response,endpoint};
+      if(!retryable || index===endpoints.length-1) return {response,endpoint};
       await response.body?.cancel().catch(()=>{});
     } catch(error) {
       lastError=error;
