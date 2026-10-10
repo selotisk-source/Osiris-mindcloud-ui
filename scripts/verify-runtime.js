@@ -38,7 +38,7 @@ async function waitForHealth(child) {
     if (req.method === "POST" && req.url === "/v1/run" && req.headers.authorization === "Bearer test-token") {
       let body = "";
       req.on("data", chunk => { body += chunk; });
-      req.on("end", () => { res.writeHead(200); res.end(JSON.stringify({ok:true,received:JSON.parse(body)})); });
+      req.on("end", () => { const received=JSON.parse(body); res.writeHead(200); res.end(JSON.stringify({status:"executed",httpStatus:200,url:received.input?.url||"https://example.com",title:"Example Domain",ok:true,received})); });
       return;
     }
     res.writeHead(404); res.end(JSON.stringify({error:"not_found"}));
