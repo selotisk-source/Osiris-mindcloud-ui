@@ -49,7 +49,30 @@ async function readResponse(response) {
 async function execute({id,operation,input={},requestId}) {
   const timeout={signal:AbortSignal.timeout(15000)};
   let endpoint, response, headers={"accept":"application/json"};
-  if(id==="subdomain-finder") {\n    const domain=String(input.domain||"").trim().toLowerCase().replace(/\\.$/,"");\n    if(!domain || domain.length>253 || !/^(?=.{1,253}$)(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\\.)+[a-z]{2,63}$/.test(domain)) return {ok:false,error:"valid_domain_required"};\n    if(operation==="discover") {\n      const endpoint="https://crt.sh/?q="+encodeURIComponent("%25."+domain)+"&output=json";\n      const response=await fetch(endpoint,{...timeout,headers:{"accept":"application/json","user-agent":"MindCloud/1.0 (passive certificate-transparency lookup)"}});\n      let rows=[]; try { rows=await response.json(); } catch {}\n      if(!response.ok || !Array.isArray(rows)) return {ok:false,id,operation,status:response.status,error:"certificate_transparency_lookup_failed"};\n      const names=[...new Set(rows.flatMap(row=>String(row.name_value||"").split(/\\r?\\n/)).map(name=>name.trim().toLowerCase().replace(/^\\*\\./,"")).filter(name=>name===domain||name.endsWith("."+domain)))].sort();\n      return {ok:true,id,operation,status:response.status,result:{domain,subdomains:names,count:names.length,method:"passive-certificate-transparency",provider:"crt.sh"},evidence:{source:"https://crt.sh/",retrievedAt:new Date().toISOString(),requestId}};\n    }\n    if(operation==="resolve") {\n      const name=String(input.name||domain).trim().toLowerCase().replace(/\\.$/,"");\n      if(!(name===domain||name.endsWith("."+domain))) return {ok:false,error:"name_outside_requested_domain"};\n      const endpoint="https://cloudflare-dns.com/dns-query?name="+encodeURIComponent(name)+"&type="+encodeURIComponent(String(input.type||"A"));\n      const response=await fetch(endpoint,{...timeout,headers:{accept:"application/dns-json"}});\n      let result; try { result=await response.json(); } catch { result=null; }\n      if(!response.ok||!result||typeof result.Status!=="number") return {ok:false,id,operation,status:response.status,error:"dns_lookup_failed"};\n      return {ok:true,id,operation,status:response.status,result:{name,type:input.type||"A",dnsStatus:result.Status,answers:(result.Answer||[]).map(a=>({name:a.name,type:a.type,data:a.data,ttl:a.TTL}))},evidence:{source:"https://cloudflare-dns.com/dns-query",retrievedAt:new Date().toISOString(),requestId}};\n    }\n    return {ok:false,error:"operation_not_supported",id,operation};\n  } else if(id==="overpass-turbo") {
+  if(id==="subdomain-finder") {
+    const domain=String(input.domain||"").trim().toLowerCase().replace(/\.$/,"");
+    if(!domain || domain.length>253 || !/^(?=.{1,253}$)(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,63}$/.test(domain)) return {ok:false,error:"valid_domain_required"};
+    if(operation==="discover") {
+      const endpoint="https://crt.sh/?q="+encodeURIComponent("%25."+domain)+"&output=json";
+      const response=await fetch(endpoint,{...timeout,headers:{"accept":"application/json","user-agent":"MindCloud/1.0 (passive certificate-transparency lookup)"}});
+      let rows=[]; try { rows=await response.json(); } catch {}
+      if(!response.ok || !Array.isArray(rows)) return {ok:false,id,operation,status:response.status,error:"certificate_transparency_lookup_failed"};
+      const names=[...new Set(rows.flatMap(row=>String(row.name_value||"").split(/\r?\n/)).map(name=>name.trim().toLowerCase().replace(/^\*\./,"")).filter(name=>name===domain||name.endsWith("."+domain)))].sort();
+      return {ok:true,id,operation,status:response.status,result:{domain,subdomains:names,count:names.length,method:"passive-certificate-transparency",provider:"crt.sh"},evidence:{source:"https://crt.sh/",retrievedAt:new Date().toISOString(),requestId}};
+    }
+    if(operation==="resolve") {
+      const name=String(input.name||domain).trim().toLowerCase().replace(/\.$/,"");
+      if(!(name===domain||name.endsWith("."+domain))) return {ok:false,error:"name_outside_requested_domain"};
+      const type=String(input.type||"A").toUpperCase();
+      if(!["A","AAAA","CNAME","MX","NS","TXT"].includes(type)) return {ok:false,error:"unsupported_dns_record_type"};
+      const endpoint="https://cloudflare-dns.com/dns-query?name="+encodeURIComponent(name)+"&type="+encodeURIComponent(type);
+      const response=await fetch(endpoint,{...timeout,headers:{accept:"application/dns-json"}});
+      let result; try { result=await response.json(); } catch { result=null; }
+      if(!response.ok||!result||typeof result.Status!=="number") return {ok:false,id,operation,status:response.status,error:"dns_lookup_failed"};
+      return {ok:true,id,operation,status:response.status,result:{name,type,dnsStatus:result.Status,answers:(result.Answer||[]).map(a=>({name:a.name,type:a.type,data:a.data,ttl:a.TTL}))},evidence:{source:"https://cloudflare-dns.com/dns-query",retrievedAt:new Date().toISOString(),requestId}};
+    }
+    return {ok:false,error:"operation_not_supported",id,operation};
+  } else if(id==="overpass-turbo") {
     if(!["query","export_geojson"].includes(operation)) return {ok:false,error:"operation_not_supported",id,operation};
     if(typeof input.query!=="string"||!input.query.trim()) return {ok:false,error:"query_required",id,operation};
     endpoint=process.env.OVERPASS_API_URL||"https://overpass-api.de/api/interpreter";
