@@ -16,14 +16,14 @@ const pending = new Map();
 function send(id, method, params = {}) {
   return new Promise((resolve, reject) => {
     pending.set(id, { resolve, reject });
-    child.stdin.write(JSON.stringify({ jsonrpc: "2.0", id, method, params }) + "\\n");
+    child.stdin.write(JSON.stringify({ jsonrpc: "2.0", id, method, params }) + "\n");
   });
 }
 
 function consume(chunk) {
   buffer += chunk.toString();
   let newline;
-  while ((newline = buffer.indexOf("\\n")) >= 0) {
+  while ((newline = buffer.indexOf("\n")) >= 0) {
     const line = buffer.slice(0, newline).trim();
     buffer = buffer.slice(newline + 1);
     if (!line.startsWith("{")) continue;
@@ -61,7 +61,7 @@ try {
     capabilities: {},
     clientInfo: { name: "mindcloud-ruflo-smoke-test", version: "1.0.0" },
   });
-  child.stdin.write(JSON.stringify({ jsonrpc: "2.0", method: "notifications/initialized", params: {} }) + "\\n");
+  child.stdin.write(JSON.stringify({ jsonrpc: "2.0", method: "notifications/initialized", params: {} }) + "\n");
   const tools = await send(2, "tools/list", {});
   const toolCount = Array.isArray(tools?.tools) ? tools.tools.length : 0;
   if (!initialized?.serverInfo || toolCount < 1) {
