@@ -93,6 +93,7 @@ async function waitHealthy(child) {
     assert.equal(result.integrations.memoryRoundTrip.status, "healthy");
     assert.equal(result.integrations.memoryRoundTrip.persisted, true);
     assert.equal(result.integrations.memoryRoundTrip.mode, "write-readback");
+    assert.equal(result.integrations.memoryRoundTrip.persisted, true, "readback must confirm the exact marker");
     assert.ok(result.integrations.memoryRoundTrip.readbackAttempts >= 1);
     assert.match(result.integrations.memoryRoundTrip.sessionId, /^mindcloud-persistence-probe-/);
     assert.match(result.integrations.memoryRoundTrip.markerHash, /^[a-f0-9]{64}$/);

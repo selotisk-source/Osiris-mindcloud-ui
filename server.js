@@ -230,7 +230,7 @@ async function cogneeMemoryRoundTrip() {
     const response = await fetch(endpoint + "/api/v1/recall", {
       method:"POST",
       headers:{"content-type":"application/json","accept":"application/json"},
-      body:JSON.stringify({query:marker,session_id:sessionId,scope:"session",only_context:true,top_k:5}),
+      body:JSON.stringify({query:marker,session_id:sessionId,scope:["session_first"],only_context:true,top_k:5}),
       signal:AbortSignal.timeout(20000)
     });
     return {response,body:await parseResponse(response)};
