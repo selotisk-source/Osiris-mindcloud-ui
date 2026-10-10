@@ -21,6 +21,20 @@ const agentTools = JSON.parse(fs.readFileSync(path.join(__dirname, "integrations
 const approvalRequests = new Map();
 const approvalAudit = [];
 const metanoiaReports = new Map();
+const METANOIA_REPORT_TTL_MS = 10 * 60 * 1000;
+function rememberMetanoiaReport(report) {
+  const now = Date.now();
+  for (const [hash, entry] of metanoiaReports) {
+    if (now > entry.expiresAt) metanoiaReports.delete(hash);
+  }
+  while (metanoiaReports.size >= 100) metanoiaReports.delete(metanoiaReports.keys().next().value);
+  metanoiaReports.set(report.reportHash, {
+    report: structuredClone(report),
+    createdAt: now,
+    expiresAt: now + METANOIA_REPORT_TTL_MS,
+    consumed: false
+  });
+}
 
 function tokenMatches(supplied, expected) {
   if (!supplied || !expected || supplied.length !== expected.length) return false;
@@ -308,8 +322,7 @@ const server = http.createServer(async (req,res)=>{
     try {
       const input = await readJson(req);
       const report = evaluateMetanoia(input);
-      metanoiaReports.set(report.reportHash, report);
-      while (metanoiaReports.size > 100) metanoiaReports.delete(metanoiaReports.keys().next().value);
+      rememberMetanoiaReport(report);
       sendJson(res, report);
     } catch (error) {
       sendJson(res,{error:error instanceof Error ? error.message : String(error)},Number.isInteger(error.statusCode) ? error.statusCode : 400);
@@ -320,20 +333,37 @@ const server = http.createServer(async (req,res)=>{
     if (!isApprovalAuthorized(req)) { sendJson(res,{error:"approval_authorization_required"},401); return; }
     try {
       const input = await readJson(req);
-      if (typeof input.reportHash !== "string" || !/^[a-f0-9]{64}$/.test(input.reportHash)) {
-        sendJson(res,{error:"metanoia_report_hash_required"},400); return;
+      if (!input || typeof input !== "object" || Array.isArray(input)) {
+        sendJson(res,{error:"invalid_metanoia_approval"},400); return;
       }
-      const report = metanoiaReports.get(input.reportHash);
-      if (!report || report.status !== "review_required") {
-        sendJson(res,{error:"metanoia_review_not_found_or_not_eligible"},409); return;
+      if (typeof input.reportHash !== "string" || !/^[a-f0-9]{64}$/.test(input.reportHash) ||
+          typeof input.expectedPreviousVersionId !== "string" || !input.expectedPreviousVersionId) {
+        sendJson(res,{error:"report_hash_and_expected_previous_version_required"},400); return;
+      }
+      const reportEntry = metanoiaReports.get(input.reportHash);
+      if (!reportEntry || reportEntry.consumed || Date.now() > reportEntry.expiresAt) {
+        sendJson(res,{error:"metanoia_report_missing_expired_or_consumed"},409); return;
+      }
+      const report = reportEntry.report;
+      if (report.reportHash !== input.reportHash || report.status !== "review_required" ||
+          (!report.findings?.contradictions?.length && !report.findings?.anomalies?.length)) {
+        sendJson(res,{error:"metanoia_report_not_eligible_for_approval"},409); return;
       }
       const versions = mindcloud.versionHistory.list();
       const previousVersion = versions[versions.length - 1];
       if (!previousVersion || input.expectedPreviousVersionId !== previousVersion.id) {
         sendJson(res,{error:"metanoia_previous_version_conflict",expectedPreviousVersionId:previousVersion?.id || null},409); return;
       }
+      if (!input.proposedModel || typeof input.proposedModel !== "object" || Array.isArray(input.proposedModel)) {
+        sendJson(res,{error:"proposed_model_object_required"},400); return;
+      }
+      if (typeof input.rationale !== "string" || input.rationale.trim().length < 8) {
+        sendJson(res,{error:"rationale_required_min_8_chars"},400); return;
+      }
+      const findingEvidenceRefs = (report.findings?.contradictions || []).flatMap(item => item.evidenceRefs || []);
+      const permittedEvidenceRefs = new Set([...(report.evidenceRefs || []), ...findingEvidenceRefs]);
       if (!Array.isArray(input.evidenceRefs) ||
-          input.evidenceRefs.some(ref => typeof ref !== "string" || !report.evidenceRefs.includes(ref))) {
+          input.evidenceRefs.some(ref => typeof ref !== "string" || !permittedEvidenceRefs.has(ref))) {
         sendJson(res,{error:"metanoia_evidence_refs_not_in_review"},400); return;
       }
       if (!mindcloud.versionHistory.storePath) {
@@ -341,11 +371,11 @@ const server = http.createServer(async (req,res)=>{
       }
       const newVersion = mindcloud.createModelVersion({
         model:input.proposedModel,
-        rationale:input.rationale,
+        rationale:input.rationale.trim(),
         changeType:"metanoia-revalidation",
         evidenceRefs:input.evidenceRefs
       });
-      metanoiaReports.delete(input.reportHash);
+      reportEntry.consumed = true;
       sendJson(res,{
         type:"mindcloud_metanoia_version_transition",
         reportHash:report.reportHash,
