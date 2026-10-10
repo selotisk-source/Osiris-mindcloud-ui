@@ -28,6 +28,17 @@ These patterns are integrated as explicit capability/runtime references rather t
 - agent identity separated from security identity
 - Metanoia revalidation before consequential promotion
 
+## MindCloud Arena Skill
+
+Arena is registered in the MindCore capability catalog and the MindCloud capability graph as **Arena → Evaluate → Verify**. It compares competing candidates using the same task and test contract, applies deterministic scoring, and rejects any candidate with a failed test, failed required check, or missing test evidence.
+
+- Skill contract: `skills/arena/SKILL.md`
+- Evaluator and gated promotion proposal: `mindcore/arena-skill.js`
+- Independent checks: `scripts/verify-arena-skill.js`
+- Included in the standard `npm run verify` sequence.
+
+Arena reports do not deploy code or write to the capability registry. Skill promotion requires a verified winner, explicit approval, and successful revalidation; registry persistence remains a separate audited operation.
+
 ## Integrated agent toolchain
 
 MindCore now has typed supervised adapter contracts for ten external capabilities:

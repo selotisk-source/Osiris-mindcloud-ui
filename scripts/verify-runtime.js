@@ -103,6 +103,22 @@ async function waitForHealth(child) {
     assert.equal(metanoiaApi.body.proposal.writesPerformed,false);
     assert.equal(metanoiaApi.body.proposal.humanApprovalRequired,true);
 
+    const arenaApi = await post("/api/mindcloud/arena/evaluate",{
+      task:"End-to-end Arena API pilot",
+      candidates:[
+        {id:"api-winner",approach:"Complete candidate",tests:[{id:"contract",passed:true,evidenceRef:"test://arena/api-contract"}],requiredChecks:[{id:"red-team",passed:true}]},
+        {id:"api-loser",approach:"Failing candidate",tests:[{id:"contract",passed:false,evidenceRef:"test://arena/api-contract-fail"}],requiredChecks:[{id:"red-team",passed:true}]}
+      ]
+    });
+    assert.equal(arenaApi.status,200);
+    assert.equal(arenaApi.body.type,"mindcloud_arena_report");
+    assert.equal(arenaApi.body.status,"verified_winner");
+    assert.equal(arenaApi.body.winnerId,"api-winner");
+    assert.equal(arenaApi.body.promotion.allowed,false);
+    const invalidArenaApi = await post("/api/mindcloud/arena/evaluate",{task:"invalid",candidates:[]});
+    assert.equal(invalidArenaApi.status,400);
+    assert.equal(invalidArenaApi.body.error,"arena_requires_competing_candidates");
+
     const unauthorizedEvidenceRead = await get("/api/mindcloud/evidence-graph");
     assert.equal(unauthorizedEvidenceRead.status,401);
     assert.equal(unauthorizedEvidenceRead.body.error,"unauthorized");
