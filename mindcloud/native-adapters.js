@@ -241,4 +241,17 @@ async function execute({id,operation,input={},requestId}) {
   }
   return {ok:response.ok,id,operation,status:response.status,result,evidence:{source:endpoint.split("?")[0],retrievedAt:new Date().toISOString(),requestId}};
 }
-module.exports={supports,state,health,execute};
+const IMPLEMENTED_OPERATIONS = Object.freeze({
+  "overpass-turbo":["query","export_geojson"],
+  "google-street-view":["metadata","image"],
+  "shodan":["host","search","dns"],
+  "opensanctions":["search","match"],
+  "subdomain-finder":["discover","resolve"],
+  "mapillary":["search","image"],
+  "agentmemory":["remember","observe","smart_search","context"],
+  "ruflo":["discover_tools"]
+});
+function operationsFor(id) {
+  return IMPLEMENTED_OPERATIONS[id] ? [...IMPLEMENTED_OPERATIONS[id]] : null;
+}
+module.exports={supports,state,health,execute,operationsFor};

@@ -67,7 +67,7 @@ function fakeSpawn(command, args, options) {
   const discovered = runtime.discover("ruflo");
   assert.equal(discovered.ok, true);
   assert.equal(discovered.adapter.runtime.state, "registered-only");
-  assert.deepEqual(discovered.adapter.runtime.operations, ["health", "discover_tools"]);
+  assert.deepEqual(discovered.adapter.runtime.operations, ["discover_tools", "health"]);
   const denied = await runtime.execute({ id: "ruflo", operation: "invoke_tool", input: { name: "ruflo_run", arguments: { task: "do something" } } });
   assert.equal(denied.error, "operation_not_allowed");
   assert.equal(denied.ok, false);

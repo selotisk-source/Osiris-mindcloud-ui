@@ -4,6 +4,7 @@ const vm = require("node:vm");
 const html = fs.readFileSync("index.html", "utf8");
 const registry = JSON.parse(fs.readFileSync("integrations/agent-tools.json", "utf8"));
 const { AdapterRuntime } = require("../mindcloud/adapter-runtime");
+const native = require("../mindcloud/native-adapters");
 
 const scripts = [...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)]
   .map(match => match[1])
@@ -32,5 +33,21 @@ for (const adapter of snapshot.adapters) {
     "every adapter must report a truthful runtime state");
   assert.ok(Array.isArray(adapter.runtime.operations),
     "every adapter must publish supported operation contracts");
+  assert.ok(Array.isArray(adapter.runtime.executableOperations),
+    "every adapter must publish the operations executable in its current configuration");
+  assert.ok(adapter.runtime.executableOperations.every(operation=>adapter.runtime.operations.includes(operation)),
+    "executable operations must be a subset of the declared effective contract");
+  if (adapter.runtime.state === "registered-only") {
+    assert.ok(adapter.runtime.executableOperations.every(operation=>operation === "health"),
+      "unconfigured adapters must not advertise action execution as available");
+  }
+  if (native.supports(adapter.id)) {
+    const expected = [...native.operationsFor(adapter.id), ...(registry.tools.find(tool=>tool.id===adapter.id).operations.includes("health")?["health"]:[])];
+    assert.deepEqual(adapter.runtime.operations,expected,
+      "native adapters must not advertise operations that their implementation cannot execute: "+adapter.id);
+  }
 }
-console.log("adapter-toolbox: verified inline UI syntax, live health/discovery controls, truthful runtime states, and protected execution boundary");
+assert.deepEqual(runtime.discover("overpass-turbo").adapter.operations,["query","export_geojson","health"]);
+assert.deepEqual(runtime.discover("shodan").adapter.operations,["host","search","dns","health"]);
+assert.deepEqual(runtime.discover("ruflo").adapter.operations,["discover_tools","health"]);
+console.log("adapter-toolbox: verified UI syntax, lifecycle controls, native operation conformance, executable operation inventory, and protected execution boundary");

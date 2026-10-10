@@ -23,13 +23,26 @@ class AdapterRuntime {
   runtimeState(tool) {
     const nativeState = native.state(tool.id);
     const configured = nativeState ? nativeState.configured : Boolean(this.endpointFor(tool.id));
-    return {state:configured?"configured":"registered-only",executable:configured,transport:nativeState?(nativeState.mode||"native-http"):(tool.transport||"external-runtime"),operations:tool.operations||[],...(nativeState?.required?{required:nativeState.required}:{})};
+    const nativeOperations = native.supports(tool.id) ? native.operationsFor(tool.id) : null;
+    const operations = nativeOperations
+      ? [...nativeOperations, ...((tool.operations||[]).includes("health") ? ["health"] : [])]
+      : (tool.operations||[]);
+    const executableOperations = operations.filter(operation => operation === "health" || configured);
+    return {
+      state:configured?"configured":"registered-only",
+      executable:configured,
+      transport:nativeState?(nativeState.mode||"native-http"):(tool.transport||"external-runtime"),
+      operations,
+      executableOperations,
+      ...(nativeState?.required?{required:nativeState.required}:{})
+    };
   }
 
   discover(id) {
     const tool=this.registry.tools.find(item=>item.id===id);
     if(!tool)return {ok:false,error:"adapter_not_found",id};
-    return {ok:true,adapter:{id:tool.id,layer:tool.layer,operations:tool.operations||[],runtime:this.runtimeState(tool)}};
+    const runtime=this.runtimeState(tool);
+    return {ok:true,adapter:{id:tool.id,layer:tool.layer,operations:runtime.operations,runtime}};
   }
 
   async health(id) {
@@ -52,7 +65,9 @@ class AdapterRuntime {
     const requestId=crypto.randomUUID();
     const tool=this.registry.tools.find(item=>item.id===id);
     if(!tool)return this.record(requestId,{ok:false,error:"adapter_not_found",id,operation});
+    const runtimeOperations=this.runtimeState(tool).operations;
     if(!tool.operations?.includes(operation))return this.record(requestId,{ok:false,error:"operation_not_allowed",id,operation});
+    if(!runtimeOperations.includes(operation))return this.record(requestId,{ok:false,error:"operation_not_implemented",id,operation,implementedOperations:runtimeOperations});
     if(operation==="health") {
       const result=await this.health(id);
       return this.record(requestId,{ok:Boolean(result?.ok),id,operation,result,execution:{contractVersion:"1.0",attempts:1,retries:0,retryPolicy:"health-probe",recovered:false}});
