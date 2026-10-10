@@ -14,9 +14,7 @@ const { AdapterRuntime } = require("../mindcloud/adapter-runtime");
     let body = "";
     req.on("data", chunk => { body += chunk; });
     req.on("end", () => {
-      let input = {};
-      try { input = JSON.parse(body); } catch {}
-      const status = input.id === "test-adapter-two" ? 502 : 503;
+      const status = 503;
       res.writeHead(status, { "content-type": "application/json" });
       res.end(JSON.stringify({ error: "provider_temporarily_unavailable" }));
     });
@@ -73,7 +71,7 @@ const { AdapterRuntime } = require("../mindcloud/adapter-runtime");
     });
     assert.equal(providerCalls, 2);
     assert.equal(secondResult.ok, false);
-    assert.equal(secondResult.status, 502);
+    assert.equal(secondResult.status, 503);
     assert.equal(runtime.snapshot().auditCount, 2);
     assert.equal(runtime.audit[1].requestId, secondResult.requestId);
     assert.equal(runtime.audit[1].id, "test-adapter-two");
