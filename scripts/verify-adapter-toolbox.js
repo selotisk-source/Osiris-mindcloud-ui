@@ -36,6 +36,10 @@ assert.match(html, /id="commandTokenToggle"/, "operator must be able to explicit
 assert.match(html, /tokenInput\.type=reveal\?'text':'password'/, "token visibility control must toggle between masked and visible states");
 assert.match(html, /['"]authorization['"]:'Bearer '\+token/, "execution must use the protected bearer-authenticated API");
 assert.match(html, /id="commandConsoleResult"/, "command console must display the real API response");
+assert.match(html, /id="clusterPlan"/, "OSIRIS console must expose bounded agent-cluster planning");
+assert.match(html, /\/api\/mindcloud\/agent-cluster\/plan/, "cluster plan must use the authenticated MindCloud API");
+assert.match(html, /id="clusterBudget"/, "cluster plan must expose a bounded total token budget");
+assert.match(html, /no external AI calls or adapter execution are started/i, "planning UI must not imply external agents were executed");
 assert.doesNotMatch(html, /localStorage\.(?:setItem|getItem).*commandToken/i, "execution token must not be persisted in browser storage");
 
 
