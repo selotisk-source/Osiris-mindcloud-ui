@@ -13,7 +13,15 @@ const fixtures = {
   "subdomain-finder": { discover: { domain: "example.com" }, resolve: { domain: "example.com", type: "A" } },
   mapillary: { search: { bbox: "27.8,43.1,28.0,43.3", limit: 10 }, image: { id: "123456" } },
   agentmemory: { remember: { content: "test observation" }, observe: { observation: "test observation" }, smart_search: { query: "test" }, context: { context: "test" } },
-  ruflo: { discover_tools: {} }
+  ruflo: { discover_tools: {} },
+  "speech-figure": {
+    inspect: {},
+    start_session: { locale: "sv-SE", camera_enabled: false, model_profile: "local-whisper", session_id: "session-test" },
+    stop_session: { session_id: "session-test" },
+    get_transcript: { session_id: "session-test" },
+    export_transcript: { session_id: "session-test", format: "vtt" },
+    render_preview: { text: "MindCloud adapter test", style: "word-silhouette", locale: "sv-SE" }
+  }
 };
 
 for (const [id, operations] of Object.entries(CONTRACTS)) {
@@ -59,6 +67,7 @@ const runtime = new AdapterRuntime(registry);
       "bounded-generic-external-input",
       "input-size-and-depth-limits",
       "unsafe-object-key-rejection",
+      "speech-figure-typed-operation-contracts",
       "runtime-rejects-before-provider-execution",
       "unsupported-operation-still-blocked"
     ]
