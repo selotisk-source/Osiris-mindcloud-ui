@@ -38,7 +38,7 @@ body{overflow:hidden}.app{height:100%;display:flex;flex-direction:column}
 @media(max-width:700px){.app-nav{padding:6px}.module-panel{inset:108px 6px 6px;padding:9px}.module-grid{grid-template-columns:1fr}}
 
 .command-console{position:absolute;z-index:40;inset:64px 10px 10px;overflow:auto;background:#0d131c;border:1px solid #35506f;border-radius:10px;box-shadow:0 18px 50px #0009;padding:14px}
-.command-console[hidden]{display:none}.command-console-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.command-console-head h2{font-size:16px;margin:0}.command-token-row{display:flex;gap:6px}.command-token-row input{flex:1;min-width:0}.command-console-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px}.command-console label{display:grid;gap:5px;color:#9fb0c5;font-size:12px}.command-console input,.command-console select,.command-console textarea{width:100%;min-width:0;border:1px solid #253142;background:#080e15;color:#e7edf5;border-radius:7px;padding:9px;font:inherit}.command-console textarea{min-height:110px;resize:vertical;font-family:ui-monospace,monospace}.command-console .wide{grid-column:1/-1}.command-console .command-console-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.command-console .command-console-result{min-height:100px;max-height:35vh;overflow:auto;white-space:pre-wrap;overflow-wrap:anywhere;border:1px solid #253142;background:#080e15;border-radius:7px;padding:10px;color:#b9c9da}.command-console .command-console-note{color:#f7c873;font-size:12px}.command-console .command-console-status{color:#6ee7b7;font-size:12px}@media(max-width:650px){.command-console-grid{grid-template-columns:1fr}.command-console .wide{grid-column:auto}}
+.command-console[hidden]{display:none}.command-console-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.command-console-head h2{font-size:16px;margin:0}.command-token-row{display:flex;gap:6px}.command-token-row input{flex:1;min-width:0}.command-cluster{margin-top:16px;padding-top:12px;border-top:1px solid #253142}.command-cluster>label{display:grid;gap:5px;color:#9fb0c5;font-size:12px}.command-cluster input,.command-cluster select{width:100%;min-width:0;border:1px solid #253142;background:#080e15;color:#e7edf5;border-radius:7px;padding:9px;font:inherit}.command-console-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px}.command-console label{display:grid;gap:5px;color:#9fb0c5;font-size:12px}.command-console input,.command-console select,.command-console textarea{width:100%;min-width:0;border:1px solid #253142;background:#080e15;color:#e7edf5;border-radius:7px;padding:9px;font:inherit}.command-console textarea{min-height:110px;resize:vertical;font-family:ui-monospace,monospace}.command-console .wide{grid-column:1/-1}.command-console .command-console-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.command-console .command-console-result{min-height:100px;max-height:35vh;overflow:auto;white-space:pre-wrap;overflow-wrap:anywhere;border:1px solid #253142;background:#080e15;border-radius:7px;padding:10px;color:#b9c9da}.command-console .command-console-note{color:#f7c873;font-size:12px}.command-console .command-console-status{color:#6ee7b7;font-size:12px}@media(max-width:650px){.command-console-grid{grid-template-columns:1fr}.command-console .wide{grid-column:auto}}
 </style>
 </head>
 <body>
@@ -351,6 +351,18 @@ function safeText(s){return String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<'
   <label class="wide">Input JSON<textarea id="commandInput" spellcheck="false">{}</textarea></label>
  </div>
  <div class="command-console-actions"><button class="btn active" id="commandRun" type="button">Run command</button><button class="btn" id="commandClearToken" type="button">Clear token</button><span id="commandConsoleStatus" class="command-console-status" role="status" aria-live="polite">Ready · no command executed</span></div>
+ <div class="command-cluster">
+  <h3>Hierarchical AI cluster · bounded plan</h3>
+  <p class="command-console-note">Creates a budgeted plan only. No external AI calls or adapter execution are started by this action.</p>
+  <label>Cluster goal<input id="clusterGoal" type="text" maxlength="2000" placeholder="Describe the goal for the coordinator and specialist agents" /></label>
+  <div class="command-console-grid">
+   <label>Agents<select id="clusterAgents"><option value="2">2 agents</option><option value="4" selected>4 agents</option><option value="6">6 agents</option><option value="8">8 agents</option><option value="12">12 agents</option></select></label>
+   <label>Maximum recursion depth<select id="clusterDepth"><option value="1">1</option><option value="2" selected>2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option></select></label>
+   <label class="wide">Total token budget<input id="clusterBudget" type="number" min="256" max="12000" step="256" value="8000" /></label>
+  </div>
+  <div class="command-console-actions"><button class="btn" id="clusterPlan" type="button">Build cluster plan</button><span id="clusterStatus" class="command-console-status" role="status" aria-live="polite">Plan-only mode · provider execution not configured here</span></div>
+  <pre class="command-console-result" id="clusterResult" role="region" aria-label="Agent cluster plan" tabindex="0">No cluster plan created.</pre>
+ </div>
  <h3>Execution result / audit evidence</h3><pre class="command-console-result" id="commandConsoleResult" role="region" aria-label="Command result" tabindex="0">No command executed in this session.</pre>
 </section>
 
@@ -369,6 +381,13 @@ function safeText(s){return String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<'
  const clearToken=document.getElementById('commandClearToken');
  const status=document.getElementById('commandConsoleStatus');
  const result=document.getElementById('commandConsoleResult');
+ const clusterGoal=document.getElementById('clusterGoal');
+ const clusterAgents=document.getElementById('clusterAgents');
+ const clusterDepth=document.getElementById('clusterDepth');
+ const clusterBudget=document.getElementById('clusterBudget');
+ const clusterPlanButton=document.getElementById('clusterPlan');
+ const clusterStatus=document.getElementById('clusterStatus');
+ const clusterResult=document.getElementById('clusterResult');
  let tools=[];
  function setStatus(message){status.textContent=message;}
  function option(label,value){const el=document.createElement('option');el.textContent=label;el.value=value;return el;}
@@ -417,6 +436,22 @@ function safeText(s){return String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<'
  refresh.addEventListener('click',loadAdapters);
  adapterSelect.addEventListener('change',fillOperations);
  clearToken.addEventListener('click',()=>{tokenInput.value='';setStatus('Execution token cleared from this page');});
+ clusterPlanButton.addEventListener('click',async()=>{
+  const token=tokenInput.value;
+  const goal=clusterGoal.value.trim();
+  if(!token){clusterStatus.textContent='Execution token required';tokenInput.focus();return;}
+  if(!goal){clusterStatus.textContent='Enter a cluster goal first';clusterGoal.focus();return;}
+  const tokenBudget=Number(clusterBudget.value);
+  if(!Number.isInteger(tokenBudget)||tokenBudget<256||tokenBudget>12000){clusterStatus.textContent='Token budget must be between 256 and 12000';return;}
+  clusterPlanButton.disabled=true;clusterStatus.textContent='Creating bounded plan…';clusterResult.textContent='Waiting for plan response…';
+  try{
+   const response=await fetch('/api/mindcloud/agent-cluster/plan',{method:'POST',headers:{'content-type':'application/json','authorization':'Bearer '+token},body:JSON.stringify({goal,requestedAgents:Number(clusterAgents.value),depth:Number(clusterDepth.value),tokenBudget}),cache:'no-store'});
+   const body=await response.json().catch(()=>({error:'invalid_json_response'}));
+   clusterResult.textContent=JSON.stringify({httpStatus:response.status,ok:response.ok,response:body},null,2);
+   clusterStatus.textContent=response.ok?'Plan created · no agents executed':('Plan rejected · HTTP '+response.status);
+  }catch(error){clusterResult.textContent=String(error.message||error);clusterStatus.textContent='Network or request error';}
+  finally{clusterPlanButton.disabled=false;}
+ });
  tokenToggle.addEventListener('click',()=>{const reveal=tokenInput.type==='password';tokenInput.type=reveal?'text':'password';tokenToggle.textContent=reveal?'Hide token':'Show token';tokenToggle.setAttribute('aria-pressed',String(reveal));});
  run.addEventListener('click',async()=>{
   const id=adapterSelect.value, operation=operationSelect.value, token=tokenInput.value;
