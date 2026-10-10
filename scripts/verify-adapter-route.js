@@ -28,6 +28,16 @@ async function waitHealthy(child) {
 
 (async () => {
   const provider = http.createServer((req, res) => {
+    if (req.method === "GET" && req.url.startsWith("/crt.sh?")) {
+      res.writeHead(200, { "content-type": "application/json" });
+      res.end(JSON.stringify([{name_value:"api.example.com\nosiris.example.com\nnotexample.com"}]));
+      return;
+    }
+    if (req.method === "GET" && req.url.startsWith("/dns-query?")) {
+      res.writeHead(200, { "content-type": "application/json" });
+      res.end(JSON.stringify({Status:0,Answer:[{name:"api.example.com",type:1,data:"203.0.113.12",TTL:60}]}));
+      return;
+    }
     if (req.method !== "POST" || req.url !== "/api/interpreter") {
       res.writeHead(404, { "content-type": "application/json" });
       res.end(JSON.stringify({ error: "not_found" }));
@@ -50,10 +60,14 @@ async function waitHealthy(child) {
     cwd: process.cwd(),
     env: {
       ...process.env,
+      NODE_ENV: "test",
       PORT: String(appPort),
       CCTV_SOURCE_URL: "",
       COGNEE_SERVICE_URL: "",
       OVERPASS_API_URL: `http://127.0.0.1:${providerPort}/api/interpreter`,
+      CRT_SH_URL: `http://127.0.0.1:${providerPort}/crt.sh`,
+      CLOUDFLARE_DNS_URL: `http://127.0.0.1:${providerPort}/dns-query`,
+      MINDCLOUD_AUTHORIZED_DOMAINS: "example.com",
       MINDCLOUD_TOOL_EXECUTION_TOKEN: token
     },
     stdio: ["ignore", "pipe", "pipe"]
@@ -86,9 +100,35 @@ async function waitHealthy(child) {
     assert.ok(executed.body.evidence.requestId.length > 0);
     assert.equal(executed.body.evidence.source, `http://127.0.0.1:${providerPort}/api/interpreter`);
 
+    const blockedScope = await json(await fetch(appBase + "/api/adapters/execute", {
+      method: "POST",
+      headers: { "content-type": "application/json", authorization: "Bearer " + token },
+      body: JSON.stringify({ id: "subdomain-finder", operation: "discover", input: { domain: "example.net" } })
+    }));
+    assert.equal(blockedScope.status, 200);
+    assert.equal(blockedScope.body.error, "human_approval_required", "unallowlisted domains must remain blocked");
+
+    const discovered = await json(await fetch(appBase + "/api/adapters/execute", {
+      method: "POST",
+      headers: { "content-type": "application/json", authorization: "Bearer " + token },
+      body: JSON.stringify({ id: "subdomain-finder", operation: "discover", input: { domain: "example.com" } })
+    }));
+    assert.equal(discovered.status, 200);
+    assert.equal(discovered.body.ok, true);
+    assert.deepEqual(discovered.body.result.subdomains, ["api.example.com", "osiris.example.com"]);
+    assert.equal(discovered.body.result.method, "passive-certificate-transparency");
+
+    const resolved = await json(await fetch(appBase + "/api/adapters/execute", {
+      method: "POST",
+      headers: { "content-type": "application/json", authorization: "Bearer " + token },
+      body: JSON.stringify({ id: "subdomain-finder", operation: "resolve", input: { domain: "example.com", name: "api.example.com", type: "A" } })
+    }));
+    assert.equal(resolved.status, 200);
+    assert.equal(resolved.body.ok, true);
+    assert.equal(resolved.body.result.answers[0].data, "203.0.113.12");
     const snapshot = await json(await fetch(appBase + "/api/adapters"));
     assert.equal(snapshot.status, 200);
-    assert.equal(snapshot.body.auditCount, 1);
+    assert.equal(snapshot.body.auditCount, 4);
     console.log(JSON.stringify({
       status: "verified",
       checks: [
@@ -97,7 +137,10 @@ async function waitHealthy(child) {
         "provider-http-request",
         "Overpass-JSON-to-GeoJSON-node-and-way",
         "evidence-request-id-and-source",
-        "adapter-audit-recorded"
+        "adapter-audit-recorded",
+        "subdomain-domain-allowlist-gate",
+        "passive-certificate-transparency-discovery",
+        "free-dns-over-https-resolution"
       ]
     }, null, 2));
   } catch (error) {
