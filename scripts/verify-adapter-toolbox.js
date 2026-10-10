@@ -32,6 +32,8 @@ assert.match(html, /id="commandConsole"/, "OSIRIS must expose the integrated com
 assert.match(html, /id="commandAdapter"/, "command console must select a live adapter");
 assert.match(html, /id="commandOperation"/, "command console must select a declared operation");
 assert.match(html, /id="commandToken" type="password"/, "execution credential must be masked in the UI");
+assert.match(html, /id="commandTokenToggle"/, "operator must be able to explicitly reveal or remask the session token");
+assert.match(html, /tokenInput\.type=reveal\?'text':'password'/, "token visibility control must toggle between masked and visible states");
 assert.match(html, /authorization:'Bearer '\+token/, "execution must use the protected bearer-authenticated API");
 assert.match(html, /id="commandConsoleResult"/, "command console must display the real API response");
 assert.doesNotMatch(html, /localStorage\.(?:setItem|getItem).*commandToken/i, "execution token must not be persisted in browser storage");
