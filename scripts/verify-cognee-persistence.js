@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 const assert = require("node:assert/strict");
-const { spawn } = require("node:child_process");
+const { spawn, spawnSync } = require("node:child_process");
 const http = require("node:http");
 const fs = require("node:fs");
 const path = require("node:path");
@@ -11,6 +11,24 @@ const memoryPort = 39131;
 const appBase = "http://127.0.0.1:" + appPort;
 const memoryBase = "http://127.0.0.1:" + memoryPort;
 const root = path.resolve(__dirname, "..");
+
+const cogneeEntrypointPath = path.join(root, "deploy/cognee/railway-entrypoint.sh");
+const cogneeEntrypoint = fs.readFileSync(cogneeEntrypointPath, "utf8");
+const shellSyntax = spawnSync("sh", ["-n", cogneeEntrypointPath], { encoding: "utf8" });
+assert.equal(shellSyntax.status, 0, "Cognee Railway entrypoint shell syntax must pass: " + shellSyntax.stderr);
+for (const setting of [
+  "EMBEDDING_BATCH_SIZE 1",
+  "GLINER_INFERENCE_THREADS 1",
+  "IMPROVE_AUTO_ENABLED false",
+  "FASTEMBED_CACHE_PATH /data/fastembed_cache",
+  "HF_HOME /data/huggingface_cache"
+]) {
+  assert.ok(cogneeEntrypoint.includes("set_env " + setting), "Cognee entrypoint must enforce " + setting);
+}
+assert.ok(cogneeEntrypoint.indexOf("set_env EMBEDDING_BATCH_SIZE 1") < cogneeEntrypoint.indexOf("exec su -p"),
+  "Cognee defaults must be patched before the upstream entrypoint starts");
+assert.ok(cogneeEntrypoint.includes('grep -q "^${key}="'), "Cognee env patcher must expand the key variable");
+assert.ok(cogneeEntrypoint.includes('sed -i "s|^${key}=.*|${key}=${value}|" "$ENV_FILE"'), "Cognee env patcher must replace blank values in place");
 const storeDir = fs.mkdtempSync(path.join(os.tmpdir(), "mindcloud-cognee-probe-"));
 const records = new Map();
 
