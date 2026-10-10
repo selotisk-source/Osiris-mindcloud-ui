@@ -37,6 +37,12 @@ assert.match(html, /tokenInput\.type=reveal\?'text':'password'/, "token visibili
 assert.match(html, /['"]authorization['"]:'Bearer '\+token/, "execution must use the protected bearer-authenticated API");
 assert.match(html, /id="commandConsoleResult"/, "command console must display the real API response");
 assert.match(html, /id="clusterPlan"/, "OSIRIS console must expose bounded agent-cluster planning");
+assert.match(html, /id="providerRun"/, "OSIRIS console must expose multi-provider collaboration");
+assert.match(html, /\/api\/mindcloud\/providers\/collaborate/, "provider handoff must use the protected collaboration API");
+assert.match(html, /name="providerChoice" value="gemini"/, "Gemini must be a selectable provider");
+assert.match(html, /name="providerChoice" value="claude"/, "Claude must be a selectable provider");
+assert.match(html, /name="providerChoice" value="grok"/, "Grok must be a selectable provider");
+assert.match(html, /name="providerChoice" value="deepseek"/, "DeepSeek must be a selectable provider");
 assert.match(html, /\/api\/mindcloud\/agent-cluster\/plan/, "cluster plan must use the authenticated MindCloud API");
 assert.match(html, /id="clusterBudget"/, "cluster plan must expose a bounded total token budget");
 assert.match(html, /no external AI calls or adapter execution are started/i, "planning UI must not imply external agents were executed");
