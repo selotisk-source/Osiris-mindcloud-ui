@@ -107,7 +107,8 @@ async function waitForHealth(child) {
       task:"End-to-end Arena API pilot",
       candidates:[
         {id:"api-winner",approach:"Complete candidate",tests:[{id:"contract",passed:true,evidenceRef:"test://arena/api-contract"}],requiredChecks:[{id:"red-team",passed:true}]},
-        {id:"api-loser",approach:"Failing candidate",tests:[{id:"contract",passed:false,evidenceRef:"test://arena/api-contract-fail"}],requiredChecks:[{id:"red-team",passed:true}]}
+        {id:"api-loser",approach:"Failing candidate",tests:[{id:"contract",passed:false,evidenceRef:"test://arena/api-contract-fail"}],requiredChecks:[{id:"red-team",passed:true}]},
+        {id:"api-third",approach:"Third competing candidate",tests:[{id:"contract",passed:true,evidenceRef:"test://arena/api-third-contract"},{id:"edge-case",passed:false,evidenceRef:"test://arena/api-third-edge"}],requiredChecks:[{id:"red-team",passed:true}]}
       ]
     });
     assert.equal(arenaApi.status,200);
