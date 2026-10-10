@@ -173,7 +173,8 @@ async function execute({id,operation,input={},requestId}) {
     }
     if(operation==="resolve") {
       const name=String(input.name||domain).trim().toLowerCase().replace(/\.$/,"");
-      if(!(name===domain||name.endsWith("."+domain))) return {ok:false,error:"name_outside_requested_domain"};
+      if(!/^(?=.{1,253}$)(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,63}$/.test(name)) return {ok:false,id,operation,error:"valid_dns_name_required"};
+      if(!(name===domain||name.endsWith("."+domain))) return {ok:false,id,operation,error:"name_outside_requested_domain",name,domain};
       const type=String(input.type||"A").toUpperCase();
       if(!["A","AAAA","CNAME","MX","NS","TXT"].includes(type)) return {ok:false,error:"unsupported_dns_record_type"};
       const base=process.env.NODE_ENV==="test"&&process.env.CLOUDFLARE_DNS_URL?process.env.CLOUDFLARE_DNS_URL:"https://cloudflare-dns.com/dns-query";
