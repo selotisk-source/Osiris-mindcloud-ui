@@ -18,6 +18,18 @@ const newsletterHtml = fs.readFileSync(path.join(__dirname, "newsletter.html"), 
 const agentTools = JSON.parse(fs.readFileSync(path.join(__dirname, "integrations", "agent-tools.json"), "utf8"));
 const approvalRequests = new Map();
 const approvalAudit = [];
+// Reports are server-issued, short-lived review objects. The client cannot invent a report hash
+// and use it to authorize a model transition.
+const metanoiaReports = new Map();
+const METANOIA_REPORT_TTL_MS = 10 * 60 * 1000;
+function rememberMetanoiaReport(report) {
+  const now = Date.now();
+  for (const [hash, entry] of metanoiaReports) {
+    if (now > entry.expiresAt) metanoiaReports.delete(hash);
+  }
+  while (metanoiaReports.size >= 100) metanoiaReports.delete(metanoiaReports.keys().next().value);
+  metanoiaReports.set(report.reportHash, { report: structuredClone(report), createdAt: now, expiresAt: now + METANOIA_REPORT_TTL_MS, consumed: false });
+}
 
 function tokenMatches(supplied, expected) {
   if (!supplied || !expected || supplied.length !== expected.length) return false;
@@ -265,9 +277,77 @@ const server = http.createServer(async (req,res)=>{
   if(pathname==="/api/mindcloud/metanoia/evaluate" && req.method==="POST"){
     try {
       const input = await readJson(req);
-      sendJson(res, evaluateMetanoia(input));
+      const report = evaluateMetanoia(input);
+      rememberMetanoiaReport(report);
+      sendJson(res, report);
     } catch (error) {
       sendJson(res,{error:error instanceof Error ? error.message : String(error)},Number.isInteger(error.statusCode) ? error.statusCode : 400);
+    }
+    return;
+  }
+  if(pathname==="/api/mindcloud/metanoia/approve" && req.method==="POST"){
+    const expectedToken = process.env.MINDCLOUD_APPROVAL_TOKEN || "";
+    if (!expectedToken) { sendJson(res,{error:"metanoia_approval_token_not_configured"},503); return; }
+    if (!tokenMatches(bearerToken(req), expectedToken)) { sendJson(res,{error:"approval_authorization_required"},401); return; }
+    try {
+      const input = await readJson(req);
+      if (!input || typeof input !== "object" || Array.isArray(input)) {
+        sendJson(res,{error:"invalid_metanoia_approval"},400); return;
+      }
+      if (typeof input.reportHash !== "string" || !input.reportHash ||
+          typeof input.expectedPreviousVersionId !== "string" || !input.expectedPreviousVersionId) {
+        sendJson(res,{error:"report_hash_and_expected_previous_version_required"},400); return;
+      }
+      const reportEntry = metanoiaReports.get(input.reportHash);
+      if (!reportEntry || reportEntry.consumed || Date.now() > reportEntry.expiresAt) {
+        sendJson(res,{error:"metanoia_report_missing_expired_or_consumed"},409); return;
+      }
+      const report = reportEntry.report;
+      if (report.reportHash !== input.reportHash || report.status !== "review_required" ||
+          (!report.findings.contradictions.length && !report.findings.anomalies.length)) {
+        sendJson(res,{error:"metanoia_report_not_eligible_for_approval"},409); return;
+      }
+      const versions = mindcloud.versionHistory.list();
+      const previous = versions[versions.length - 1];
+      if (!previous || previous.id !== input.expectedPreviousVersionId) {
+        sendJson(res,{error:"model_version_conflict",currentVersionId:previous?.id || null},409); return;
+      }
+      if (!input.proposedModel || typeof input.proposedModel !== "object" || Array.isArray(input.proposedModel)) {
+        sendJson(res,{error:"proposed_model_object_required"},400); return;
+      }
+      if (typeof input.rationale !== "string" || input.rationale.trim().length < 8) {
+        sendJson(res,{error:"rationale_required_min_8_chars"},400); return;
+      }
+      if (!Array.isArray(input.evidenceRefs) || input.evidenceRefs.some(ref => typeof ref !== "string" || !ref.trim())) {
+        sendJson(res,{error:"evidence_refs_must_be_nonempty_strings"},400); return;
+      }
+      const supportedRefs = new Set([
+        ...(report.evidenceRefs || []),
+        ...((report.findings.contradictions || []).flatMap(item => item.evidenceRefs || []))
+      ]);
+      if (input.evidenceRefs.some(ref => !supportedRefs.has(ref))) {
+        sendJson(res,{error:"evidence_reference_not_present_in_reviewed_report"},400); return;
+      }
+      // The review report is single-use and tied to the latest expected parent version.
+      // createModelVersion preserves the parent and rolls the version store back on persistence failure.
+      const previousFull = mindcloud.versionHistory.get(previous.id);
+      const newVersion = mindcloud.createModelVersion({
+        model: input.proposedModel,
+        rationale: input.rationale,
+        changeType: "metanoia-approved-transition",
+        evidenceRefs: input.evidenceRefs
+      });
+      reportEntry.consumed = true;
+      sendJson(res,{
+        type:"mindcloud_metanoia_version_transition",
+        approvedAt:new Date().toISOString(),
+        reportHash:report.reportHash,
+        previousVersion:previousFull,
+        newVersion
+      },201);
+    } catch(error) {
+      const status = Number.isInteger(error.statusCode) ? error.statusCode : 500;
+      sendJson(res,{error:error instanceof Error ? error.message : String(error)},status);
     }
     return;
   }
