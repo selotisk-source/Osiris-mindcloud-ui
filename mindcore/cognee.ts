@@ -33,9 +33,16 @@ export class HttpCogneeAdapter implements CogneeAdapter {
 
   private url(path:string){return this.endpoint.replace(/\/$/,"")+path;}
   private async request(path:string,init:RequestInit={}){
+    const headers = new Headers(init.headers || {});
+    if (typeof FormData !== "undefined" && init.body instanceof FormData) {
+      // Let fetch generate the multipart boundary for FormData uploads.
+      headers.delete("content-type");
+    } else if (!headers.has("content-type")) {
+      headers.set("content-type", "application/json");
+    }
     const response=await this.fetchImpl(this.url(path),{
       ...init,
-      headers:{"content-type":"application/json",...(init.headers||{})},
+      headers,
     });
     const text=await response.text();
     let body:unknown;
