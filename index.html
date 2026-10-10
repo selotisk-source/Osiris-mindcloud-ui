@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>MindCloud — Split Screen</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
 <style>
 :root{--bg:#070a0f;--panel:#0d131c;--panel2:#111925;--line:#253142;--text:#e7edf5;--muted:#8290a3;--accent:#79b8ff;--good:#6ee7b7;--warn:#f7c873}
 *{box-sizing:border-box}html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font:14px/1.4 Inter,ui-sans-serif,system-ui,sans-serif}
@@ -20,7 +21,7 @@ body{overflow:hidden}.app{height:100%;display:flex;flex-direction:column}
 .card{background:#101722;border:1px solid #223044;border-radius:8px;padding:12px;margin-bottom:9px}.card h3{margin:0 0 6px;font-size:14px}.card p{margin:0;color:var(--muted)}
 .metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}.metric{background:#0a1018;border:1px solid #1e2a3a;border-radius:7px;padding:9px}.metric b{display:block;font-size:18px}.metric small{color:var(--muted)}
 .graph{height:170px;position:relative;border:1px solid #1e2a3a;border-radius:8px;background:radial-gradient(circle at 50% 50%,#142337 0 1px,transparent 2px);background-size:24px 24px;overflow:hidden}.node{position:absolute;width:42px;height:42px;border:1px solid #42678e;border-radius:50%;background:#0e1a29;display:grid;place-items:center;font-size:10px}.edge{position:absolute;height:1px;background:#42678e55;transform-origin:left center}
-.map{height:100%;min-height:220px;border:1px solid #1e2a3a;border-radius:8px;background:linear-gradient(145deg,#0b141d,#0b1118);position:relative;overflow:hidden}.map:before{content:"";position:absolute;inset:12% 10%;background:linear-gradient(155deg,transparent 48%,#24384b 49%,#24384b 50%,transparent 51%),linear-gradient(25deg,transparent 47%,#1c3041 48%,#1c3041 50%,transparent 51%);opacity:.65}.pin{position:absolute;width:11px;height:11px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 5px #79b8ff22,0 0 16px #79b8ff66}
+.heritage-map{height:calc(100% - 94px);min-height:260px;border:1px solid #26384c;border-radius:8px;overflow:hidden;background:#dbe6e8;position:relative}.geo-toolbar{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}.geo-toolbar .btn{font-size:11px;padding:6px 8px}.geo-toolbar .btn.active{border-color:var(--accent);color:var(--accent)}.geo-status{font-size:10px;color:var(--muted);margin:5px 0 8px}.geo-results{display:flex;gap:6px;overflow-x:auto;margin-top:8px;padding-bottom:3px}.geo-place{flex:0 0 175px;text-align:left;border:1px solid #26384c;border-radius:7px;background:#101722;color:var(--text);padding:8px;cursor:pointer}.geo-place b{display:block;font-size:11px}.geo-place small{display:block;color:var(--muted);margin-top:3px}.geo-place:hover{border-color:var(--accent)}.leaflet-container{font:12px/1.4 Inter,system-ui,sans-serif}.leaflet-popup-content-wrapper,.leaflet-popup-tip{background:#101722;color:#e7edf5}.leaflet-popup-content a{color:#79b8ff}
 .sensor{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #1d2837}.sensor:last-child{border-bottom:0}.sensor small{color:var(--muted)}.ok{color:var(--good)}.tag{font-size:10px;border:1px solid #2a3a4e;border-radius:999px;padding:3px 7px;color:var(--muted)}
 .drawer{height:0;overflow:hidden;border-top:1px solid transparent;transition:.18s}.drawer.open{height:45px;border-top-color:var(--line)}.drawer-inner{height:44px;display:flex;align-items:center;gap:7px;padding:0 12px;overflow-x:auto}.tab{white-space:nowrap;padding:6px 9px;border:1px solid #2a3748;border-radius:6px;background:#0d141e;cursor:grab}.tab.dragging{opacity:.45}
 .station.drop-target{outline:2px solid var(--accent);outline-offset:-2px}.footer{position:absolute;right:10px;bottom:8px;color:#526277;font-size:10px}
@@ -83,7 +84,7 @@ body{overflow:hidden}.app{height:100%;display:flex;flex-direction:column}
   <div class="media-controls"><input id="sourceInput" class="source-input" placeholder="HLS .m3u8 / MP4 / image URL"><button class="btn" id="connectBtn">CONNECT</button><button class="btn" id="stopBtn">STOP</button></div>
   <div class="card"><h3>Camera pipe</h3><p id="cameraMeta">/api/cctv → source → stream → proxy</p></div>
 </div><span class="footer">live media station</span></section>
-<section class="station" data-station="3"><div class="station-head"><span class="handle">⠿</span><span class="station-title">GEO / Heritage</span><span class="station-role">Cyprus · Varna · Sweden</span></div><div class="content"><div class="map"><span class="pin" style="left:31%;top:55%"></span><span class="pin" style="left:67%;top:36%"></span><span class="pin" style="left:53%;top:66%"></span></div><div class="card"><h3>Heritage Graph</h3><p>Map → place → object → institution → virtual tour → evidence.</p></div></div><span class="footer">geographic station</span></section>
+<section class="station" data-station="3"><div class="station-head"><span class="handle">⠿</span><span class="station-title">GEO / Heritage</span><span class="station-role">Cyprus · Varna · Sweden</span></div><div class="content"><div class="geo-toolbar"><button class="btn active" data-geo-region="global">GLOBAL</button><button class="btn" data-geo-region="varna">VARNA</button><button class="btn" data-geo-region="sweden">SWEDEN</button><button class="btn" data-geo-region="cyprus">CYPRUS</button><button class="btn" id="geoReset">RESET</button></div><div id="geoStatus" class="geo-status">Loading geographic map and heritage locations…</div><div id="heritageMap" class="heritage-map" role="application" aria-label="Interactive heritage map"></div><div id="geoResults" class="geo-results"></div><div class="card" style="margin-top:8px"><h3>Heritage Map</h3><p>Geographic base map · selectable place markers · Sweden, Bulgaria and Cyprus. Verified source records will be added as a separate evidence layer.</p></div></div><span class="footer">geographic station</span></section>
 <section class="station" data-station="4"><div class="station-head"><span class="handle">⠿</span><span class="station-title">God's Eye View</span><span class="station-role">Global Graph</span></div><div class="content"><div class="godview"><div class="gv-core">MINDCORE</div><div class="gv-node gv-a">SENSOR</div><div class="gv-node gv-b">GEO</div><div class="gv-node gv-c">RESEARCH</div><div class="gv-node gv-d">SENSORS</div></div><div class="card"><h3>System overview</h3><p>Global state, relationships and active stations in one view.</p></div><div class="card"><h3>Execution security</h3><p>Security follows the execution domain: browser session, files, credentials and tools are scoped independently of agent role.</p></div></div><span class="footer">god's eye view</span></section>
 </main>
 </div>
@@ -173,6 +174,64 @@ else if(name==='Heritage Map'){const c=await fetch('/api/capabilities').then(r=>
 else if(name==='Evidence Graph'){const c=await fetch('/api/mindcloud/capabilities').then(r=>r.json());body.innerHTML='<article class="module-note"><h3>Evidence graph boundary</h3><p>Capability layers available: '+esc(Object.keys(c.layers||{}).length)+'</p><p>The backend exposes a capability graph; a full evidence-provenance graph and source-to-claim lineage UI are not implemented yet.</p>'+links+'</article>';}
 else {const r=await fetch('/api/agent-tools').then(r=>r.json());const found=(r.tools||[]).filter(t=>(t.id+' '+t.source+' '+t.layer).toLowerCase().includes(name.toLowerCase()));body.innerHTML='<article class="module-note"><h3>'+esc(name)+' · integration status</h3><p>'+ (found.length?'Registry match: '+found.map(t=>esc(t.id)+' ('+esc(t.status)+')').join(', '):'Not found in the live adapter registry.')+'</p><p>This module is a catalog entry only; this app exposes no live MiroFish execution endpoint.</p>'+links+'</article>';}
 }catch(e){body.innerHTML='<article class="module-note"><h3>Module check failed</h3><p>'+esc(e.message||e)+'</p>'+links+'</article>';}}
+})();
+</script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script>
+(function(){
+  const mapEl=document.getElementById('heritageMap');
+  if(!mapEl)return;
+  const statusEl=document.getElementById('geoStatus');
+  const resultsEl=document.getElementById('geoResults');
+  const regionButtons=[...document.querySelectorAll('[data-geo-region]')];
+  const places=[
+    {id:'varna-museum',name:'Varna Archaeological Museum',region:'varna',lat:43.2047,lng:27.9147,kind:'Museum',note:'Archaeological collections and regional heritage.',url:'https://archaeo.museumvarna.com/'},
+    {id:'varna',name:'Varna, Bulgaria',region:'varna',lat:43.2141,lng:27.9147,kind:'City / heritage hub',note:'Regional entry point for archaeological sites, museums and archives.',url:'https://visit.varna.bg/'},
+    {id:'sofia',name:'Sofia, Bulgaria',region:'varna',lat:42.6977,lng:23.3219,kind:'City / heritage hub',note:'National museums, churches, archives and cultural institutions.',url:'https://www.tourism.government.bg/'},
+    {id:'uppsala',name:'Uppsala, Sweden',region:'sweden',lat:59.8586,lng:17.6389,kind:'City / heritage hub',note:'Historic university city and regional collections.',url:'https://www.raa.se/'},
+    {id:'gamla-uppsala',name:'Gamla Uppsala',region:'sweden',lat:59.8983,lng:17.6331,kind:'Archaeological landscape',note:'Historic burial mounds and cultural landscape.',url:'https://www.raa.se/'},
+    {id:'stockholm',name:'Stockholm, Sweden',region:'sweden',lat:59.3293,lng:18.0686,kind:'City / heritage hub',note:'Museums, archives and national heritage institutions.',url:'https://www.raa.se/'},
+    {id:'paphos',name:'Nea Paphos Archaeological Park',region:'cyprus',lat:34.755,lng:32.405,kind:'Archaeological site',note:'Archaeological park on the western coast of Cyprus.',url:'https://www.visitcyprus.com/'},
+    {id:'kings-tombs',name:'Tombs of the Kings, Paphos',region:'cyprus',lat:34.772,lng:32.406,kind:'Necropolis',note:'Ancient necropolis and protected archaeological site.',url:'https://www.visitcyprus.com/'},
+    {id:'nicosia',name:'Nicosia, Cyprus',region:'cyprus',lat:35.1856,lng:33.3823,kind:'City / heritage hub',note:'Museums, historic districts and cultural institutions.',url:'https://www.visitcyprus.com/'}
+  ];
+  if(!window.L){statusEl.textContent='Map library failed to load. Check access to unpkg.com; the geographic map is not replaced with a fake graphic.';return;}
+  const map=L.map(mapEl,{zoomControl:true,preferCanvas:true}).setView([42,25],4);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap contributors</a>'}).addTo(map);
+  const markers=new Map();
+  const icon=L.divIcon({className:'',html:'<span style="display:block;width:13px;height:13px;border-radius:50%;background:#2388d9;border:2px solid white;box-shadow:0 1px 8px #10203099"></span>',iconSize:[13,13],iconAnchor:[6,6]});
+  function selectPlace(p){map.flyTo([p.lat,p.lng],Math.max(map.getZoom(),10),{duration:.5});markers.get(p.id)?.openPopup();}
+  places.forEach(p=>{
+    const m=L.marker([p.lat,p.lng],{icon,title:p.name}).addTo(map);
+    m.bindPopup('<b>'+p.name+'</b><br>'+p.kind+'<br>'+p.note+'<br><a href="'+p.url+'" target="_blank" rel="noopener">Institution / visitor source</a>');
+    markers.set(p.id,m);
+    m.on('click',()=>{[...resultsEl.children].forEach(el=>el.classList.toggle('active',el.dataset.place===p.id));});
+  });
+  function showRegion(region){
+    regionButtons.forEach(b=>b.classList.toggle('active',b.dataset.geoRegion===region));
+    if(region==='global'){map.flyToBounds(L.latLngBounds(places.map(p=>[p.lat,p.lng])).pad(.18),{duration:.5});statusEl.textContent='Global view · '+places.length+' mapped starter locations · base map © OpenStreetMap.';}
+    else{
+      const selected=places.filter(p=>p.region===region);
+      if(!selected.length)return;
+      map.flyToBounds(L.latLngBounds(selected.map(p=>[p.lat,p.lng])).pad(.35),{duration:.5});
+      const label={varna:'Bulgaria',sweden:'Sweden',cyprus:'Cyprus'}[region]||region;
+      statusEl.textContent=label+' · '+selected.length+' mapped starter locations · source links open separately.';
+    }
+    resultsEl.replaceChildren();
+    places.filter(p=>region==='global'||p.region===region).forEach(p=>{
+      const b=document.createElement('button');b.type='button';b.className='geo-place';b.dataset.place=p.id;
+      const name=document.createElement('b');name.textContent=p.name;
+      const detail=document.createElement('small');detail.textContent=p.kind+' · '+p.lat.toFixed(3)+', '+p.lng.toFixed(3);
+      b.append(name,detail);b.addEventListener('click',()=>selectPlace(p));resultsEl.appendChild(b);
+    });
+    setTimeout(()=>map.invalidateSize(),80);
+  }
+  regionButtons.forEach(b=>b.addEventListener('click',()=>showRegion(b.dataset.geoRegion)));
+  document.getElementById('geoReset')?.addEventListener('click',()=>{showRegion('global');map.setZoom(4);});
+  window.addEventListener('resize',()=>map.invalidateSize());
+  const station=document.querySelector('[data-station="3"]');
+  if(station){new MutationObserver(()=>{if(station.offsetParent!==null)map.invalidateSize();}).observe(station,{attributes:true,attributeFilter:['style','class']});}
+  showRegion('global');
 })();
 </script>
 </body>
