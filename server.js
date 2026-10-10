@@ -515,7 +515,7 @@ const server = http.createServer(async (req,res)=>{
     } catch(error) { sendJson(res,{error:error instanceof Error?error.message:String(error)},400); }
     return;
   }
-  if(pathname==="/api/adapters/execute" && req.method==="POST"){
+  // Both public entry points share the same authenticated adapter runtime, approval gate, audit, and evidence capture.\n  if((pathname==="/api/adapters/execute" || pathname==="/api/mindcloud/dispatch") && req.method==="POST"){
     const expectedToken = process.env.MINDCLOUD_TOOL_EXECUTION_TOKEN || "";
     const suppliedToken = (req.headers.authorization || "").replace(/^Bearer\s+/i, "");
     if (!expectedToken || !suppliedToken || suppliedToken.length !== expectedToken.length ||
