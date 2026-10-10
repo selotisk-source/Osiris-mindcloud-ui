@@ -2,7 +2,7 @@ const rufloMcp = require("./ruflo-mcp");
 const NATIVE = new Set(["overpass-turbo","google-street-view","shodan","opensanctions","subdomain-finder","mapillary","agentmemory","ruflo"]);
 
 function authorizedDomains() {
-  return (process.env.MINDCLOUD_AUTHORIZED_DOMAINS || "").split(",").map(value => value.trim().toLowerCase().replace(/^\\*\\./, "").replace(/\\.$/, "")).filter(value => /^(?=.{1,253}$)(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\\.)+[a-z]{2,63}$/.test(value));
+  return (process.env.MINDCLOUD_AUTHORIZED_DOMAINS || "").split(",").map(value => value.trim().toLowerCase().replace(/^[*.]+/, "").replace(/[.]$/, "")).filter(value => /^(?=.{1,253}$)(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?[.])+[a-z]{2,63}$/.test(value));
 }
 function isAuthorizedDomain(domain) {
   return authorizedDomains().some(allowed => domain === allowed || domain.endsWith("." + allowed));
