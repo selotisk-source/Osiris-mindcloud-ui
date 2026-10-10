@@ -7,6 +7,7 @@ const { AdapterRuntime } = require("./mindcloud/adapter-runtime");
 const { proxyCctvRequest } = require("./mindcloud/cctv-proxy");
 const { evaluateMetanoia } = require("./mindcloud/metanoia-engine");
 const { evaluateArena } = require("./mindcore/arena-skill");
+const { runArenaWorkflow } = require("./mindcloud/arena-workflow");
 const { EvidenceGraph } = require("./mindcloud/evidence-graph");
 
 const routerNetwork = createRouterNetwork();
@@ -251,6 +252,19 @@ const server = http.createServer(async (req,res)=>{
       sendJson(res, evaluateArena(input));
     } catch (error) {
       sendJson(res,{error:error instanceof Error ? error.message : String(error)},Number.isInteger(error.statusCode) ? error.statusCode : 400);
+    }
+    return;
+  }
+  if(pathname==="/api/mindcloud/arena/run" && req.method==="POST"){
+    const expectedToken = process.env.MINDCLOUD_EVIDENCE_WRITE_TOKEN || "";
+    if (!expectedToken) { sendJson(res,{error:"mindcloud_evidence_write_token_not_configured"},503); return; }
+    if (!tokenMatches(bearerToken(req), expectedToken)) { sendJson(res,{error:"unauthorized"},401); return; }
+    try {
+      const input = await readJson(req);
+      sendJson(res,runArenaWorkflow(input,evidenceGraph),201);
+    } catch(error) {
+      const message = error instanceof Error ? error.message : String(error);
+      sendJson(res,{error:message},Number.isInteger(error.statusCode) ? error.statusCode : 400);
     }
     return;
   }

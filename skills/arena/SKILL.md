@@ -34,5 +34,12 @@ Each candidate has a unique string id, string approach, non-empty tests array of
 promoteArenaSkill({ report, approved, revalidationPassed, skillId, evidenceRefs })
 Promotion requires a verified winner, explicit approval, and successful revalidation. The result deliberately sets registryWritePerformed to false; persistence is a separate operation.
 
+## Runtime workflow
+- `POST /api/mindcloud/arena/evaluate` evaluates candidates without writing evidence.
+- `POST /api/mindcloud/arena/run` runs the same evaluation and persists a report node, candidate nodes, per-test evidence nodes, and graph edges. It requires the server-configured `MINDCLOUD_EVIDENCE_WRITE_TOKEN` as a bearer token.
+- When no candidate qualifies, the workflow calls Metanoia, persists a review node, and links it to the report and candidates for targeted revalidation.
+- Read the evidence graph through the separately authenticated `GET /api/mindcloud/evidence-graph` endpoint.
+- The workflow is fail-closed for promotion: it never writes a skill to the registry or deploys a candidate. Explicit approval and independent revalidation remain separate gates.
+
 ## Initial pilot
-Use a low-risk code or documentation task with two or three candidate implementations and one deliberately failing candidate. Save the report and evidence with the project. Do not promote until the repository verification suite passes.
+Use a low-risk code or documentation task with two or three candidate implementations and one deliberately failing candidate. Save the report and evidence with the project. If no candidate qualifies, use the linked Metanoia review to decide which assumptions or tests to revise. Do not promote until the repository verification suite passes.

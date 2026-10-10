@@ -26,7 +26,7 @@ function evaluateArena(input = {}) {
     const testRate = passed / total;
     const checkRate = checks.length ? (checks.length - failedChecks.length) / checks.length : 1;
     const score = Math.round((testRate * 80 + checkRate * 20) * 100) / 100;
-    const evidenceComplete = candidate.tests.every(test => test.evidenceRef && String(test.evidenceRef).trim());
+    const evidenceComplete = candidate.tests.every(test => typeof test.evidenceRef === "string" && test.evidenceRef.trim().length > 0);
     const eligible = passed === total && failedChecks.length === 0 && evidenceComplete;
     return { id:candidate.id, approach:candidate.approach, score, tests:{total,passed,failed:total-passed}, failedChecks:failedChecks.map(check=>check && check.id || "unnamed_check"), evidenceComplete, eligible, status:eligible?"verified_candidate":"rejected_candidate" };
   }).sort((a,b)=>b.score-a.score || a.id.localeCompare(b.id));
