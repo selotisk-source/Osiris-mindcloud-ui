@@ -38,7 +38,7 @@ async function getJson(path) {
   assert.ok(runtime.mindcloud && runtime.memory && runtime.cctv, "runtime status missing component state");
 
   const overpass = await getJson("/api/adapters/overpass-turbo/health");
-  assert.equal(overpass.status, "healthy", "live Overpass provider health failed");
+  assert.equal(overpass.status, "healthy", "live Overpass provider health failed: " + JSON.stringify(overpass));
 
   const credentialGatedAdapters = {};
   for (const id of ["google-street-view", "shodan", "opensanctions"]) {
