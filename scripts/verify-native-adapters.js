@@ -6,12 +6,16 @@ const calls = [];
 global.fetch = async (url, options={}) => {
   const urlText=String(url);
   calls.push({url:urlText,options});
-  const unavailable=urlText.includes("overpass-primary") || urlText.includes("overpass-api.de") || urlText.includes("overpass.private.coffee") || urlText.includes("maps.mail.ru");
+  const isMainApi=urlText.includes("overpass-api.de")&&!urlText.includes("z.overpass-api.de")&&!urlText.includes("lz4.overpass-api.de");
+  const unavailable=urlText.includes("overpass-primary") || isMainApi || urlText.includes("overpass.private.coffee") || urlText.includes("maps.mail.ru") || urlText.includes("overpass.osm.jp");
   const failureStatus=urlText.includes("overpass-primary-500.test")?500:502;
+  const body=()=>urlText.includes("invalid-200.test")?{error:"upstream returned non-Overpass JSON"}:urlText.includes("graph.mapillary.com")?{data:[{id:"12345",thumb_1024_url:"https://images.example/12345.jpg",geometry:{type:"Point",coordinates:[27.9,43.2]},captured_at:1700000000}]}:urlText.includes("crt.sh")?[{name_value:"www.example.com\napi.example.com\n*.example.com\nnotexample.com"}]:urlText.includes("cloudflare-dns.com")?{Status:0,Answer:[{name:"www.example.com",type:1,data:"203.0.113.10",TTL:60}]}:urlText.includes("overpass.osm.jp")?{elements:[]}:urlText.includes("overpass.test")?{elements:[{type:"node",id:7,lat:43.2,lon:27.9,tags:{name:"Test point"}}]}:{mock:true,items:[],status:"OK"};
   return {
     ok:!unavailable,status:unavailable?failureStatus:200,
     headers:{get:(key)=>key.toLowerCase()==="content-type"?"application/json":"application/json"},
-    json:async()=>urlText.includes("graph.mapillary.com")?{data:[{id:"12345",thumb_1024_url:"https://images.example/12345.jpg",geometry:{type:"Point",coordinates:[27.9,43.2]},captured_at:1700000000}]}:urlText.includes("crt.sh")?[{name_value:"www.example.com\napi.example.com\n*.example.com\nnotexample.com"}]:urlText.includes("cloudflare-dns.com")?{Status:0,Answer:[{name:"www.example.com",type:1,data:"203.0.113.10",TTL:60}]}:urlText.includes("overpass.osm.jp")?{elements:[]}:urlText.includes("overpass.test")?{elements:[{type:"node",id:7,lat:43.2,lon:27.9,tags:{name:"Test point"}}]}:{mock:true,items:[],status:"OK"}
+    json:async()=>body(),
+    clone:()=>({json:async()=>body()}),
+    body:{cancel:async()=>{}}
   };
 };
 
@@ -114,13 +118,23 @@ global.fetch = async (url, options={}) => {
   process.env.OVERPASS_API_URL="https://overpass-api.de/api/interpreter";
   const defaultMirrorHealth=await native.health("overpass-turbo");
   assert.equal(defaultMirrorHealth.status,"healthy");
-  assert.equal(defaultMirrorHealth.endpoint,"https://overpass.osm.jp/api/interpreter");
-  assert.deepEqual(calls.slice(15,19).map(call=>call.url),[
+  assert.equal(defaultMirrorHealth.endpoint,"https://lz4.overpass-api.de/api/interpreter");
+  assert.deepEqual(calls.slice(15,21).map(call=>call.url),[
     "https://overpass-api.de/api/interpreter",
     "https://overpass.private.coffee/api/interpreter",
     "https://maps.mail.ru/osm/tools/overpass/api/interpreter",
-    "https://overpass.osm.jp/api/interpreter"
+    "https://overpass.osm.jp/api/interpreter",
+    "https://z.overpass-api.de/api/interpreter",
+    "https://lz4.overpass-api.de/api/interpreter"
   ]);
+
+  process.env.OVERPASS_API_URL="https://overpass-invalid-200.test/api/interpreter";
+  process.env.OVERPASS_API_FALLBACKS="https://overpass.test/api/interpreter";
+  const invalidBodyFallback=await native.health("overpass-turbo");
+  assert.equal(invalidBodyFallback.status,"healthy");
+  assert.equal(invalidBodyFallback.endpoint,"https://overpass.test/api/interpreter");
+  assert.equal(calls[21].url,"https://overpass-invalid-200.test/api/interpreter");
+  assert.equal(calls[22].url,"https://overpass.test/api/interpreter");
 
   assert.equal(native.supports("agentmemory"),true);
   assert.equal(native.state("agentmemory").configured,true);
@@ -143,5 +157,5 @@ global.fetch = async (url, options={}) => {
   const unsupportedMemory=await native.execute({id:"agentmemory",operation:"forget",input:{},requestId:"test-memory-forget"});
   assert.equal(unsupportedMemory.error,"operation_not_supported");
 
-  console.log("native-adapters: verified Overpass four-mirror failover, free passive subdomain/DNS, Mapillary, credential-gated APIs and Cognee-backed AgentMemory");
+  console.log("native-adapters: verified Overpass six-mirror failover and invalid-200-response failover, free passive subdomain/DNS, Mapillary, credential-gated APIs and Cognee-backed AgentMemory");
 })().catch(error=>{console.error(error);process.exitCode=1;}).finally(()=>{global.fetch=originalFetch;});
