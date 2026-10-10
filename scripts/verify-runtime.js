@@ -75,6 +75,15 @@ async function waitForHealth(child) {
     assert.ok(runtime.body.cctv);
     assert.ok(runtime.body.memory);
 
+    const spatial = await get("/api/mindcloud/suggest?goal=planetary%20situational%20awareness");
+    assert.equal(spatial.status, 200);
+    assert.ok(Array.isArray(spatial.body.recipes));
+    assert.ok(spatial.body.recipes.some((recipe) => recipe.id === "planetary-situational-awareness"));
+
+    const tooling = await get("/api/agent-tools");
+    assert.equal(tooling.status, 200);
+    assert.ok(JSON.stringify(tooling.body).includes("gigacity-spatial"));
+
     const sidepanel = fs.readFileSync(path.join(root, "extension", "sidepanel.html"), "utf8");
     const manifest = fs.readFileSync(path.join(root, "extension", "manifest.json"), "utf8");
     assert.match(sidepanel, /Station A · Brave \/ Runtime/);
