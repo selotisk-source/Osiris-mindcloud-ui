@@ -8,7 +8,7 @@ global.fetch = async (url, options={}) => {
   return {
     ok:true,status:200,
     headers:{get:(key)=>key.toLowerCase()==="content-type"?"application/json":"application/json"},
-    json:async()=>({mock:true,items:[],status:"OK"})
+    json:async()=>String(url).includes("overpass.test")?{elements:[{type:"node",id:7,lat:43.2,lon:27.9,tags:{name:"Test point"}}]}:{mock:true,items:[],status:"OK"}
   };
 };
 
@@ -31,6 +31,9 @@ global.fetch = async (url, options={}) => {
   assert.equal(calls[0].url,"https://overpass.test/api/interpreter");
   assert.match(calls[0].options.body,/data=/);
   assert.equal(overpass.evidence.requestId,"test-overpass");
+  const geojson=await native.execute({id:"overpass-turbo",operation:"export_geojson",input:{query:"[out:json];node(1);out;"},requestId:"test-geojson"});
+  assert.equal(geojson.result.type,"FeatureCollection");
+  assert.deepEqual(geojson.result.features[0].geometry,{type:"Point",coordinates:[27.9,43.2]});
 
   const street=await native.execute({id:"google-street-view",operation:"metadata",input:{location:"Varna, Bulgaria"},requestId:"test-street"});
   assert.equal(street.ok,true);
