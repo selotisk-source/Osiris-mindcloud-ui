@@ -1,4 +1,6 @@
 const SERVICE_URL = (process.env.BROWSER_USE_SERVICE_URL || "").replace(/\/$/, "");
+const SERVICE_TOKEN = process.env.BROWSER_USE_API_KEY || "";
+const ALLOWED = new Set(["browse", "navigate", "click", "type", "extract", "screenshot"]);
 
 function requireService() {
   if (!SERVICE_URL) {
@@ -9,17 +11,13 @@ function requireService() {
   return SERVICE_URL;
 }
 
-async function execute(operation, input = {}) {
+async function request(path, options = {}, timeout = 15000) {
   const service = requireService();
-  const response = await fetch(service + "/execute", {
-    method: "POST",
-    headers: {"content-type": "application/json"},
-    body: JSON.stringify({operation, input}),
-    signal: AbortSignal.timeout(Number(process.env.BROWSER_USE_TIMEOUT_MS || 15000))
-  });
-  const text = await response.text();
+  const headers = {"content-type":"application/json", ...(SERVICE_TOKEN ? {"authorization": "Bearer " + SERVICE_TOKEN} : {}), ...(options.headers || {})};
+  const response = await fetch(service + path, {...options, headers, signal:AbortSignal.timeout(timeout)});
+  const raw = await response.text();
   let data;
-  try { data = text ? JSON.parse(text) : {}; } catch { data = {raw:text}; }
+  try { data = raw ? JSON.parse(raw) : {}; } catch { data = {raw}; }
   if (!response.ok) {
     const error = new Error("browser_use_service_error");
     error.code = "REMOTE_ERROR";
@@ -27,19 +25,39 @@ async function execute(operation, input = {}) {
     error.details = data;
     throw error;
   }
-  return {tool:"browser-use", operation, status:"verified", data};
+  return data;
+}
+
+async function execute(operation, input = {}) {
+  if (!ALLOWED.has(operation)) {
+    const error = new Error("unsupported_browser_use_operation");
+    error.code = "INVALID_OPERATION";
+    throw error;
+  }
+  const task = typeof input.task === "string" ? input.task : ({
+    browse: "Browse the supplied URL and report the requested findings.",
+    navigate: "Navigate to the supplied URL and report the resulting page state.",
+    click: "On the supplied page, click the specified element and report the result.",
+    type: "On the supplied page, enter the supplied text in the specified field and report the result.",
+    extract: "Extract the requested information from the supplied URL or current page.",
+    screenshot: "Capture a screenshot of the supplied URL and report the result."
+  })[operation];
+  const result = await request("/v1/run", {
+    method:"POST",
+    body:JSON.stringify({task, instructions: JSON.stringify(input), max_steps: Number(process.env.BROWSER_USE_MAX_STEPS || 15)})
+  }, Number(process.env.BROWSER_USE_TIMEOUT_MS || 60000));
+  return {tool:"browser-use", operation, status:"executed", result};
 }
 
 async function health() {
-  const service = requireService();
-  const response = await fetch(service + "/health", {signal:AbortSignal.timeout(2500)});
-  return {status: response.ok ? "healthy" : "degraded", httpStatus: response.status, endpoint: service};
+  const data = await request("/health", {method:"GET"}, 3000);
+  return {status:"healthy", endpoint:SERVICE_URL, result:data};
 }
 
 module.exports = {
-  id: "browser-use",
-  mode: "remote-execution-bridge",
-  policy: "No browser session, credentials, or computer-use authority is assumed. The configured Browser Use service owns execution.",
+  id:"browser-use",
+  mode:"http-rest-bridge",
+  policy:"Uses Browser Use self-hosted REST API /v1/run. Never supply secrets in task input. Execution requires a configured endpoint and model-provider credentials on the Browser Use service.",
   execute,
   health
 };
