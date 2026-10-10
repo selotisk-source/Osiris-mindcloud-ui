@@ -20,6 +20,44 @@ function send(res, status, body, type = "application/json; charset=utf-8") {
   res.end(body);
 }
 
+function probeBackendThroughProxy() {
+  return new Promise((resolve) => {
+    const request = http.request({
+      hostname: "127.0.0.1",
+      port: PORT,
+      path: "/api/mindcloud/status",
+      method: "GET",
+      headers: { accept: "application/json" }
+    }, (response) => {
+      let body = "";
+      response.setEncoding("utf8");
+      response.on("data", (chunk) => {
+        body += chunk;
+        if (body.length > 1024 * 1024) response.destroy(new Error("probe_response_too_large"));
+      });
+      response.on("end", () => {
+        let parsed = null;
+        try { parsed = JSON.parse(body); } catch {}
+        const valid = response.statusCode >= 200 && response.statusCode < 300 &&
+          parsed !== null && typeof parsed === "object" && !Array.isArray(parsed);
+        resolve({
+          ok: valid,
+          status: response.statusCode || 0,
+          error: valid ? null : "proxy_upstream_response_invalid"
+        });
+      });
+      response.on("error", () => resolve({ ok: false, status: response.statusCode || 0, error: "proxy_probe_response_error" }));
+    });
+    request.setTimeout(7000, () => request.destroy(new Error("proxy_probe_timeout")));
+    request.on("error", (error) => resolve({
+      ok: false,
+      status: 0,
+      error: error.code || error.message || "proxy_probe_failed"
+    }));
+    request.end();
+  });
+}
+
 function proxy(req, res) {
   if (!BACKEND_URL) {
     send(res, 503, JSON.stringify({ error: "mindcloud_backend_url_not_configured" }));
@@ -62,6 +100,31 @@ const server = http.createServer((req, res) => {
   const url = new URL(req.url || "/", "http://frontend.local");
   if (req.method === "GET" && url.pathname === "/health") {
     send(res, 200, JSON.stringify({ status: "healthy", service: "mindcloud-frontend", backendConfigured: Boolean(BACKEND_URL) }));
+    return;
+  }
+  if (req.method === "GET" && url.pathname === "/ready") {
+    probeBackendThroughProxy().then((probe) => {
+      if (probe.ok) {
+        send(res, 200, JSON.stringify({
+          status: "ready",
+          service: "mindcloud-frontend",
+          backend: "reachable",
+          proxy: "verified",
+          upstreamStatus: probe.status
+        }));
+      } else {
+        send(res, 503, JSON.stringify({
+          status: "not_ready",
+          service: "mindcloud-frontend",
+          backend: "unreachable",
+          proxy: "failed",
+          error: probe.error || "backend_probe_failed",
+          upstreamStatus: probe.status || null
+        }));
+      }
+    }).catch(() => {
+      send(res, 503, JSON.stringify({ status: "not_ready", service: "mindcloud-frontend", backend: "unreachable", proxy: "failed" }));
+    });
     return;
   }
   if (url.pathname.startsWith("/api/") || url.pathname.startsWith("/newsletters/")) {
