@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import { spawn } from "node:child_process";
 
-const timeoutMs = Number(process.env.RUFLO_MCP_TIMEOUT_MS ?? 30000);
+const timeoutMs = Number(process.env.RUFLO_MCP_TIMEOUT_MS ?? 120000);
 const child = spawn("npx", ["-y", "ruflo@latest", "mcp", "start"], {
   stdio: ["pipe", "pipe", "pipe"],
   env: { ...process.env, NO_COLOR: "1" },
