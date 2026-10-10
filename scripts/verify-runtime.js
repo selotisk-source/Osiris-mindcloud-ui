@@ -34,8 +34,8 @@ async function waitForHealth(child) {
 (async () => {
   const mockAdapter = http.createServer((req,res) => {
     res.setHeader("content-type","application/json; charset=utf-8");
-    if (req.method === "GET" && req.url === "/health") { res.writeHead(200); res.end(JSON.stringify({status:"ok"})); return; }
-    if (req.method === "POST" && req.url === "/execute") {
+    if (req.method === "GET" && req.url === "/health") { res.writeHead(200); res.end(JSON.stringify({status:"healthy",browserEngine:"browserless-chromium",persistentSessions:true})); return; }
+    if (req.method === "POST" && req.url === "/v1/run" && req.headers.authorization === "Bearer test-token") {
       let body = "";
       req.on("data", chunk => { body += chunk; });
       req.on("end", () => { res.writeHead(200); res.end(JSON.stringify({ok:true,received:JSON.parse(body)})); });
@@ -46,7 +46,7 @@ async function waitForHealth(child) {
   await new Promise(resolve => mockAdapter.listen(39128,"127.0.0.1",resolve));
   const child = spawn(process.execPath, ["server.js"], {
     cwd: root,
-    env: { ...process.env, PORT: String(port), CCTV_SOURCE_URL: "", COGNEE_SERVICE_URL: "", BROWSER_USE_SERVICE_URL: "http://127.0.0.1:39128" },
+    env: { ...process.env, PORT: String(port), CCTV_SOURCE_URL: "", COGNEE_SERVICE_URL: "", BROWSER_USE_SERVICE_URL: "http://127.0.0.1:39128", BROWSER_USE_API_KEY: "test-token" },
     stdio: ["ignore", "pipe", "pipe"]
   });
 
@@ -114,6 +114,7 @@ async function waitForHealth(child) {
     const adapterHealth = await get("/api/adapters/browser-use/health");
     assert.equal(adapterHealth.status,200);
     assert.equal(adapterHealth.body.status,"healthy");
+    assert.equal(adapterHealth.body.browserEngine,"browserless-chromium");
     const adapterRun = await post("/api/adapters/execute",{id:"browser-use",operation:"browse",input:{url:"https://example.com"}});
     assert.equal(adapterRun.status,200);
     assert.equal(adapterRun.body.ok,true);
