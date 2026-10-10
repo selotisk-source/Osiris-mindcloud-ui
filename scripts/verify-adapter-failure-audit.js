@@ -77,12 +77,35 @@ const { AdapterRuntime } = require("../mindcloud/adapter-runtime");
     assert.equal(runtime.audit[1].id, "test-adapter-two");
     assert.equal(runtime.audit[1].ok, false);
 
+    // Historical execution success must not hide a later failed health probe.
+    runtime.audit.push({
+      id: "test-adapter",
+      operation: "inspect",
+      ok: true,
+      requestId: "historical-success",
+      timestamp: new Date().toISOString()
+    });
+    runtime.audit.push({
+      id: "test-adapter",
+      operation: "health",
+      ok: false,
+      result: { status: "offline" },
+      requestId: "later-health-failure",
+      timestamp: new Date().toISOString()
+    });
+    const degradedSnapshot = runtime.snapshot();
+    const degradedAdapter = degradedSnapshot.adapters.find(adapter => adapter.id === "test-adapter");
+    assert.equal(degradedAdapter.runtime.readiness, "degraded", "latest failed health probe must override historical readiness");
+    assert.equal(degradedAdapter.runtime.verification.status, "verified", "historical execution evidence remains available separately");
+
     console.log(JSON.stringify({
       status: "verified",
       checks: [
         "provider-failure-returned-as-structured-result",
         "failed-execution-audited-with-matching-request-id",
         "failed-execution-not-marked-verified",
+        "later-health-failure-overrides-readiness",
+        "historical-verification-evidence-is-preserved",
         "non-idempotent-operation-not-retried"
       ],
       adaptersTested: 2,
