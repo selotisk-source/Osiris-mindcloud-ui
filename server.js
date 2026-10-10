@@ -212,9 +212,26 @@ async function runMindcloudSelfTest() {
   const memory = await cogneeHealth();
   const memoryRoundTrip = memory.status === "healthy" ? await cogneeMemoryRoundTrip() : {status:memory.status,persisted:false};
   const browserUse = await adapters.health("browser-use");
-  const browserExecution = browserUse.status === "healthy"
-    ? await adapters.execute({id:"browser-use",operation:"browse",input:{url:"https://example.com",sessionId:"mindcloud-e2e-selftest",waitUntil:"domcontentloaded",timeout:15000}})
-    : {ok:false,error:"browser_use_not_healthy"};
+  let browserExecutionAttempts = 0;
+  let browserExecution = {ok:false,error:"browser_use_not_healthy"};
+  if (browserUse.status === "healthy") {
+    for (let attempt = 1; attempt <= 2; attempt++) {
+      browserExecutionAttempts = attempt;
+      browserExecution = await adapters.execute({
+        id:"browser-use",
+        operation:"browse",
+        input:{url:"https://example.com",sessionId:"mindcloud-e2e-selftest-" + taskId,waitUntil:"domcontentloaded",timeout:15000}
+      });
+      const succeeded = Boolean(browserExecution.ok && browserExecution.result?.status === "executed" && browserExecution.result?.httpStatus >= 200 && browserExecution.result?.httpStatus < 400);
+      if (succeeded) break;
+      const status = Number(browserExecution.status ?? browserExecution.result?.httpStatus);
+      const detail = [browserExecution.error,browserExecution.result?.error,browserExecution.result?.message].filter(Boolean).join(" ");
+      const transient = [408,429,500,502,503,504].includes(status) ||
+        /target page, context or browser has been closed|browser_execution_failed|temporarily unavailable/i.test(detail);
+      if (attempt === 2 || !transient) break;
+      await new Promise(resolve => setTimeout(resolve, 500));
+    }
+  }
   const browserExecutionOk = Boolean(browserExecution.ok && browserExecution.result?.status === "executed" && browserExecution.result?.httpStatus >= 200 && browserExecution.result?.httpStatus < 400);
   const coreChecks = [
     {id:"task-routed",ok:Boolean(routeResult && routeResult.taskId === taskId && routeResult.status === "routed")},
@@ -226,7 +243,7 @@ async function runMindcloudSelfTest() {
     {id:"cognee-memory-health",ok:memory.status === "healthy",status:memory.status},
     {id:"cognee-memory-persistence",ok:memoryRoundTrip.status === "healthy" && memoryRoundTrip.persisted === true,status:memoryRoundTrip.status,mode:memoryRoundTrip.mode || null},
     {id:"browser-use-health",ok:browserUse.status === "healthy",status:browserUse.status,browserEngine:browserUse.browserEngine || null},
-    {id:"browser-use-execution",ok:browserExecutionOk,status:browserExecution.ok ? "executed" : browserExecution.error || "failed",httpStatus:browserExecution.result?.httpStatus ?? browserExecution.status ?? null}
+    {id:"browser-use-execution",ok:browserExecutionOk,status:browserExecutionOk ? "executed" : browserExecution.error || browserExecution.result?.error || "failed",httpStatus:browserExecution.result?.httpStatus ?? browserExecution.status ?? null,attempts:browserExecutionAttempts}
   ];
   const coreOk = coreChecks.every(check => check.ok);
   const integrationsOk = integrationChecks.every(check => check.ok);
@@ -243,12 +260,14 @@ async function runMindcloudSelfTest() {
       browserUse,
       browserExecution:browserExecutionOk ? {
         status:"executed",
+        attempts:browserExecutionAttempts,
         httpStatus:browserExecution.result.httpStatus,
         title:browserExecution.result.title,
         url:browserExecution.result.url,
         sessionId:browserExecution.result.sessionId
       } : {
         status:"failed",
+        attempts:browserExecutionAttempts,
         error:browserExecution.error || browserExecution.result?.error || "browser_execution_failed",
         message:browserExecution.result?.message || null
       }
