@@ -141,7 +141,8 @@ async function waitForHealth(child) {
     assert.equal(selftest.body.type,"mindcloud_e2e_selftest");
     assert.equal(selftest.body.core.status,"passed");
     assert.equal(selftest.body.status,"degraded");
-    assert.ok(selftest.body.integrations.checks.some(check=>check.id==="cognee-memory" && !check.ok));
+    assert.ok(selftest.body.integrations.checks.some(check=>check.id==="cognee-memory-health" && !check.ok));
+    assert.ok(selftest.body.integrations.checks.some(check=>check.id==="cognee-memory-persistence" && !check.ok));
     assert.ok(selftest.body.integrations.checks.some(check=>check.id==="browser-use-execution" && check.ok));
 
     const unknownApi = await get("/api/internal/does-not-exist");
