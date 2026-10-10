@@ -101,6 +101,8 @@ async function waitForHealth(child) {
     assert.equal(cctv.body.proxyStatus, "implemented");
     assert.equal(cctv.body.proxyAuthStatus, "credentials-missing");
     assert.equal(cctv.body.streamStatus, "unconfigured");
+    assert.equal(cctv.body.frameStatus, "unconfigured");
+    assert.equal(cctv.body.evidenceStatus, "unavailable");
     assert.equal(cctv.body.access, "unconfigured");
 
     const adapters = await get("/api/adapters");
