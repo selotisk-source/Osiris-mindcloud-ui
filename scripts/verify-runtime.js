@@ -8,6 +8,7 @@ const os = require("node:os");
 const { VersionHistory } = require("../mindcloud/version-history");
 const storeDir = fs.mkdtempSync(path.join(os.tmpdir(), "mindcloud-versions-"));
 const storePath = path.join(storeDir, "versions.json");
+const unitStorePath = path.join(storeDir, "unit-versions.json");
 
 const port = 39127;
 const base = `http://127.0.0.1:${port}`;
@@ -76,9 +77,9 @@ async function waitForHealth(child) {
     const taskEvents = await get("/api/mindcloud/events?taskId="+encodeURIComponent(taskId));
     assert.ok(taskEvents.body.events.some(event=>event.taskId===taskId && event.type==="complete"));
 
-    const persistedHistory = new VersionHistory({name:"test-model"},{storePath});
+    const persistedHistory = new VersionHistory({name:"test-model"},{storePath:unitStorePath});
     const persistedVersion = persistedHistory.create({model:{durable:true},rationale:"Persist for restart test",evidenceRefs:["test:durable"]});
-    const reopenedHistory = new VersionHistory({name:"ignored-on-load"},{storePath});
+    const reopenedHistory = new VersionHistory({name:"ignored-on-load"},{storePath:unitStorePath});
     assert.equal(reopenedHistory.get(persistedVersion.id).model.durable,true);
     assert.equal(reopenedHistory.get(persistedVersion.id).rationale,"Persist for restart test");
     assert.equal(reopenedHistory.get(persistedVersion.id).modelHash,persistedVersion.modelHash);
