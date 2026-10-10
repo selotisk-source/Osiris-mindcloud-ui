@@ -20,6 +20,11 @@ const PROVIDERS = Object.freeze({
     id: "deepseek", label: "DeepSeek", envKey: "DEEPSEEK_API_KEY", protocol: "openai-chat-completions",
     defaultModel: process.env.DEEPSEEK_MODEL || "deepseek-flash",
     endpoint: () => "https://api.deepseek.com/chat/completions"
+  },
+  kimi: {
+    id: "kimi", label: "Kimi", envKey: "KIMI_API_KEY", protocol: "openai-chat-completions",
+    defaultModel: process.env.KIMI_MODEL || "kimi-k3",
+    endpoint: () => (process.env.KIMI_BASE_URL || "https://api.moonshot.ai/v1").replace(/\\/$/, "") + "/chat/completions"
   }
 });
 
@@ -110,7 +115,7 @@ function createProviderNetwork(config = {}) {
   async function collaborate({ goal, providerIds, rounds = 2, tokenBudget = 6000, maxTokensPerCall = 1200 } = {}) {
     const cleanGoal = String(goal || "").trim().slice(0, 4000);
     if (!cleanGoal) throw Object.assign(new Error("provider_network_goal_required"), { code: "provider_network_goal_required" });
-    const selected = [...new Set((Array.isArray(providerIds) ? providerIds : []).filter(id => Object.hasOwn(PROVIDERS, id)))].slice(0, 4);
+    const selected = [...new Set((Array.isArray(providerIds) ? providerIds : []).filter(id => Object.hasOwn(PROVIDERS, id)))].slice(0, 5);
     if (!selected.length) throw Object.assign(new Error("provider_network_provider_required"), { code: "provider_network_provider_required" });
     const roundLimit = boundedInteger(rounds, 2, 1, 3);
     const totalBudget = boundedInteger(tokenBudget, 6000, 256, 24000);
