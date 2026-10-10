@@ -68,14 +68,16 @@ class AdapterRuntime {
     const runtimeOperations=this.runtimeState(tool).operations;
     if(!tool.operations?.includes(operation))return this.record(requestId,{ok:false,error:"operation_not_allowed",id,operation});
     if(!runtimeOperations.includes(operation))return this.record(requestId,{ok:false,error:"operation_not_implemented",id,operation,implementedOperations:runtimeOperations});
+    const inputContract = require("./adapter-contracts").validateAdapterInput(id,operation,input);
+    if(!inputContract.ok)return this.record(requestId,{ok:false,id,operation,error:inputContract.error,details:inputContract.details,contract:{version:"1.0",inputValidation:"rejected"}});
     if(operation==="health") {
       const result=await this.health(id);
-      return this.record(requestId,{ok:Boolean(result?.ok),id,operation,result,execution:{contractVersion:"1.0",attempts:1,retries:0,retryPolicy:"health-probe",recovered:false}});
+      return this.record(requestId,{ok:Boolean(result?.ok),id,operation,result,execution:{contractVersion:"1.0",inputContractVersion:inputContract.version,inputValidation:inputContract.mode,attempts:1,retries:0,retryPolicy:"health-probe",recovered:false}});
     }
     if(tool.security&&!approved)return this.record(requestId,{ok:false,error:"human_approval_required",id,operation});
     if(native.supports(id)) {
       const run = await require("./adapter-policy").executeWithRetry(operation, () => native.execute({id,operation,input,requestId}));
-      return this.record(requestId,{id,operation,...(run.value || {ok:false,error:"adapter_execution_failed"}),execution:run.execution});
+      return this.record(requestId,{id,operation,...(run.value || {ok:false,error:"adapter_execution_failed"}),execution:{...run.execution,inputContractVersion:inputContract.version,inputValidation:inputContract.mode}});
     }
     const endpoint=this.endpointFor(id);
     if(!endpoint)return this.record(requestId,{ok:false,error:"adapter_not_configured",id,operation});
@@ -92,7 +94,7 @@ class AdapterRuntime {
       else result={contentType,raw:await response.text()};
       return {ok:response.ok,id,operation,status:response.status,result};
     });
-    return this.record(requestId,{id,operation,...(run.value || {ok:false,error:"adapter_execution_failed"}),execution:run.execution});
+    return this.record(requestId,{id,operation,...(run.value || {ok:false,error:"adapter_execution_failed"}),execution:{...run.execution,inputContractVersion:inputContract.version,inputValidation:inputContract.mode}});
   }
 
   record(requestId,result){this.audit.push({requestId,timestamp:new Date().toISOString(),...result});return result;}
