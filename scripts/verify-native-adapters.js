@@ -4,15 +4,18 @@ const native = require("../mindcloud/native-adapters");
 const originalFetch = global.fetch;
 const calls = [];
 global.fetch = async (url, options={}) => {
-  calls.push({url:String(url),options});
+  const urlText=String(url);
+  calls.push({url:urlText,options});
+  const unavailable=urlText.includes("overpass-primary.test");
   return {
-    ok:true,status:200,
+    ok:!unavailable,status:unavailable?502:200,
     headers:{get:(key)=>key.toLowerCase()==="content-type"?"application/json":"application/json"},
-    json:async()=>String(url).includes("graph.mapillary.com")?{data:[{id:"12345",thumb_1024_url:"https://images.example/12345.jpg",geometry:{type:"Point",coordinates:[27.9,43.2]},captured_at:1700000000}]}:String(url).includes("crt.sh")?[{name_value:"www.example.com\napi.example.com\n*.example.com\nnotexample.com"}]:String(url).includes("cloudflare-dns.com")?{Status:0,Answer:[{name:"www.example.com",type:1,data:"203.0.113.10",TTL:60}]}:String(url).includes("overpass.test")?{elements:[{type:"node",id:7,lat:43.2,lon:27.9,tags:{name:"Test point"}}]}:{mock:true,items:[],status:"OK"}
+    json:async()=>urlText.includes("graph.mapillary.com")?{data:[{id:"12345",thumb_1024_url:"https://images.example/12345.jpg",geometry:{type:"Point",coordinates:[27.9,43.2]},captured_at:1700000000}]}:urlText.includes("crt.sh")?[{name_value:"www.example.com\napi.example.com\n*.example.com\nnotexample.com"}]:urlText.includes("cloudflare-dns.com")?{Status:0,Answer:[{name:"www.example.com",type:1,data:"203.0.113.10",TTL:60}]}:urlText.includes("overpass.test")?{elements:[{type:"node",id:7,lat:43.2,lon:27.9,tags:{name:"Test point"}}]}:{mock:true,items:[],status:"OK"}
   };
 };
 
 (async()=>{
+  delete process.env.OVERPASS_API_FALLBACKS;
   process.env.OVERPASS_API_URL="https://overpass.test/api/interpreter";
   process.env.GOOGLE_MAPS_API_KEY="test-google-key";
   process.env.SHODAN_API_KEY="test-shodan-key";
@@ -78,8 +81,22 @@ global.fetch = async (url, options={}) => {
   assert.equal(mapillary.result.data[0].id,"12345");
   assert.match(calls[8].url,/graph\.mapillary\.com\/images/);
   assert.equal(calls[8].options.headers.authorization,"OAuth test-mapillary-token");
+
   const invalidMapillary=await native.execute({id:"mapillary",operation:"search",input:{bbox:"28,43,27,44"},requestId:"test-mapillary-invalid"});
   assert.equal(invalidMapillary.error,"valid_bbox_required");
 
-  console.log("native-adapters: verified Overpass, free passive subdomain/DNS, Mapillary and existing credential-gated API contracts");
+  process.env.OVERPASS_API_URL="https://overpass-primary.test/api/interpreter";
+  process.env.OVERPASS_API_FALLBACKS="https://overpass.test/api/interpreter";
+  const fallbackHealth=await native.health("overpass-turbo");
+  assert.equal(fallbackHealth.status,"healthy");
+  assert.equal(fallbackHealth.endpoint,"https://overpass.test/api/interpreter");
+  assert.equal(calls[9].url,"https://overpass-primary.test/api/interpreter");
+  assert.equal(calls[10].url,"https://overpass.test/api/interpreter");
+  const fallbackQuery=await native.execute({id:"overpass-turbo",operation:"query",input:{query:"[out:json];node(1);out;"},requestId:"test-overpass-fallback"});
+  assert.equal(fallbackQuery.ok,true);
+  assert.equal(fallbackQuery.evidence.source,"https://overpass.test/api/interpreter");
+  assert.equal(calls[11].url,"https://overpass-primary.test/api/interpreter");
+  assert.equal(calls[12].url,"https://overpass.test/api/interpreter");
+
+  console.log("native-adapters: verified Overpass mirror failover, free passive subdomain/DNS, Mapillary and credential-gated API contracts");
 })().catch(error=>{console.error(error);process.exitCode=1;}).finally(()=>{global.fetch=originalFetch;});
