@@ -35,7 +35,6 @@ function readJson(req) {
 }
 function cctvResponse() {
   const source = process.env.CCTV_SOURCE_URL || null;
-  const publicAccess = process.env.CCTV_PUBLIC_ACCESS === "true";
   let protocol = null;
   try { protocol = source ? new URL(source).protocol.replace(":", "").toUpperCase() : null; } catch {}
   return {
@@ -47,7 +46,7 @@ function cctvResponse() {
     streamStatus: source ? "unverified" : "unconfigured",
     proxyStatus: "implemented",
     proxyAuthStatus: process.env.CCTV_PROXY_TOKEN ? "configured" : "credentials-missing",
-    access: source ? (publicAccess ? "public" : "osiris-controlled") : "unconfigured"
+    access: source ? "osiris-controlled" : "unconfigured"
   };
 }
 async function cogneeHealth() {
@@ -233,7 +232,7 @@ const server = http.createServer(async (req,res)=>{
   if(pathname==="/api/liveness/route"){sendJson(res,{type:"mindcloud_live_liveness",capability:"route-variation",status:"available",policy:"safety-first-accessibility-second-controlled-variation",humanApprovalRequired:true});return;}
   if(pathname==="/api/cctv/stream" && req.method==="GET"){
     const expectedToken = process.env.CCTV_PROXY_TOKEN || "";
-    const suppliedToken = (req.headers.authorization || "").replace(/^Bearer\\s+/i, "");
+    const suppliedToken = (req.headers.authorization || "").replace(/^Bearer\s+/i, "");
     if (!expectedToken) { sendJson(res,{error:"cctv_proxy_token_not_configured"},503); return; }
     if (!suppliedToken || suppliedToken.length !== expectedToken.length ||
         !require("node:crypto").timingSafeEqual(Buffer.from(suppliedToken), Buffer.from(expectedToken))) {
@@ -245,7 +244,7 @@ const server = http.createServer(async (req,res)=>{
       try {
         if (encodedResource.length > 8192) throw new Error("resource_too_long");
         resource = Buffer.from(encodedResource, "base64url").toString("utf8");
-        if (!resource || !/^https?:\\/\\//i.test(resource)) throw new Error("invalid_resource");
+        if (!resource || !/^https?:\/\//i.test(resource)) throw new Error("invalid_resource");
       } catch {
         sendJson(res,{error:"cctv_resource_invalid_encoding"},400); return;
       }
