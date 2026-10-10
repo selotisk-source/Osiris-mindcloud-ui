@@ -18,7 +18,7 @@ const { AdapterRuntime } = require("../mindcloud/adapter-runtime");
       try { payload = JSON.parse(body); } catch {}
       if (payload.input?.target === "success-fixture") {
         res.writeHead(200, { "content-type": "application/json" });
-        res.end(JSON.stringify({ ok: true, result: { target: "success-fixture", verifiedBy: "mock-provider" } }));
+        res.end(JSON.stringify({ target: "success-fixture", verifiedBy: "mock-provider" }));
         return;
       }
       res.writeHead(503, { "content-type": "application/json" });
