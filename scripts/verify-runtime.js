@@ -58,7 +58,7 @@ async function waitForHealth(child) {
   await new Promise(resolve => mockAdapter.listen(39128,"127.0.0.1",resolve));
   const child = spawn(process.execPath, ["server.js"], {
     cwd: root,
-    env: { ...process.env, PORT: String(port), CCTV_SOURCE_URL: "", COGNEE_SERVICE_URL: "", BROWSER_USE_SERVICE_URL: "http://127.0.0.1:39128", BROWSER_USE_API_KEY: "test-token", MINDCLOUD_TOOL_EXECUTION_TOKEN: "mindcloud-test-execution-token", MINDCLOUD_MODEL_VERSION_WRITE_TOKEN: "mindcloud-version-write-test-token", MINDCLOUD_MODEL_VERSION_STORE: storePath, MINDCLOUD_TASK_WRITE_TOKEN: "mindcloud-task-write-test-token", MINDCLOUD_TASK_EVENT_STORE: taskEventStorePath, MINDCLOUD_EVIDENCE_WRITE_TOKEN: "mindcloud-evidence-write-test-token", MINDCLOUD_EVIDENCE_GRAPH_STORE: evidenceGraphStorePath },
+    env: { ...process.env, PORT: String(port), CCTV_SOURCE_URL: "", COGNEE_SERVICE_URL: "", BROWSER_USE_SERVICE_URL: "http://127.0.0.1:39128", BROWSER_USE_API_KEY: "test-token", MINDCLOUD_TOOL_EXECUTION_TOKEN: "mindcloud-test-execution-token", MINDCLOUD_MODEL_VERSION_WRITE_TOKEN: "mindcloud-version-write-test-token", MINDCLOUD_MODEL_VERSION_STORE: storePath, MINDCLOUD_TASK_WRITE_TOKEN: "mindcloud-task-write-test-token", MINDCLOUD_TASK_EVENT_STORE: taskEventStorePath, MINDCLOUD_EVIDENCE_WRITE_TOKEN: "mindcloud-evidence-write-test-token", MINDCLOUD_EVIDENCE_READ_TOKEN: "mindcloud-evidence-read-test-token", MINDCLOUD_EVIDENCE_GRAPH_STORE: evidenceGraphStorePath },
     stdio: ["ignore", "pipe", "pipe"]
   });
 
@@ -103,7 +103,10 @@ async function waitForHealth(child) {
     assert.equal(metanoiaApi.body.proposal.writesPerformed,false);
     assert.equal(metanoiaApi.body.proposal.humanApprovalRequired,true);
 
-    const emptyEvidenceGraph = await get("/api/mindcloud/evidence-graph");
+    const unauthorizedEvidenceRead = await get("/api/mindcloud/evidence-graph");
+    assert.equal(unauthorizedEvidenceRead.status,401);
+    assert.equal(unauthorizedEvidenceRead.body.error,"unauthorized");
+    const emptyEvidenceGraph = await fetch(base + "/api/mindcloud/evidence-graph", {headers:{accept:"application/json",authorization:"Bearer mindcloud-evidence-read-test-token"}}).then(async res=>({status:res.status,body:await res.json()}));
     assert.equal(emptyEvidenceGraph.status,200);
     assert.equal(emptyEvidenceGraph.body.type,"mindcloud_evidence_graph");
     assert.equal(emptyEvidenceGraph.body.nodeCount,0);
@@ -118,7 +121,7 @@ async function waitForHealth(child) {
     assert.equal(evidenceEdge.status,201);
     const invalidEdge = await post("/api/mindcloud/evidence-graph/edges",{from:"missing-node",to:"claim-runtime-health",relation:"supports"},"mindcloud-evidence-write-test-token");
     assert.equal(invalidEdge.status,400);
-    const evidenceSnapshot = await get("/api/mindcloud/evidence-graph");
+    const evidenceSnapshot = await fetch(base + "/api/mindcloud/evidence-graph", {headers:{accept:"application/json",authorization:"Bearer mindcloud-evidence-read-test-token"}}).then(async res=>({status:res.status,body:await res.json()}));
     assert.equal(evidenceSnapshot.body.nodeCount,2);
     assert.equal(evidenceSnapshot.body.edgeCount,1);
     const durableGraph = new EvidenceGraph({storePath:evidenceGraphStorePath});
