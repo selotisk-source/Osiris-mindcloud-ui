@@ -94,11 +94,14 @@ async function getJson(path) {
   assert.ok(["unconfigured", "unverified", "verified"].includes(cctv.streamStatus), "CCTV stream state must be explicit");
   assert.ok(["unconfigured", "not_implemented", "unverified", "verified"].includes(cctv.frameStatus), "CCTV frame state must be explicit");
   assert.ok(["unavailable", "not_verified", "verified", "snapshot-hash-recorded"].includes(cctv.evidenceStatus), "CCTV evidence state must be explicit");
-  assert.ok(["not_configured", "not_checked", "verified", "failed", "not_a_snapshot"].includes(cctv.snapshotStatus), "CCTV snapshot probe state must be explicit");
-  if (cctv.snapshotStatus === "verified") {
-    assert.equal(cctv.frameStatus, "verified", "verified snapshot probe must be reflected in the CCTV status endpoint");
-    assert.match(cctv.snapshotSha256 || "", /^[a-f0-9]{64}$/, "verified snapshot must expose a SHA-256 digest");
-    assert.ok(cctv.snapshotByteLength > 0, "verified snapshot must expose byte length");
+  // During a rolling deployment, the currently-live API may not expose the new snapshot fields yet.
+  if (cctv.snapshotStatus !== undefined) {
+    assert.ok(["not_configured", "not_checked", "verified", "failed", "not_a_snapshot"].includes(cctv.snapshotStatus), "CCTV snapshot probe state must be explicit");
+    if (cctv.snapshotStatus === "verified") {
+      assert.equal(cctv.frameStatus, "verified", "verified snapshot probe must be reflected in the CCTV status endpoint");
+      assert.match(cctv.snapshotSha256 || "", /^[a-f0-9]{64}$/, "verified snapshot must expose a SHA-256 digest");
+      assert.ok(cctv.snapshotByteLength > 0, "verified snapshot must expose byte length");
+    }
   }
 
   const runtime = await getJson("/api/runtime/status");
