@@ -115,8 +115,12 @@ class AdapterRuntime {
     }
     if(tool.security&&!approved)return this.record(requestId,{ok:false,error:"human_approval_required",id,operation});
     if(native.supports(id)) {
-      const run = await require("./adapter-policy").executeWithRetry(operation, () => native.execute({id,operation,input,requestId}));
-      return this.record(requestId,{id,operation,...(run.value || {ok:false,error:"adapter_execution_failed"}),execution:{...run.execution,inputContractVersion:inputContract.version,inputValidation:inputContract.mode}});
+      try {
+        const run = await require("./adapter-policy").executeWithRetry(operation, () => native.execute({id,operation,input,requestId}));
+        return this.record(requestId,{id,operation,...(run.value || {ok:false,error:"adapter_execution_failed"}),execution:{...run.execution,inputContractVersion:inputContract.version,inputValidation:inputContract.mode}});
+      } catch {
+        return this.record(requestId,{ok:false,error:"adapter_execution_failed",id,operation,execution:{contractVersion:"1.0",inputContractVersion:inputContract.version,inputValidation:inputContract.mode,attempts:"unknown",retryPolicy:"adapter-policy"}});
+      }
     }
     const endpoint=this.endpointFor(id);
     if(!endpoint)return this.record(requestId,{ok:false,error:"adapter_not_configured",id,operation});
@@ -124,16 +128,20 @@ class AdapterRuntime {
     if(isBrowserUse&&!token)return this.record(requestId,{ok:false,error:"adapter_credentials_missing",id,operation});
     const headers={"content-type":"application/json"};
     if(isBrowserUse)headers.authorization="Bearer "+token;
-    const run = await require("./adapter-policy").executeWithRetry(operation, async () => {
-      const response=await fetch(endpoint+(isBrowserUse?"/v1/run":"/execute"),{method:"POST",headers,body:JSON.stringify({requestId,operation,input}),signal:AbortSignal.timeout(30000)});
-      const contentType=response.headers.get("content-type")||"";
-      let result;
-      if(contentType.includes("application/json")){const text=await response.text();try{result=JSON.parse(text);}catch{result={raw:text};}}
-      else if(contentType.startsWith("image/"))result={contentType,base64:Buffer.from(await response.arrayBuffer()).toString("base64")};
-      else result={contentType,raw:await response.text()};
-      return {ok:response.ok,id,operation,status:response.status,result};
-    });
-    return this.record(requestId,{id,operation,...(run.value || {ok:false,error:"adapter_execution_failed"}),execution:{...run.execution,inputContractVersion:inputContract.version,inputValidation:inputContract.mode}});
+    try {
+      const run = await require("./adapter-policy").executeWithRetry(operation, async () => {
+        const response=await fetch(endpoint+(isBrowserUse?"/v1/run":"/execute"),{method:"POST",headers,body:JSON.stringify({requestId,operation,input}),signal:AbortSignal.timeout(30000)});
+        const contentType=response.headers.get("content-type")||"";
+        let result;
+        if(contentType.includes("application/json")){const text=await response.text();try{result=JSON.parse(text);}catch{result={raw:text};}}
+        else if(contentType.startsWith("image/"))result={contentType,base64:Buffer.from(await response.arrayBuffer()).toString("base64")};
+        else result={contentType,raw:await response.text()};
+        return {ok:response.ok,id,operation,status:response.status,result};
+      });
+      return this.record(requestId,{id,operation,...(run.value || {ok:false,error:"adapter_execution_failed"}),execution:{...run.execution,inputContractVersion:inputContract.version,inputValidation:inputContract.mode}});
+    } catch {
+      return this.record(requestId,{ok:false,error:"adapter_execution_failed",id,operation,execution:{contractVersion:"1.0",inputContractVersion:inputContract.version,inputValidation:inputContract.mode,attempts:"unknown",retryPolicy:"adapter-policy"}});
+    }
   }
 
   record(requestId,result){const entry={...result,requestId,timestamp:new Date().toISOString()};this.audit.push(entry);return {...result,requestId};}
