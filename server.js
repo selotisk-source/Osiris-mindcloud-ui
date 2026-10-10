@@ -748,6 +748,7 @@ const server = http.createServer(async (req,res)=>{
     sendJson(res,{error:"newsletter_not_found"},404);return;
   }
   if(pathname.startsWith("/api/")){sendJson(res,{error:"api_route_not_found",path:pathname},404);return;}
+  if (process.env.MINDCLOUD_API_ONLY === "true") { sendJson(res,{error:"backend_route_not_found",path:pathname},404); return; }
   res.writeHead(200,{"content-type":"text/html; charset=utf-8"});res.end(html);
 });
 server.listen(port,"0.0.0.0",()=>{
