@@ -1,6 +1,10 @@
 FROM cognee/cognee:main
-# Cognee's image declares a 40s Docker healthcheck, while Railway
-# performs its own deployment probe. Disable the inherited Docker probe
-# so Railway can keep the process alive through Cognee's migration/model
-# warm-up phase.
+# Railway mounts volumes with root ownership. Repair the mount ownership at
+# container startup, then drop privileges back to the image's "cognee" user.
+USER root
+COPY deploy/cognee/railway-entrypoint.sh /railway-entrypoint.sh
+RUN chmod 0755 /railway-entrypoint.sh
+ENTRYPOINT ["/railway-entrypoint.sh"]
+
+# Railway performs its own deployment health probe.
 HEALTHCHECK NONE
