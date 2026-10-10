@@ -13,6 +13,7 @@ try {
 const builtInTools = [
   { id: "mindcore-router", name: "MindCore Router", layer: "Orchestration", status: "runtime" },
   { id: "mindcloud-runtime", name: "MindCloud Runtime", layer: "Orchestration", status: "runtime" },
+  { id: "mindcloud-arena-skill", name: "MindCloud Arena Skill", layer: "Evaluation", status: "runtime", operations: ["evaluate", "revalidate", "propose-promotion"] },
   { id: "geospatial-capabilities", name: "Geospatial Capabilities", layer: "GeoOSINT", status: "runtime" },
   { id: "live-liveness", name: "Live Liveness", layer: "SituationalAwareness", status: "runtime" },
   { id: "monte-carlo", name: "Monte Carlo", layer: "Reasoning", status: "runtime" },
