@@ -30,7 +30,9 @@ async function getJson(path) {
   const cctv = await getJson("/api/cctv");
   assert.equal(cctv.endpoint, "/api/cctv");
   assert.ok(["configured", "not_configured"].includes(cctv.status), "CCTV must report explicit configuration state");
-  assert.ok(typeof cctv.proxyStatus === "string", "CCTV proxy state missing");
+  assert.equal(cctv.proxyStatus, "implemented", "CCTV proxy implementation must be present");
+  assert.ok(["configured", "credentials-missing"].includes(cctv.proxyAuthStatus), "CCTV proxy auth state must be explicit");
+  assert.ok(["unconfigured", "unverified", "verified"].includes(cctv.streamStatus), "CCTV stream state must be explicit");
 
   const runtime = await getJson("/api/runtime/status");
   assert.equal(runtime.type, "mindcloud_runtime_status");
