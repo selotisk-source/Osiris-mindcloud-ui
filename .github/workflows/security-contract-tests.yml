@@ -1,6 +1,15 @@
 name: Independent security contracts
 
 on:
+  push:
+    branches:
+      - "tests/independent-security-metanoia"
+    paths:
+      - "tests/security/**"
+      - "server.js"
+      - "mindcloud/**"
+      - "integrations/agent-tools.json"
+      - ".github/workflows/security-contract-tests.yml"
   pull_request:
     paths:
       - "tests/security/**"
