@@ -75,6 +75,21 @@ async function waitForHealth(child) {
     assert.equal(cctv.body.proxyStatus, "not_implemented");
     assert.equal(cctv.body.access, "unconfigured");
 
+    const adapters = await get("/api/adapters");
+    assert.equal(adapters.status, 200);
+    assert.equal(adapters.body.type, "mindcloud_adapter_runtime");
+    assert.deepEqual(adapters.body.lifecycle, ["discover","health","execute","result","audit"]);
+    assert.ok(adapters.body.adapters.length >= 10);
+
+    const adapter = await get("/api/adapters/browser-use/discover");
+    assert.equal(adapter.status, 200);
+    assert.equal(adapter.body.ok, true);
+    assert.equal(adapter.body.adapter.runtime.state, "registered-only");
+
+    const blocked = await fetch(base + "/api/adapters/execute", {method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({id:"anthropic-cybersecurity-skills",operation:"assess",input:{target:"test"}})}).then(async res=>({status:res.status,body:await res.json()}));
+    assert.equal(blocked.status, 200);
+    assert.equal(blocked.body.error, "human_approval_required");
+
     const memory = await get("/api/memory/health");
     assert.equal(memory.status, 200);
     assert.equal(memory.body.status, "not_configured");
@@ -104,6 +119,9 @@ async function waitForHealth(child) {
         "cctv-safe-unconfigured-state",
         "memory-health",
         "runtime-status",
+        "adapter-runtime-lifecycle",
+        "adapter-discovery",
+        "adapter-approval-gate",
         "two-station-sidepanel",
         "brave-host-permission"
       ]
