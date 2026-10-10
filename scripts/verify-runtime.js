@@ -44,6 +44,17 @@ async function waitForHealth(child) {
     assert.equal(health.status, 200);
     assert.equal(health.body.status, "ok");
 
+    const beforeSuggestion = await get("/api/mindcloud/status");
+    const suggested = await get("/api/mindcloud/suggest?kind=research&goal=evidence");
+    const afterSuggestion = await get("/api/mindcloud/status");
+    assert.equal(suggested.status, 200);
+    assert.equal(suggested.body.type, "mindcloud_suggestion");
+    assert.equal(afterSuggestion.body.tasks.length, beforeSuggestion.body.tasks.length);
+    assert.equal(afterSuggestion.body.eventCount, beforeSuggestion.body.eventCount);
+
+    const evidenceValidation = fs.readFileSync(path.join(root, "extension", "evidence-validation.js"), "utf8");
+    assert.match(evidenceValidation, /validateCctvEvidence/);
+
     const router = await get("/api/router?kind=general");
     assert.equal(router.status, 200);
     assert.ok(router.body.network);
