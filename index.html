@@ -173,6 +173,8 @@ function setWorkspaceLayout(n){
   setTimeout(()=>{window.dispatchEvent(new Event('resize'));document.getElementById('heritageMap')&&window.dispatchEvent(new Event('heritage-layout-change'));},120);
 }
 document.querySelectorAll('[data-layout]').forEach(b=>b.onclick=()=>setWorkspaceLayout(Number(b.dataset.layout)));
+// Default to the requested two-station workspace on first load.
+setWorkspaceLayout(2); // default two-station workspace
 document.getElementById('godBtn').onclick=()=>document.querySelector('[data-station="4"]').scrollIntoView({behavior:'smooth'});
 </script><script>
 (async function(){
