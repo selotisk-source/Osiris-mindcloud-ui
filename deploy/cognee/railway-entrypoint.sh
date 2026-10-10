@@ -14,8 +14,8 @@ touch "$ENV_FILE"
 set_env() {
   key="$1"
   value="$2"
-  if grep -q "^\${key}=" "$ENV_FILE"; then
-    sed -i "s|^\${key}=.*|\${key}=\${value}|" "$ENV_FILE"
+  if grep -q "^${key}=" "$ENV_FILE"; then
+    sed -i "s|^${key}=.*|${key}=${value}|" "$ENV_FILE"
   else
     printf '%s=%s\n' "$key" "$value" >> "$ENV_FILE"
   fi
