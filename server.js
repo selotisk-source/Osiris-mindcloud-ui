@@ -208,7 +208,7 @@ async function cogneeHealth() {
   const endpoint = (process.env.COGNEE_SERVICE_URL || "").replace(/\/$/, "");
   if (!endpoint) return {status:"not_configured",endpoint:null};
   try {
-    const response = await fetch(endpoint + "/health", {signal:AbortSignal.timeout(2500)});
+    const response = await fetch(endpoint + "/health", {signal:AbortSignal.timeout(10000)});
     return {status:response.ok ? "healthy" : "degraded",endpoint,httpStatus:response.status};
   } catch (error) {
     return {status:"offline",endpoint,error:error instanceof Error ? error.message : String(error)};
