@@ -143,7 +143,43 @@ async function waitForHealth(child) {
     const durableGraph = new EvidenceGraph({storePath:evidenceGraphStorePath});
     assert.equal(durableGraph.snapshot().nodeCount,2);
     assert.equal(durableGraph.snapshot().edgeCount,1);
+
     assert.throws(()=>durableGraph.addNode({type:"claim",content:{}}),/evidence_node_label_required/);
+
+    const unauthorizedArenaRun = await post("/api/mindcloud/arena/run",{
+      task:"Persist Arena evidence and trigger Metanoia review",
+      candidates:[
+        {id:"workflow-a",approach:"Candidate A",tests:[{id:"contract-a",passed:false,evidenceRef:"test://workflow/a"}]},
+        {id:"workflow-b",approach:"Candidate B",tests:[{id:"contract-b",passed:false,evidenceRef:"test://workflow/b"}]}
+      ]
+    });
+    assert.equal(unauthorizedArenaRun.status,401);
+    const arenaWorkflow = await post("/api/mindcloud/arena/run",{
+      task:"Persist Arena evidence and trigger Metanoia review",
+      candidates:[
+        {id:"workflow-a",approach:"Candidate A",tests:[{id:"contract-a",passed:false,evidenceRef:"test://workflow/a"}]},
+        {id:"workflow-b",approach:"Candidate B",tests:[{id:"contract-b",passed:false,evidenceRef:"test://workflow/b"}]}
+      ]
+    },"mindcloud-evidence-write-test-token");
+    assert.equal(arenaWorkflow.status,201);
+    assert.equal(arenaWorkflow.body.type,"mindcloud_arena_workflow");
+    assert.equal(arenaWorkflow.body.status,"no_qualified_winner");
+    assert.equal(arenaWorkflow.body.report.winnerId,null);
+    assert.equal(arenaWorkflow.body.metanoia.type,"mindcloud_metanoia_report");
+    assert.equal(arenaWorkflow.body.metanoia.status,"review_required");
+    assert.equal(arenaWorkflow.body.promotion.registryWritePerformed,false);
+    assert.equal(arenaWorkflow.body.promotion.allowed,false);
+    assert.ok(arenaWorkflow.body.evidence.reportNodeId);
+    assert.equal(arenaWorkflow.body.evidence.candidateNodeIds.length,2);
+    assert.equal(arenaWorkflow.body.evidence.evidenceNodeIds.length,2);
+    assert.ok(arenaWorkflow.body.evidence.metanoiaNodeId);
+    const arenaEvidenceSnapshot = await fetch(base + "/api/mindcloud/evidence-graph", {headers:{accept:"application/json",authorization:"Bearer mindcloud-evidence-read-test-token"}}).then(async res=>({status:res.status,body:await res.json()}));
+    assert.equal(arenaEvidenceSnapshot.status,200);
+    assert.equal(arenaEvidenceSnapshot.body.nodeCount,8);
+    assert.equal(arenaEvidenceSnapshot.body.edgeCount,8);
+    assert.ok(arenaEvidenceSnapshot.body.nodes.some(node=>node.type==="arena_report"));
+    assert.ok(arenaEvidenceSnapshot.body.nodes.some(node=>node.type==="metanoia_review"));
+
 
     const health = await get("/health");
     assert.equal(health.status, 200);
