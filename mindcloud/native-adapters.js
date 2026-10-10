@@ -55,7 +55,7 @@ async function fetchOverpass(query, timeoutMs=15000) {
         body:new URLSearchParams({data:query}).toString(),
         signal:AbortSignal.timeout(timeoutMs)
       });
-      const retryable=[429,502,503,504].includes(response.status);
+      const retryable=[429,500,502,503,504].includes(response.status);
       if(response.ok || !retryable || index===endpoints.length-1) return {response,endpoint};
       await response.body?.cancel().catch(()=>{});
     } catch(error) {
