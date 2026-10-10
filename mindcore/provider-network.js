@@ -13,12 +13,12 @@ const PROVIDERS = Object.freeze({
   },
   grok: {
     id: "grok", label: "xAI Grok", envKey: "XAI_API_KEY", protocol: "openai-responses",
-    defaultModel: process.env.GROK_MODEL || "grok-4.1",
+    defaultModel: process.env.GROK_MODEL || "grok-4.7",
     endpoint: () => "https://api.x.ai/v1/responses"
   },
   deepseek: {
     id: "deepseek", label: "DeepSeek", envKey: "DEEPSEEK_API_KEY", protocol: "openai-chat-completions",
-    defaultModel: process.env.DEEPSEEK_MODEL || "deepseek-chat",
+    defaultModel: process.env.DEEPSEEK_MODEL || "deepseek-flash",
     endpoint: () => "https://api.deepseek.com/chat/completions"
   }
 });
