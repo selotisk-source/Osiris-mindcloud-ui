@@ -370,7 +370,10 @@ async function waitForHealth(child) {
     assert.ok(selftest.body.integrations.checks.some(check=>check.id==="cognee-memory-persistence" && !check.ok));
     assert.ok(selftest.body.integrations.checks.some(check=>check.id==="browser-use-execution" && check.ok));
     assert.equal(selftest.body.integrations.browserExecution.status,"executed");
-    assert.equal(selftest.body.integrations.browserExecution.attempts,2);
+    assert.equal(selftest.body.integrations.browserExecution.attempts,1,"the shared adapter retry should recover inside the first self-test attempt");
+    assert.equal(selftest.body.integrations.browserExecution.adapterExecution.attempts,2,"the adapter contract should report both provider attempts");
+    assert.equal(selftest.body.integrations.browserExecution.adapterExecution.retries,1);
+    assert.equal(selftest.body.integrations.browserExecution.adapterExecution.recovered,true);
 
     const unknownApi = await get("/api/internal/does-not-exist");
     assert.equal(unknownApi.status,404);
