@@ -242,6 +242,28 @@ const server = http.createServer(async (req,res)=>{
   if(pathname==="/newsletter"||pathname==="/newsletter/"||pathname==="/briefing"||pathname==="/briefing/"||pathname==="/nyheter"||pathname==="/nyheter/"){res.writeHead(200,{"content-type":"text/html; charset=utf-8"});res.end(newsletterHtml);return;}
   if(pathname==="/health"){sendJson(res,{status:"ok",service:"osiris-mindcloud-ui"});return;}
   if(pathname==="/api/mindcloud/status"){sendJson(res,mindcloud.snapshot());return;}
+  if(pathname==="/api/mindcloud/versions" && req.method==="GET"){
+    sendJson(res,{type:"mindcloud_model_version_history",versions:mindcloud.versionHistory.list()});
+    return;
+  }
+  if(pathname==="/api/mindcloud/versions" && req.method==="POST"){
+    try {
+      const input = await readJson(req);
+      const version = mindcloud.createModelVersion(input);
+      sendJson(res,{type:"mindcloud_model_version_created",version},201);
+    } catch(error) {
+      const status = Number.isInteger(error.statusCode) ? error.statusCode : 400;
+      sendJson(res,{error:error instanceof Error ? error.message : String(error)},status);
+    }
+    return;
+  }
+  if(pathname.startsWith("/api/mindcloud/versions/") && req.method==="GET"){
+    const id = decodeURIComponent(pathname.slice("/api/mindcloud/versions/".length));
+    const version = mindcloud.versionHistory.get(id);
+    if(!version){sendJson(res,{error:"model_version_not_found"},404);return;}
+    sendJson(res,{type:"mindcloud_model_version",version});
+    return;
+  }
   if(pathname==="/api/mindcloud/selftest" && req.method==="POST"){
     try { sendJson(res,await runMindcloudSelfTest()); }
     catch (error) { sendJson(res,{type:"mindcloud_e2e_selftest",status:"failed",error:error instanceof Error ? error.message : String(error)},500); }
