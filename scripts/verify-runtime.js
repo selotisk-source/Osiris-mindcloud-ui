@@ -44,13 +44,28 @@ async function waitForHealth(child) {
 }
 
 (async () => {
+  const selftestAttempts = new Map();
   const mockAdapter = http.createServer((req,res) => {
     res.setHeader("content-type","application/json; charset=utf-8");
     if (req.method === "GET" && req.url === "/health") { res.writeHead(200); res.end(JSON.stringify({status:"healthy",browserEngine:"browserless-chromium",persistentSessions:true})); return; }
     if (req.method === "POST" && req.url === "/v1/run" && req.headers.authorization === "Bearer test-token") {
       let body = "";
       req.on("data", chunk => { body += chunk; });
-      req.on("end", () => { const received=JSON.parse(body); res.writeHead(200); res.end(JSON.stringify({status:"executed",httpStatus:200,url:received.input?.url||"https://example.com",title:"Example Domain",ok:true,received})); });
+      req.on("end", () => {
+        const received=JSON.parse(body);
+        const sessionId=received.input?.sessionId || "";
+        if (sessionId.startsWith("mindcloud-e2e-selftest-")) {
+          const count=(selftestAttempts.get(sessionId)||0)+1;
+          selftestAttempts.set(sessionId,count);
+          if (count === 1) {
+            res.writeHead(502);
+            res.end(JSON.stringify({error:"browser_execution_failed",message:"goto: Target page, context or browser has been closed"}));
+            return;
+          }
+        }
+        res.writeHead(200);
+        res.end(JSON.stringify({status:"executed",httpStatus:200,url:received.input?.url||"https://example.com",title:"Example Domain",ok:true,received}));
+      });
       return;
     }
     res.writeHead(404); res.end(JSON.stringify({error:"not_found"}));
@@ -334,6 +349,8 @@ async function waitForHealth(child) {
     assert.ok(selftest.body.integrations.checks.some(check=>check.id==="cognee-memory-health" && !check.ok));
     assert.ok(selftest.body.integrations.checks.some(check=>check.id==="cognee-memory-persistence" && !check.ok));
     assert.ok(selftest.body.integrations.checks.some(check=>check.id==="browser-use-execution" && check.ok));
+    assert.equal(selftest.body.integrations.browserExecution.status,"executed");
+    assert.equal(selftest.body.integrations.browserExecution.attempts,2);
 
     const unknownApi = await get("/api/internal/does-not-exist");
     assert.equal(unknownApi.status,404);
