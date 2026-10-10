@@ -58,6 +58,42 @@ async function cogneeHealth() {
     return {status:"offline",endpoint,error:error instanceof Error ? error.message : String(error)};
   }
 }
+
+async function runMindcloudSelfTest() {
+  const taskId = "selftest-" + Date.now() + "-" + Math.random().toString(36).slice(2, 8);
+  let routeResult = null;
+  let routeError = null;
+  try {
+    routeResult = mindcloud.route({taskId,kind:"research",goal:"MindCloud end-to-end self-test"});
+  } catch (error) {
+    routeError = error instanceof Error ? error.message : String(error);
+  }
+  const snapshot = mindcloud.snapshot();
+  const events = mindcloud.eventsFor(taskId);
+  const memory = await cogneeHealth();
+  const browserUse = await adapters.health("browser-use");
+  const coreChecks = [
+    {id:"task-routed",ok:Boolean(routeResult && routeResult.taskId === taskId && routeResult.status === "routed")},
+    {id:"task-readable",ok:snapshot.tasks.some(task => task.taskId === taskId)},
+    {id:"event-emitted",ok:events.some(event => event.taskId === taskId && event.type === "complete")},
+    {id:"tool-catalog-loaded",ok:Array.isArray(agentTools.tools) && agentTools.tools.length >= 10}
+  ];
+  const integrationChecks = [
+    {id:"cognee-memory",ok:memory.status === "healthy",status:memory.status},
+    {id:"browser-use",ok:browserUse.status === "healthy",status:browserUse.status}
+  ];
+  const coreOk = coreChecks.every(check => check.ok);
+  const integrationsOk = integrationChecks.every(check => check.ok);
+  return {
+    type:"mindcloud_e2e_selftest",
+    status:coreOk && integrationsOk ? "passed" : coreOk ? "degraded" : "failed",
+    taskId,
+    core:{status:coreOk ? "passed" : "failed",checks:coreChecks,error:routeError},
+    integrations:{status:integrationsOk ? "passed" : "degraded",checks:integrationChecks,memory,browserUse},
+    optional:{cctv:cctvResponse()},
+    timestamp:new Date().toISOString()
+  };
+}
 const server = http.createServer(async (req,res)=>{
   const url = new URL(req.url, "http://"+(req.headers.host||"localhost"));
   const pathname = url.pathname;
@@ -65,6 +101,11 @@ const server = http.createServer(async (req,res)=>{
   if(pathname==="/newsletter"||pathname==="/newsletter/"||pathname==="/briefing"||pathname==="/briefing/"||pathname==="/nyheter"||pathname==="/nyheter/"){res.writeHead(200,{"content-type":"text/html; charset=utf-8"});res.end(newsletterHtml);return;}
   if(pathname==="/health"){sendJson(res,{status:"ok",service:"osiris-mindcloud-ui"});return;}
   if(pathname==="/api/mindcloud/status"){sendJson(res,mindcloud.snapshot());return;}
+  if(pathname==="/api/mindcloud/selftest" && req.method==="POST"){
+    try { sendJson(res,await runMindcloudSelfTest()); }
+    catch (error) { sendJson(res,{type:"mindcloud_e2e_selftest",status:"failed",error:error instanceof Error ? error.message : String(error)},500); }
+    return;
+  }
   if(pathname==="/api/mindcloud/capabilities"){sendJson(res,{type:"mindcloud_capability_graph",layers:mindcloud.snapshot().capabilityLayers,recipes:mindcloud.snapshot().recipes});return;}
   if(pathname==="/api/mindcloud/suggest"){const task={kind:url.searchParams.get("kind")||"general",goal:url.searchParams.get("goal")||""};sendJson(res,{type:"mindcloud_suggestion",...require("./mindcloud/capability-graph").suggest(task)});return;}
   if(pathname==="/api/mindcloud/route" && req.method==="POST"){
@@ -91,7 +132,8 @@ const server = http.createServer(async (req,res)=>{
     cogneeHealth().then(memory=>sendJson(res,{
       type:"mindcloud_runtime_status",
       service:"osiris-mindcloud-ui",
-      health:"ok",
+      health:memory.status==="healthy" ? "ok" : "degraded",
+      coreHealth:"ok",
       cctv:cctvResponse(),
       memory,
       mindcloud:mindcloud.snapshot(),
@@ -105,6 +147,7 @@ const server = http.createServer(async (req,res)=>{
     if(file.startsWith(root+path.sep)&&fs.existsSync(file)&&fs.statSync(file).isFile()){res.writeHead(200,{"content-type":"application/json; charset=utf-8","cache-control":"public, max-age=60"});res.end(fs.readFileSync(file));return;}
     sendJson(res,{error:"newsletter_not_found"},404);return;
   }
+  if(pathname.startsWith("/api/")){sendJson(res,{error:"api_route_not_found",path:pathname},404);return;}
   res.writeHead(200,{"content-type":"text/html; charset=utf-8"});res.end(html);
 });
 server.listen(port,"0.0.0.0",()=>console.log("OSIRIS MindCloud listening on port "+port));

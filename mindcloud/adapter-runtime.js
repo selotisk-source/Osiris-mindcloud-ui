@@ -15,8 +15,18 @@ class AdapterRuntime {
     }));
   }
 
+  endpointFor(id) {
+    const envName = `ADAPTER_${String(id).toUpperCase().replace(/[^A-Z0-9]/g, "_")}_URL`;
+    const aliases = {
+      "browser-use": ["BROWSER_USE_SERVICE_URL", "RAILWAY_SERVICE_BROWSER_USE_RUNNER_URL"],
+      "cognee-memory": ["COGNEE_SERVICE_URL"]
+    };
+    const endpoint = process.env[envName] || (aliases[id] || []).map(name => process.env[name]).find(Boolean) || "";
+    return endpoint.replace(/\/$/, "");
+  }
+
   runtimeState(tool) {
-    const configured = Boolean(process.env[`ADAPTER_${String(tool.id).toUpperCase().replace(/[^A-Z0-9]/g, "_")}_URL`]);
+    const configured = Boolean(this.endpointFor(tool.id));
     return {
       state: configured ? "configured" : "registered-only",
       executable: configured,
@@ -34,8 +44,7 @@ class AdapterRuntime {
   async health(id) {
     const tool = this.registry.tools.find(item => item.id === id);
     if (!tool) return {ok:false,error:"adapter_not_found",id};
-    const envName = `ADAPTER_${String(id).toUpperCase().replace(/[^A-Z0-9]/g, "_")}_URL`;
-    const endpoint = (process.env[envName] || "").replace(/\/$/, "");
+    const endpoint = this.endpointFor(id);
     if (!endpoint) return {ok:true,status:"registered-only",endpoint:null};
     try {
       const response = await fetch(endpoint + "/health", {signal:AbortSignal.timeout(2500)});
@@ -51,8 +60,7 @@ class AdapterRuntime {
     if (!tool) return this.record(requestId,{ok:false,error:"adapter_not_found",id,operation});
     if (!tool.operations?.includes(operation)) return this.record(requestId,{ok:false,error:"operation_not_allowed",id,operation});
     if (tool.security && !approved) return this.record(requestId,{ok:false,error:"human_approval_required",id,operation});
-    const envName = `ADAPTER_${String(id).toUpperCase().replace(/[^A-Z0-9]/g, "_")}_URL`;
-    const endpoint = (process.env[envName] || "").replace(/\/$/, "");
+    const endpoint = this.endpointFor(id);
     if (!endpoint) return this.record(requestId,{ok:false,error:"adapter_not_configured",id,operation});
     try {
       const response = await fetch(endpoint + "/execute", {
