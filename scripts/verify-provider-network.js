@@ -39,7 +39,7 @@ const fetch = async (url, options) => {
   assert.equal(collaboration.status, "responses_received_unverified");
   assert.equal(collaboration.verified, false);
   assert.equal(collaboration.toolExecutionPerformed, false);
-  assert.ok(collaboration.callsAttempted <= 10);
+  assert.ok(collaboration.callsAttempted <= 10);\n  assert.ok(collaboration.approximateTokenUsage <= collaboration.tokenBudget, "global reserved token usage must never exceed the budget");\n  assert.equal(collaboration.tokenBudgetPolicy, "sequential_pre_dispatch_reservation");\n  assert.ok(collaboration.outputs.filter(item => item.ok).every(item => item.reservedTokens === item.estimatedPromptTokens + item.outputTokenAllowance));
   const noProvider = await missing.collaborate({ goal: "Test no credentials", providerIds: ["claude"] });
   assert.equal(noProvider.status, "no_provider_response");
   console.log("provider-network: verified provider normalization, credential isolation, bounded multi-round handoff, and unverified-output safety gate");
