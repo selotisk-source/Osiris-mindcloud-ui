@@ -36,6 +36,11 @@ function proxy(req, res) {
   }
   const transport = target.protocol === "https:" ? https : http;
   const headers = { ...req.headers, host: target.host, "x-forwarded-host": req.headers.host || "", "x-forwarded-proto": "https" };
+  // Browser media elements cannot attach a bearer token. Add the server-held CCTV
+  // credential only for the same-origin CCTV stream proxy, never to other APIs.
+  if (target.pathname === "/api/cctv/stream" && process.env.CCTV_PROXY_TOKEN) {
+    headers.authorization = "Bearer " + process.env.CCTV_PROXY_TOKEN;
+  }
   delete headers.connection;
   delete headers["content-length"];
   const upstream = transport.request(target, { method: req.method, headers }, (upstreamRes) => {
