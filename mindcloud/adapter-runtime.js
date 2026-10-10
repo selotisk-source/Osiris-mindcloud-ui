@@ -22,7 +22,18 @@ class AdapterRuntime {
 
   runtimeState(tool) {
     const nativeState = native.state(tool.id);
-    const configured = nativeState ? nativeState.configured : Boolean(this.endpointFor(tool.id));
+    const endpoint = nativeState ? null : this.endpointFor(tool.id);
+    const envName = `ADAPTER_${String(tool.id).toUpperCase().replace(/[^A-Z0-9]/g,"_")}_URL`;
+    const endpointAliases = {
+      "browser-use":"BROWSER_USE_SERVICE_URL",
+      "cognee-memory":"COGNEE_SERVICE_URL",
+      "geohints":"GEOHINTS_URL",
+      "cookies-viewer":"COOKIES_VIEWER_URL"
+    };
+    const missingConfiguration = [];
+    if (!nativeState && !endpoint) missingConfiguration.push(endpointAliases[tool.id] || envName);
+    if (tool.id === "browser-use" && !process.env.BROWSER_USE_API_KEY) missingConfiguration.push("BROWSER_USE_API_KEY");
+    const configured = nativeState ? nativeState.configured : missingConfiguration.length === 0;
     const nativeOperations = native.supports(tool.id) ? native.operationsFor(tool.id) : null;
     const operations = nativeOperations
       ? [...nativeOperations, ...((tool.operations||[]).includes("health") ? ["health"] : [])]
@@ -34,6 +45,7 @@ class AdapterRuntime {
       transport:nativeState?(nativeState.mode||"native-http"):(tool.transport||"external-runtime"),
       operations,
       executableOperations,
+      ...(missingConfiguration.length?{missingConfiguration}:{}),
       ...(nativeState?.required?{required:nativeState.required}:{})
     };
   }
@@ -51,7 +63,13 @@ class AdapterRuntime {
     const nativeHealth=await native.health(id);
     if(nativeHealth)return nativeHealth;
     const endpoint=this.endpointFor(id);
-    if(!endpoint)return {ok:true,status:"registered-only",endpoint:null};
+    const missingConfiguration = [];
+    if(!endpoint) missingConfiguration.push(id==="browser-use"?"BROWSER_USE_SERVICE_URL":`ADAPTER_${String(id).toUpperCase().replace(/[^A-Z0-9]/g,"_")}_URL`);
+    if(id==="browser-use"&&!process.env.BROWSER_USE_API_KEY) missingConfiguration.push("BROWSER_USE_API_KEY");
+    if(missingConfiguration.length) {
+      const credentialsMissing = Boolean(endpoint) && id==="browser-use" && !process.env.BROWSER_USE_API_KEY;
+      return {ok:false,status:credentialsMissing?"credentials-missing":"registered-only",endpoint:endpoint||null,missingConfiguration};
+    }
     try {
       const response=await fetch(endpoint+"/health",{signal:AbortSignal.timeout(2500)});
       let details={}; try{details=await response.json();}catch{}
