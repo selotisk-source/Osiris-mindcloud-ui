@@ -6,7 +6,8 @@ const env = {
   GEMINI_API_KEY: "gemini-test-secret",
   ANTHROPIC_API_KEY: "claude-test-secret",
   XAI_API_KEY: "grok-test-secret",
-  DEEPSEEK_API_KEY: "deepseek-test-secret",\n  KIMI_API_KEY: "kimi-test-secret"
+  DEEPSEEK_API_KEY: "deepseek-test-secret",
+  KIMI_API_KEY: "kimi-test-secret"
 };
 const calls = [];
 const fetch = async (url, options) => {
