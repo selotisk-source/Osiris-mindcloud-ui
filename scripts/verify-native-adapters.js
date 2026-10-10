@@ -51,5 +51,13 @@ global.fetch = async (url, options={}) => {
   assert.equal(calls[4].options.headers.authorization,"ApiKey test-sanctions-key");
   const denied=await native.execute({id:"shodan",operation:"host",input:{},requestId:"test-invalid"});
   assert.equal(denied.error,"ip_required");
-  console.log("native-adapters: verified Overpass, Street View metadata, Shodan and OpenSanctions request/response contracts");
+
+  const overpassHealth=await native.health("overpass-turbo");
+  assert.equal(overpassHealth.status,"healthy");
+  assert.equal(overpassHealth.probe,"interpreter-json");
+  assert.equal(calls[5].url,"https://overpass.test/api/interpreter");
+  assert.equal(calls[5].options.method,"POST");
+  assert.match(calls[5].options.body,/data=/);
+
+  console.log("native-adapters: verified Overpass execution and interpreter health, Street View metadata, Shodan and OpenSanctions request/response contracts");
 })().catch(error=>{console.error(error);process.exitCode=1;}).finally(()=>{global.fetch=originalFetch;});
