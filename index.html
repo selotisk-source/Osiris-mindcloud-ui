@@ -38,7 +38,7 @@ body{overflow:hidden}.app{height:100%;display:flex;flex-direction:column}
 @media(max-width:700px){.app-nav{padding:6px}.module-panel{inset:108px 6px 6px;padding:9px}.module-grid{grid-template-columns:1fr}}
 
 .command-console{position:absolute;z-index:40;inset:64px 10px 10px;overflow:auto;background:#0d131c;border:1px solid #35506f;border-radius:10px;box-shadow:0 18px 50px #0009;padding:14px}
-.command-console[hidden]{display:none}.command-console-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.command-console-head h2{font-size:16px;margin:0}.command-token-row{display:flex;gap:6px}.command-token-row input{flex:1;min-width:0}.command-cluster{margin-top:16px;padding-top:12px;border-top:1px solid #253142}.command-cluster>label{display:grid;gap:5px;color:#9fb0c5;font-size:12px}.command-cluster input,.command-cluster select{width:100%;min-width:0;border:1px solid #253142;background:#080e15;color:#e7edf5;border-radius:7px;padding:9px;font:inherit}.command-console-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px}.command-console label{display:grid;gap:5px;color:#9fb0c5;font-size:12px}.command-console input,.command-console select,.command-console textarea{width:100%;min-width:0;border:1px solid #253142;background:#080e15;color:#e7edf5;border-radius:7px;padding:9px;font:inherit}.command-console textarea{min-height:110px;resize:vertical;font-family:ui-monospace,monospace}.command-console .wide{grid-column:1/-1}.command-console .command-console-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.command-console .command-console-result{min-height:100px;max-height:35vh;overflow:auto;white-space:pre-wrap;overflow-wrap:anywhere;border:1px solid #253142;background:#080e15;border-radius:7px;padding:10px;color:#b9c9da}.command-console .command-console-note{color:#f7c873;font-size:12px}.command-console .command-console-status{color:#6ee7b7;font-size:12px}@media(max-width:650px){.command-console-grid{grid-template-columns:1fr}.command-console .wide{grid-column:auto}}
+.command-console[hidden]{display:none}.command-console-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.command-console-head h2{font-size:16px;margin:0}.command-token-row{display:flex;gap:6px}.command-token-row input{flex:1;min-width:0}.provider-network-options{display:flex;gap:12px;flex-wrap:wrap;margin:10px 0}.provider-network-options label{display:flex;align-items:center;gap:5px;border:1px solid #253142;background:#080e15;border-radius:7px;padding:7px 9px;color:#9fb0c5;font-size:12px}.provider-network-options input{width:auto}.command-cluster{margin-top:16px;padding-top:12px;border-top:1px solid #253142}.command-cluster>label{display:grid;gap:5px;color:#9fb0c5;font-size:12px}.command-cluster input,.command-cluster select{width:100%;min-width:0;border:1px solid #253142;background:#080e15;color:#e7edf5;border-radius:7px;padding:9px;font:inherit}.command-console-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px}.command-console label{display:grid;gap:5px;color:#9fb0c5;font-size:12px}.command-console input,.command-console select,.command-console textarea{width:100%;min-width:0;border:1px solid #253142;background:#080e15;color:#e7edf5;border-radius:7px;padding:9px;font:inherit}.command-console textarea{min-height:110px;resize:vertical;font-family:ui-monospace,monospace}.command-console .wide{grid-column:1/-1}.command-console .command-console-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.command-console .command-console-result{min-height:100px;max-height:35vh;overflow:auto;white-space:pre-wrap;overflow-wrap:anywhere;border:1px solid #253142;background:#080e15;border-radius:7px;padding:10px;color:#b9c9da}.command-console .command-console-note{color:#f7c873;font-size:12px}.command-console .command-console-status{color:#6ee7b7;font-size:12px}@media(max-width:650px){.command-console-grid{grid-template-columns:1fr}.command-console .wide{grid-column:auto}}
 </style>
 </head>
 <body>
@@ -351,6 +351,24 @@ function safeText(s){return String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<'
   <label class="wide">Input JSON<textarea id="commandInput" spellcheck="false">{}</textarea></label>
  </div>
  <div class="command-console-actions"><button class="btn active" id="commandRun" type="button">Run command</button><button class="btn" id="commandClearToken" type="button">Clear token</button><span id="commandConsoleStatus" class="command-console-status" role="status" aria-live="polite">Ready · no command executed</span></div>
+ <div class="command-cluster" id="providerNetworkPanel">
+  <h3>Multi-model collaboration network</h3>
+  <p class="command-console-note">Gemini · Claude · Grok · DeepSeek. Providers run only when their server-side API keys are configured. Model output is unverified until independently checked.</p>
+  <div id="providerCatalog" class="command-console-result">Loading provider configuration…</div>
+  <label>Research / task goal<input id="providerGoal" type="text" maxlength="4000" placeholder="What should the model network research, build, or critique?" /></label>
+  <div class="provider-network-options">
+   <label><input type="checkbox" name="providerChoice" value="gemini" checked /> Gemini</label>
+   <label><input type="checkbox" name="providerChoice" value="claude" checked /> Claude</label>
+   <label><input type="checkbox" name="providerChoice" value="grok" checked /> Grok</label>
+   <label><input type="checkbox" name="providerChoice" value="deepseek" checked /> DeepSeek</label>
+  </div>
+  <div class="command-console-grid">
+   <label>Handoff rounds<select id="providerRounds"><option value="1">1 round</option><option value="2" selected>2 rounds</option><option value="3">3 rounds</option></select></label>
+   <label>Total token budget<input id="providerBudget" type="number" min="256" max="24000" step="256" value="6000" /></label>
+  </div>
+  <div class="command-console-actions"><button class="btn" id="providerRun" type="button">Run model collaboration</button><span id="providerStatus" class="command-console-status" role="status" aria-live="polite">No provider calls made</span></div>
+  <pre class="command-console-result" id="providerResult" role="region" aria-label="Multi-model collaboration results" tabindex="0">No collaboration started.</pre>
+ </div>
  <div class="command-cluster">
   <h3>Hierarchical AI cluster · bounded plan</h3>
   <p class="command-console-note">Creates a budgeted plan only. No external AI calls or adapter execution are started by this action.</p>
@@ -381,6 +399,40 @@ function safeText(s){return String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<'
  const clearToken=document.getElementById('commandClearToken');
  const status=document.getElementById('commandConsoleStatus');
  const result=document.getElementById('commandConsoleResult');
+ const providerCatalog=document.getElementById('providerCatalog');
+ const providerGoal=document.getElementById('providerGoal');
+ const providerRounds=document.getElementById('providerRounds');
+ const providerBudget=document.getElementById('providerBudget');
+ const providerRun=document.getElementById('providerRun');
+ const providerStatus=document.getElementById('providerStatus');
+ const providerResult=document.getElementById('providerResult');
+ const providerChoices=[...document.querySelectorAll('input[name="providerChoice"]')];
+ const loadProviderCatalog=async()=>{
+  try{
+   const response=await fetch('/api/mindcloud/providers',{cache:'no-store'});
+   const data=await response.json();
+   providerCatalog.textContent=(data.providers||[]).map(p=>p.label+' · '+p.model+' · '+(p.configured?'configured':'credentials missing')+' · '+p.protocol).join('\\n')+'\\n\\nAPI keys remain server-side and are never returned.';
+  }catch(error){providerCatalog.textContent='Provider catalog unavailable: '+String(error.message||error);}
+ };
+ loadProviderCatalog();
+ providerRun.addEventListener('click',async()=>{
+  const token=tokenInput.value;
+  const goal=providerGoal.value.trim();
+  const providerIds=providerChoices.filter(input=>input.checked).map(input=>input.value);
+  const tokenBudget=Number(providerBudget.value);
+  if(!token){providerStatus.textContent='Execution token required';tokenInput.focus();return;}
+  if(!goal){providerStatus.textContent='Enter a research goal first';providerGoal.focus();return;}
+  if(!providerIds.length){providerStatus.textContent='Select at least one provider';return;}
+  if(!Number.isInteger(tokenBudget)||tokenBudget<256||tokenBudget>24000){providerStatus.textContent='Budget must be between 256 and 24000';return;}
+  providerRun.disabled=true;providerStatus.textContent='Running bounded provider handoff…';providerResult.textContent='Waiting for provider responses…';
+  try{
+   const response=await fetch('/api/mindcloud/providers/collaborate',{method:'POST',headers:{'content-type':'application/json','authorization':'Bearer '+token},body:JSON.stringify({goal,providerIds,rounds:Number(providerRounds.value),tokenBudget,maxTokensPerCall:1200}),cache:'no-store'});
+   const body=await response.json().catch(()=>({error:'invalid_json_response'}));
+   providerResult.textContent=JSON.stringify({httpStatus:response.status,ok:response.ok,response:body},null,2);
+   providerStatus.textContent=response.ok?(body.status==='responses_received_unverified'?'Responses received · independent verification required':'No provider responses · check server credentials'):'Request rejected · HTTP '+response.status;
+  }catch(error){providerResult.textContent=String(error.message||error);providerStatus.textContent='Network or request error';}
+  finally{providerRun.disabled=false;}
+ });
  const clusterGoal=document.getElementById('clusterGoal');
  const clusterAgents=document.getElementById('clusterAgents');
  const clusterDepth=document.getElementById('clusterDepth');
