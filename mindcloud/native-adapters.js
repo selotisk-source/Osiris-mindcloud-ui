@@ -1,6 +1,8 @@
-const NATIVE = new Set(["overpass-turbo","google-street-view","shodan","opensanctions","subdomain-finder","mapillary","agentmemory"]);
+const rufloMcp = require("./ruflo-mcp");
+const NATIVE = new Set(["overpass-turbo","google-street-view","shodan","opensanctions","subdomain-finder","mapillary","agentmemory","ruflo"]);
 
 function state(id) {
+  if (id === "ruflo") return {configured:process.env.RUFLO_MCP_ENABLED === "true",required:process.env.RUFLO_MCP_ENABLED === "true"?undefined:"RUFLO_MCP_ENABLED=true",mode:"stdio-mcp-readonly",operations:["health","discover_tools"]};
   if (id === "overpass-turbo" || id === "subdomain-finder") return {configured:true,mode:id === "subdomain-finder" ? "passive-public-data" : "native-http"};
   if (id === "agentmemory") return {configured:Boolean(process.env.COGNEE_SERVICE_URL),required:process.env.COGNEE_SERVICE_URL?undefined:"COGNEE_SERVICE_URL",mode:"cognee-persistent-memory",operations:["remember","observe","smart_search","context"]};
   if (id === "google-street-view") return {configured:Boolean(process.env.GOOGLE_MAPS_API_KEY),required:process.env.GOOGLE_MAPS_API_KEY?undefined:"GOOGLE_MAPS_API_KEY"};
@@ -14,7 +16,11 @@ function supports(id) { return NATIVE.has(id); }
 async function health(id) {
   const s=state(id);
   if (!s) return null;
-  if (!s.configured) return {ok:false,status:"credentials-missing",required:s.required};
+  if (!s.configured) return {ok:false,status:id === "ruflo" ? "disabled" : "credentials-missing",required:s.required};
+  if (id === "ruflo") {
+    try { const result=await rufloMcp.discoverTools(); return {ok:true,status:"healthy",mode:"stdio-mcp-readonly",server:result.server,protocolVersion:result.protocolVersion,toolCount:result.toolCount,executionEnabled:false}; }
+    catch(error) { return {ok:false,status:"offline",mode:"stdio-mcp-readonly",error:error instanceof Error?error.message:String(error),executionEnabled:false}; }
+  }
   if (id === "agentmemory") {
     const endpoint=process.env.COGNEE_SERVICE_URL.replace(/\/$/,"");
     try {
@@ -94,6 +100,12 @@ async function readResponse(response) {
   return {contentType,raw:(await response.text()).slice(0,20000)};
 }
 async function execute({id,operation,input={},requestId}) {
+  if (id === "ruflo") {
+    if (process.env.RUFLO_MCP_ENABLED !== "true") return {ok:false,id,operation,error:"adapter_disabled",required:"RUFLO_MCP_ENABLED=true",executionEnabled:false};
+    if (operation !== "discover_tools" && operation !== "health") return {ok:false,id,operation,error:"operation_not_supported",supportedOperations:["health","discover_tools"],executionEnabled:false};
+    try { const result=await rufloMcp.discoverTools(); return {ok:true,id,operation,result,evidence:{source:"stdio://ruflo-mcp/tools/list",retrievedAt:new Date().toISOString(),requestId,toolCount:result.toolCount,executionEnabled:false}}; }
+    catch(error) { return {ok:false,id,operation,error:error instanceof Error?error.message:String(error),executionEnabled:false}; }
+  }
   const timeout={signal:AbortSignal.timeout(15000)};
   let endpoint, response, headers={"accept":"application/json"};
   if(id==="agentmemory") {
