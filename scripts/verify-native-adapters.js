@@ -81,6 +81,8 @@ global.fetch = async (url, options={}) => {
   assert.equal(native.state("subdomain-finder").configured,false);
   const missingAllowlist=await native.execute({id:"subdomain-finder",operation:"discover",input:{domain:"example.com"},requestId:"test-missing-domain-allowlist"});
   assert.equal(missingAllowlist.error,"authorized_domain_allowlist_missing");
+  const missingScopeHealth=await native.health("subdomain-finder");
+  assert.equal(missingScopeHealth.status,"authorization-scope-missing");
   process.env.MINDCLOUD_AUTHORIZED_DOMAINS=savedAllowlist;
   const denied=await native.execute({id:"shodan",operation:"host",input:{},requestId:"test-invalid"});
   assert.equal(denied.error,"ip_required");
