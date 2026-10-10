@@ -262,7 +262,7 @@ else {const r=await fetch('/api/agent-tools').then(r=>r.json());const found=(r.t
  const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
  const checks=[
   {name:'MindCore runtime',url:'/api/mindcloud/status',detail:x=>'health: '+(x.health||'not reported')},
-  {name:'Tool registry API',url:'/api/agent-tools',detail:x=>'registry records: '+(Array.isArray(x.tools)?x.tools.length:'unknown')+'; record presence is not proof that tools execute'},
+  {name:'Tool implementation health',url:'/api/agent-tools/health',detail:x=>'implemented: '+(x.counts?.implemented??'unknown')+' · unimplemented: '+(x.counts?.unimplemented??'unknown')+' · registry presence is not execution'},
   {name:'CCTV connector',url:'/api/cctv',detail:x=>'source: '+(x.status||'unknown')+' · stream: '+(x.streamStatus||'unknown')+' · proxy: '+(x.proxyStatus||'unknown')},
   {name:'GEO capability API',url:'/api/capabilities',detail:x=>'capabilities returned: '+(Array.isArray(x.capabilities)?x.capabilities.length:'unknown')},
   {name:'MindCore capability graph',url:'/api/mindcloud/capabilities',detail:x=>'layers: '+Object.keys(x.layers||{}).length+' · recipes: '+(Array.isArray(x.recipes)?x.recipes.length:'unknown')}
