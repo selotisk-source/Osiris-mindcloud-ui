@@ -53,7 +53,7 @@ async function execute({id,operation,input={},requestId}) {
     const domain=String(input.domain||"").trim().toLowerCase().replace(/\.$/,"");
     if(!domain || domain.length>253 || !/^(?=.{1,253}$)(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,63}$/.test(domain)) return {ok:false,error:"valid_domain_required"};
     if(operation==="discover") {
-      const endpoint="https://crt.sh/?q="+encodeURIComponent("%25."+domain)+"&output=json";
+      const endpoint="https://crt.sh/?q="+encodeURIComponent("%."+domain)+"&output=json";
       const response=await fetch(endpoint,{...timeout,headers:{"accept":"application/json","user-agent":"MindCloud/1.0 (passive certificate-transparency lookup)"}});
       let rows=[]; try { rows=await response.json(); } catch {}
       if(!response.ok || !Array.isArray(rows)) return {ok:false,id,operation,status:response.status,error:"certificate_transparency_lookup_failed"};
