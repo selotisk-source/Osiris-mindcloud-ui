@@ -105,7 +105,11 @@ async function runMindcloudSelfTest() {
         title:browserExecution.result.title,
         url:browserExecution.result.url,
         sessionId:browserExecution.result.sessionId
-      } : {status:"failed",error:browserExecution.error || browserExecution.result?.error || "browser_execution_failed"}
+      } : {
+        status:"failed",
+        error:browserExecution.error || browserExecution.result?.error || "browser_execution_failed",
+        message:browserExecution.result?.message || null
+      }
     },
     optional:{cctv:cctvResponse()},
     timestamp:new Date().toISOString()
