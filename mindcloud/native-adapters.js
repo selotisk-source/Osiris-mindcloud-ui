@@ -82,7 +82,19 @@ async function execute({id,operation,input={},requestId}) {
     } else return {ok:false,error:"operation_not_supported",id,operation};
   } else return {ok:false,error:"native_adapter_not_implemented",id,operation};
 
-  const result=await readResponse(response);
+  let result=await readResponse(response);
+  if (id === "overpass-turbo" && operation === "export_geojson" && response.ok) {
+    const elements = Array.isArray(result?.elements) ? result.elements : [];
+    result = { type: "FeatureCollection", features: elements.flatMap(element => {
+      let geometry = null;
+      if (element.type === "node" && Number.isFinite(element.lon) && Number.isFinite(element.lat)) geometry = { type: "Point", coordinates: [element.lon, element.lat] };
+      else if (element.type === "way" && Array.isArray(element.geometry) && element.geometry.length >= 2) {
+        const coordinates = element.geometry.filter(point => Number.isFinite(point.lon) && Number.isFinite(point.lat)).map(point => [point.lon, point.lat]);
+        if (coordinates.length >= 2) geometry = { type: "LineString", coordinates };
+      }
+      return geometry ? [{ type: "Feature", id: `${element.type}/${element.id}`, properties: { ...element.tags, osm_type: element.type, osm_id: element.id }, geometry }] : [];
+    }) };
+  }
   return {ok:response.ok,id,operation,status:response.status,result,evidence:{source:endpoint.split("?")[0],retrievedAt:new Date().toISOString(),requestId}};
 }
 module.exports={supports,state,health,execute};
