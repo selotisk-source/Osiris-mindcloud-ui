@@ -59,6 +59,63 @@ async function cogneeHealth() {
   }
 }
 
+async function cogneeMemoryRoundTrip() {
+  const endpoint = (process.env.COGNEE_SERVICE_URL || "").replace(/\\/$/, "");
+  if (!endpoint) return {status:"not_configured",persisted:false};
+  const sessionId = "mindcloud-e2e-persistence-probe";
+  const marker = "MINDCLOUD_PERSISTENCE_PROBE_V1";
+  const datasetName = process.env.COGNEE_MEMORY_DATASET || "mindcloud-selftest";
+  const parseResponse = async response => {
+    try { return await response.json(); }
+    catch { return {raw:await response.text().catch(()=> "")}; }
+  };
+  const recall = async () => {
+    const response = await fetch(endpoint + "/api/v1/recall", {
+      method:"POST",
+      headers:{"content-type":"application/json","accept":"application/json"},
+      body:JSON.stringify({query:marker,session_id:sessionId,scope:"session",only_context:true,top_k:5}),
+      signal:AbortSignal.timeout(10000)
+    });
+    return {response,body:await parseResponse(response)};
+  };
+  const containsMarker = body => JSON.stringify(body).includes(marker);
+  try {
+    const existing = await recall();
+    if (existing.response.ok && containsMarker(existing.body)) {
+      return {status:"healthy",persisted:true,mode:"existing-readback",sessionId};
+    }
+    const form = new FormData();
+    form.append("raw_data",marker);
+    form.append("datasetName",datasetName);
+    form.append("session_id",sessionId);
+    form.append("self_improvement","false");
+    form.append("run_in_background","false");
+    const writeResponse = await fetch(endpoint + "/api/v1/remember", {
+      method:"POST",
+      headers:{accept:"application/json"},
+      body:form,
+      signal:AbortSignal.timeout(20000)
+    });
+    const writeBody = await parseResponse(writeResponse);
+    if (!writeResponse.ok) {
+      return {status:"degraded",persisted:false,mode:"write-failed",httpStatus:writeResponse.status,detail:writeBody};
+    }
+    const readback = await recall();
+    const persisted = readback.response.ok && containsMarker(readback.body);
+    return {
+      status:persisted ? "healthy" : "degraded",
+      persisted,
+      mode:"write-readback",
+      writeHttpStatus:writeResponse.status,
+      readHttpStatus:readback.response.status,
+      sessionId,
+      ...(persisted ? {} : {detail:readback.body})
+    };
+  } catch (error) {
+    return {status:"offline",persisted:false,error:error instanceof Error ? error.message : String(error)};
+  }
+}
+
 async function runMindcloudSelfTest() {
   const taskId = "selftest-" + Date.now() + "-" + Math.random().toString(36).slice(2, 8);
   let routeResult = null;
@@ -71,6 +128,7 @@ async function runMindcloudSelfTest() {
   const snapshot = mindcloud.snapshot();
   const events = mindcloud.eventsFor(taskId);
   const memory = await cogneeHealth();
+  const memoryRoundTrip = memory.status === "healthy" ? await cogneeMemoryRoundTrip() : {status:memory.status,persisted:false};
   const browserUse = await adapters.health("browser-use");
   const browserExecution = browserUse.status === "healthy"
     ? await adapters.execute({id:"browser-use",operation:"browse",input:{url:"https://example.com",sessionId:"mindcloud-e2e-selftest",waitUntil:"domcontentloaded",timeout:15000}})
@@ -83,7 +141,8 @@ async function runMindcloudSelfTest() {
     {id:"tool-catalog-loaded",ok:Array.isArray(agentTools.tools) && agentTools.tools.length >= 10}
   ];
   const integrationChecks = [
-    {id:"cognee-memory",ok:memory.status === "healthy",status:memory.status},
+    {id:"cognee-memory-health",ok:memory.status === "healthy",status:memory.status},
+    {id:"cognee-memory-persistence",ok:memoryRoundTrip.status === "healthy" && memoryRoundTrip.persisted === true,status:memoryRoundTrip.status,mode:memoryRoundTrip.mode || null},
     {id:"browser-use-health",ok:browserUse.status === "healthy",status:browserUse.status,browserEngine:browserUse.browserEngine || null},
     {id:"browser-use-execution",ok:browserExecutionOk,status:browserExecution.ok ? "executed" : browserExecution.error || "failed",httpStatus:browserExecution.result?.httpStatus ?? browserExecution.status ?? null}
   ];
@@ -98,6 +157,7 @@ async function runMindcloudSelfTest() {
       status:integrationsOk ? "passed" : "degraded",
       checks:integrationChecks,
       memory,
+      memoryRoundTrip,
       browserUse,
       browserExecution:browserExecutionOk ? {
         status:"executed",
