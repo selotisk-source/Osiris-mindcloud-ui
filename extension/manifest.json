@@ -19,5 +19,12 @@
   },
   "background": {
     "service_worker": "background.js"
-  }
+  },
+  "optional_permissions": [
+    "cookies"
+  ],
+  "optional_host_permissions": [
+    "http://*/*",
+    "https://*/*"
+  ]
 }
