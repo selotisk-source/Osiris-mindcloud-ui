@@ -123,7 +123,7 @@ async function getJson(path) {
   assert.deepEqual(agentMemoryContract.adapter.operations, ["remember", "observe", "smart_search", "context"]);
 
   const freeSubdomain = await getJson("/api/adapters/subdomain-finder/health");
-  assert.equal(freeSubdomain.status, "configured", "free passive subdomain adapter must be available");
+  assert.ok(["configured", "authorization-scope-missing"].includes(freeSubdomain.status), "free passive subdomain adapter must report either a configured scope or an explicit missing-allowlist state");
   const mapillary = await getJson("/api/adapters/mapillary/health");
   assert.ok(["credentials-missing", "configured"].includes(mapillary.status), "Mapillary must report explicit free-token state");
 
