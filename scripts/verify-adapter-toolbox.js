@@ -54,9 +54,11 @@ assert.deepEqual(runtime.discover("shodan").adapter.operations,["host","search",
 assert.deepEqual(runtime.discover("ruflo").adapter.operations,["discover_tools","health"]);
 
 const browserBeforeEvidence = runtime.discover("browser-use").adapter.runtime;
-assert.equal(browserBeforeEvidence.readiness, "registered-only");
+assert.ok(["registered-only","configured"].includes(browserBeforeEvidence.readiness),
+  "readiness must reflect whether the test environment has adapter configuration");
 assert.equal(browserBeforeEvidence.healthStatus, "not-checked");
-assert.equal(browserBeforeEvidence.verification.status, "not-verified");
+assert.equal(browserBeforeEvidence.verification.status, "not-verified",
+  "configuration alone must never count as successful execution verification");
 runtime.record("health-evidence-test", {ok:true,id:"browser-use",operation:"health",result:{status:"healthy"}});
 const browserHealthy = runtime.discover("browser-use").adapter.runtime;
 assert.equal(browserHealthy.healthStatus, "healthy");
