@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - "main"
+      - "mindcloud/ruflo-mcp-smoke-main"
   pull_request:
     types:
       - opened
