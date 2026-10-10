@@ -198,8 +198,24 @@
       ],
       "env": "GOOGLE_MAPS_API_KEY",
       "endpoint_env": "GOOGLE_STREET_VIEW_URL",
+      "status": "parked-cost-review",
+      "cost_model": "requires-billing-enabled-project; image requests billed per use; metadata requests currently listed as uncharged; Mapillary is the default free imagery alternative"
+    },
+    {
+      "id": "mapillary",
+      "source": "Mapillary Graph API",
+      "layer": "GeoOSINT",
+      "integration": "Free alternative to paid Street View imagery. Search street-level imagery by bounding box and retrieve image metadata; access token requires a free account/application registration.",
+      "operations": [
+        "search",
+        "image",
+        "health"
+      ],
+      "env": "MAPILLARY_ACCESS_TOKEN",
       "status": "adapter-ready",
-      "cost_model": "billing-required; park until free alternative evaluated"
+      "cost_model": "free-no-subscription",
+      "authentication": "registered application access token",
+      "security": "read-only imagery metadata; obey Mapillary API terms and attribution"
     },
     {
       "id": "shodan",
@@ -214,9 +230,9 @@
       ],
       "env": "SHODAN_API_KEY",
       "endpoint_env": "SHODAN_API_BASE_URL",
-      "status": "adapter-ready",
+      "status": "parked-cost-review",
       "security": "authorized targets and scopes only",
-      "cost_model": "paid-capability-risk; park unless free account quota is sufficient"
+      "cost_model": "free-account key exists but search/DNS credits and paid plans can be required; keep disabled until quota/cost scope is confirmed"
     },
     {
       "id": "subdomain-finder",
@@ -245,8 +261,8 @@
       ],
       "env": "OPENSANCTIONS_API_KEY",
       "endpoint_env": "OPENSANCTIONS_API_BASE_URL",
-      "status": "adapter-ready",
-      "cost_model": "API-plan-to-be-checked; prefer downloadable dataset if API is paid"
+      "status": "parked-cost-review",
+      "cost_model": "API uses prepaid credits for screening; non-commercial bulk data is free; defer hosted API and assess local dataset licensing before use"
     },
     {
       "id": "cookies-viewer",
