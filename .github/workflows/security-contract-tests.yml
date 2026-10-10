@@ -34,6 +34,17 @@ jobs:
       - name: Run independent approval gate grader
         run: node tests/security/approval-gate.test.js
 
+  mandate-policy-manager:
+    name: Mandate policy manager contract
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Run independent mandate policy grader
+        run: node tests/security/mandate-policy-manager.test.js
+
   decision-governor:
     name: Decision Governor contract
     runs-on: ubuntu-latest

@@ -138,6 +138,31 @@ async function waitForHealth(child) {
     assert.equal(escalatedGovernorApi.body.route,"ESCALATE");
     assert.equal(escalatedGovernorApi.body.executionAuthorized,false);
 
+    const mandateCatalog = await get("/api/mindcloud/policy/mandates");
+    assert.equal(mandateCatalog.status,200);
+    assert.equal(mandateCatalog.body.type,"mindcloud_mandate_catalog");
+    assert.equal(mandateCatalog.body.executionEnabled,false);
+    assert.equal(mandateCatalog.body.writesEnabled,false);
+    assert.ok(mandateCatalog.body.policies[0].automaticActions.includes("health-check"));
+
+    const mandateDecision = await post("/api/mindcloud/policy/evaluate",{
+      action:{type:"health-check"},
+      context:{uncertainty:0.01}
+    });
+    assert.equal(mandateDecision.status,200);
+    assert.equal(mandateDecision.body.type,"mindcloud_mandate_decision");
+    assert.equal(mandateDecision.body.route,"AUTO_WITHIN_MANDATE");
+    assert.equal(mandateDecision.body.executionAuthorized,false);
+    assert.equal(mandateDecision.body.policyMutationPerformed,false);
+
+    const blockedMandateDecision = await post("/api/mindcloud/policy/evaluate",{
+      action:{type:"restart-service",risk:"low"},
+      context:{uncertainty:0.01}
+    });
+    assert.equal(blockedMandateDecision.status,200);
+    assert.equal(blockedMandateDecision.body.route,"ESCALATE");
+    assert.equal(blockedMandateDecision.body.code,"action_outside_mandate");
+
     const arenaApi = await post("/api/mindcloud/arena/evaluate",{
       task:"End-to-end Arena API pilot",
       candidates:[
