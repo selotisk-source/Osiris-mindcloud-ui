@@ -60,7 +60,7 @@ async function cogneeHealth() {
 }
 
 async function cogneeMemoryRoundTrip() {
-  const endpoint = (process.env.COGNEE_SERVICE_URL || "").replace(/\\/$/, "");
+  const endpoint = (process.env.COGNEE_SERVICE_URL || "").replace(/\/$/, "");
   if (!endpoint) return {status:"not_configured",persisted:false};
   const sessionId = "mindcloud-e2e-persistence-probe";
   const marker = "MINDCLOUD_PERSISTENCE_PROBE_V1";
