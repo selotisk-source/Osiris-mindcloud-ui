@@ -42,7 +42,8 @@ const { AdapterRuntime } = require("../mindcloud/adapter-runtime");
 
     const snapshot = runtime.snapshot();
     assert.equal(snapshot.auditCount, 1, "failed execution must be recorded in audit");
-    assert.equal(snapshot.readinessSummary.degraded, 1, "failed health is separate; failed execution alone must not claim verified");
+    assert.equal(snapshot.readinessSummary.configured, 1, "a failed operation alone is not a health probe");
+    assert.equal(snapshot.readinessSummary.executionNotVerified, 1);
     const entry = runtime.audit[0];
     assert.equal(entry.ok, false);
     assert.equal(entry.requestId, result.requestId);
