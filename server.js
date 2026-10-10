@@ -72,6 +72,10 @@ async function runMindcloudSelfTest() {
   const events = mindcloud.eventsFor(taskId);
   const memory = await cogneeHealth();
   const browserUse = await adapters.health("browser-use");
+  const browserExecution = browserUse.status === "healthy"
+    ? await adapters.execute({id:"browser-use",operation:"browse",input:{url:"https://example.com",sessionId:"mindcloud-e2e-selftest",waitUntil:"domcontentloaded",timeout:15000}})
+    : {ok:false,error:"browser_use_not_healthy"};
+  const browserExecutionOk = Boolean(browserExecution.ok && browserExecution.result?.status === "executed" && browserExecution.result?.httpStatus >= 200 && browserExecution.result?.httpStatus < 400);
   const coreChecks = [
     {id:"task-routed",ok:Boolean(routeResult && routeResult.taskId === taskId && routeResult.status === "routed")},
     {id:"task-readable",ok:snapshot.tasks.some(task => task.taskId === taskId)},
@@ -80,7 +84,8 @@ async function runMindcloudSelfTest() {
   ];
   const integrationChecks = [
     {id:"cognee-memory",ok:memory.status === "healthy",status:memory.status},
-    {id:"browser-use",ok:browserUse.status === "healthy",status:browserUse.status}
+    {id:"browser-use-health",ok:browserUse.status === "healthy",status:browserUse.status,browserEngine:browserUse.browserEngine || null},
+    {id:"browser-use-execution",ok:browserExecutionOk,status:browserExecution.ok ? "executed" : browserExecution.error || "failed",httpStatus:browserExecution.result?.httpStatus ?? browserExecution.status ?? null}
   ];
   const coreOk = coreChecks.every(check => check.ok);
   const integrationsOk = integrationChecks.every(check => check.ok);
@@ -89,7 +94,19 @@ async function runMindcloudSelfTest() {
     status:coreOk && integrationsOk ? "passed" : coreOk ? "degraded" : "failed",
     taskId,
     core:{status:coreOk ? "passed" : "failed",checks:coreChecks,error:routeError},
-    integrations:{status:integrationsOk ? "passed" : "degraded",checks:integrationChecks,memory,browserUse},
+    integrations:{
+      status:integrationsOk ? "passed" : "degraded",
+      checks:integrationChecks,
+      memory,
+      browserUse,
+      browserExecution:browserExecutionOk ? {
+        status:"executed",
+        httpStatus:browserExecution.result.httpStatus,
+        title:browserExecution.result.title,
+        url:browserExecution.result.url,
+        sessionId:browserExecution.result.sessionId
+      } : {status:"failed",error:browserExecution.error || browserExecution.result?.error || "browser_execution_failed"}
+    },
     optional:{cctv:cctvResponse()},
     timestamp:new Date().toISOString()
   };
@@ -150,4 +167,9 @@ const server = http.createServer(async (req,res)=>{
   if(pathname.startsWith("/api/")){sendJson(res,{error:"api_route_not_found",path:pathname},404);return;}
   res.writeHead(200,{"content-type":"text/html; charset=utf-8"});res.end(html);
 });
-server.listen(port,"0.0.0.0",()=>console.log("OSIRIS MindCloud listening on port "+port));
+server.listen(port,"0.0.0.0",()=>{
+  console.log("OSIRIS MindCloud listening on port "+port);
+  runMindcloudSelfTest()
+    .then(result=>console.log("MINDCLOUD_E2E_SELFTEST "+JSON.stringify(result)))
+    .catch(error=>console.error("MINDCLOUD_E2E_SELFTEST_FAILED "+String(error?.message||error)));
+});
