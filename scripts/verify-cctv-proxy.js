@@ -46,6 +46,11 @@ function encoded(url) {
       res.end(Buffer.from("test-mpeg-ts-segment"));
       return;
     }
+    if (req.method === "GET" && req.url === "/live/frame.jpg") {
+      res.writeHead(200, { "content-type": "image/jpeg", "cache-control": "no-store" });
+      res.end(Buffer.from("ffd8ffe000104a46494600010100000100010000ffd9", "hex"));
+      return;
+    }
     if (req.method === "POST" && req.url === "/api/interpreter") {
       let body = "";
       req.on("data", chunk => { body += chunk; });
@@ -108,6 +113,17 @@ function encoded(url) {
     assert.equal(segmentResponse.headers.get("content-type"), "video/mp2t");
     assert.equal(Buffer.from(await segmentResponse.arrayBuffer()).toString(), "test-mpeg-ts-segment");
 
+    const frameResponse = await fetch(appBase + "/api/cctv/stream?resource=" + encoded(sourceBase + "/live/frame.jpg"), {
+      headers: { authorization: "Bearer " + token }
+    });
+    assert.equal(frameResponse.status, 200, "JPEG snapshot must be fetched through the authenticated proxy");
+    assert.equal(frameResponse.headers.get("content-type"), "image/jpeg");
+    const frameBytes = Buffer.from(await frameResponse.arrayBuffer());
+    assert.equal(frameBytes[0], 0xff, "snapshot must retain JPEG signature");
+    assert.equal(frameBytes[1], 0xd8, "snapshot must retain JPEG signature");
+    assert.equal(frameBytes[frameBytes.length - 2], 0xff, "snapshot must retain JPEG end marker");
+    assert.equal(frameBytes[frameBytes.length - 1], 0xd9, "snapshot must retain JPEG end marker");
+
     const rejected = await fetch(appBase + "/api/cctv/stream?resource=" + encoded("https://example.com/private.m3u8"), {
       headers: { authorization: "Bearer " + token }
     });
@@ -120,6 +136,7 @@ function encoded(url) {
         "configuration-does-not-claim-stream-verified",
         "hls-playlist-fetched-and-rewritten",
         "media-segment-fetched-through-proxy",
+        "jpeg-snapshot-fetched-and-signature-validated",
         "cross-origin-resource-rejected"
       ]
     }, null, 2));
