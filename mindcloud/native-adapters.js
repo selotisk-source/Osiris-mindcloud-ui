@@ -17,18 +17,8 @@ async function health(id) {
   if (id === "subdomain-finder") return {ok:true,status:"configured",mode:"passive-public-data",providers:["crt.sh","Cloudflare DNS-over-HTTPS"]};
   if (id === "mapillary") return {ok:true,status:"configured",mode:"free-street-level-imagery",provider:"Mapillary"};
   if (id !== "overpass-turbo") return {ok:true,status:"configured",mode:"native-http"};
-  const endpoint=process.env.OVERPASS_API_URL||"https://overpass-api.de/api/interpreter";
   try {
-    const response=await fetch(endpoint,{
-      method:"POST",
-      headers:{
-        "content-type":"application/x-www-form-urlencoded;charset=UTF-8",
-        "accept":"application/json",
-        "user-agent":"MindCloud/1.0 (https://github.com/selotisk-source/Osiris-mindcloud-ui)"
-      },
-      body:new URLSearchParams({data:"[out:json];node(1);out;"}).toString(),
-      signal:AbortSignal.timeout(10000)
-    });
+    const {response,endpoint}=await fetchOverpass("[out:json];node(1);out;",10000);
     let body=null;
     try { body=await response.json(); } catch {}
     const healthy=response.ok && Array.isArray(body?.elements);
@@ -40,8 +30,42 @@ async function health(id) {
       probe:"interpreter-json",
       ...(healthy?{}:{detail:body})
     };
-  } catch(e) { return {ok:false,status:"offline",endpoint,probe:"interpreter-json",error:e instanceof Error?e.message:String(e)}; }
+  } catch(e) { return {ok:false,status:"offline",endpoint:overpassEndpoints(),probe:"interpreter-json",error:e instanceof Error?e.message:String(e)}; }
 }
+function overpassEndpoints() {
+  const primary = process.env.OVERPASS_API_URL || "https://overpass-api.de/api/interpreter";
+  const configured = (process.env.OVERPASS_API_FALLBACKS || "").split(",").map(value => value.trim()).filter(Boolean);
+  const defaults = process.env.OVERPASS_API_URL ? [] : ["https://overpass.private.coffee/api/interpreter"];
+  return [...new Set([primary, ...configured, ...defaults])];
+}
+
+async function fetchOverpass(query, timeoutMs=15000) {
+  const endpoints = overpassEndpoints();
+  let lastError;
+  for (let index=0; index<endpoints.length; index++) {
+    const endpoint=endpoints[index];
+    try {
+      const response=await fetch(endpoint,{
+        method:"POST",
+        headers:{
+          "content-type":"application/x-www-form-urlencoded;charset=UTF-8",
+          "accept":"application/json",
+          "user-agent":"MindCloud/1.0 (https://github.com/selotisk-source/Osiris-mindcloud-ui)"
+        },
+        body:new URLSearchParams({data:query}).toString(),
+        signal:AbortSignal.timeout(timeoutMs)
+      });
+      const retryable=[429,502,503,504].includes(response.status);
+      if(response.ok || !retryable || index===endpoints.length-1) return {response,endpoint};
+      await response.body?.cancel().catch(()=>{});
+    } catch(error) {
+      lastError=error;
+      if(index===endpoints.length-1) throw error;
+    }
+  }
+  throw lastError || new Error("overpass_all_endpoints_failed");
+}
+
 async function readResponse(response) {
   const contentType=response.headers.get("content-type")||"";
   if(contentType.includes("application/json")) { try{return await response.json();}catch{return {error:"invalid_json_response"};} }
@@ -98,8 +122,7 @@ async function execute({id,operation,input={},requestId}) {
   } else if(id==="overpass-turbo") {
     if(!["query","export_geojson"].includes(operation)) return {ok:false,error:"operation_not_supported",id,operation};
     if(typeof input.query!=="string"||!input.query.trim()) return {ok:false,error:"query_required",id,operation};
-    endpoint=process.env.OVERPASS_API_URL||"https://overpass-api.de/api/interpreter";
-    response=await fetch(endpoint,{...timeout,method:"POST",headers:{"content-type":"application/x-www-form-urlencoded;charset=UTF-8","accept":"application/json"},body:new URLSearchParams({data:input.query}).toString()});
+    ({endpoint,response}=await fetchOverpass(input.query,15000));
   } else if(id==="google-street-view") {
     if(!["metadata","image"].includes(operation)) return {ok:false,error:"operation_not_supported",id,operation};
     if(!process.env.GOOGLE_MAPS_API_KEY) return {ok:false,error:"adapter_credentials_missing",required:"GOOGLE_MAPS_API_KEY"};
