@@ -247,6 +247,9 @@ const server = http.createServer(async (req,res)=>{
     return;
   }
   if(pathname==="/api/mindcloud/versions" && req.method==="POST"){
+    const expectedToken = process.env.MINDCLOUD_MODEL_VERSION_WRITE_TOKEN || "";
+    if (!expectedToken) { sendJson(res,{error:"model_version_write_token_not_configured"},503); return; }
+    if (!tokenMatches(bearerToken(req), expectedToken)) { sendJson(res,{error:"unauthorized"},401); return; }
     try {
       const input = await readJson(req);
       const version = mindcloud.createModelVersion(input);
