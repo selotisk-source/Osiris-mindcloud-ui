@@ -25,7 +25,9 @@ assert.match(html, /adapterDiscoveryCache\[id\]=result/, "discovery result must 
 assert.match(html, /readinessLabel/, "toolbox must display the runtime readiness state");
 assert.match(html, /verificationText/, "toolbox must distinguish execution verification from registration and health");
 assert.match(html, /readinessSummary/, "toolbox must display adapter readiness coverage totals");
-assert.doesNotMatch(html, /fetch\(['"]\/api\/adapters\/execute/, "browser UI must not call the protected execution endpoint or expose its token");
+assert.match(html, /fetch\(['"]\/api\/adapters\/execute['"]/, "integrated command console must call the existing protected execution endpoint");
+assert.match(html, /authorization:'Bearer '\+token/, "protected execution call must attach the session token as a bearer credential");
+assert.doesNotMatch(html, /(?:localStorage|sessionStorage)\.(?:setItem|getItem).*commandToken/i, "execution token must not be persisted in browser storage");
 assert.match(html, /id="commandConsole"/, "OSIRIS must expose the integrated command console");
 assert.match(html, /id="commandAdapter"/, "command console must select a live adapter");
 assert.match(html, /id="commandOperation"/, "command console must select a declared operation");
