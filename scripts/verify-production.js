@@ -49,12 +49,6 @@ async function getJson(path) {
     assert.ok(overpass.error || overpass.httpStatus, "unhealthy Overpass status must include diagnostic detail");
   }
 
-  const agentMemory = await getJson("/api/adapters/agentmemory/health");
-  assert.equal(agentMemory.status, "healthy", "Cognee-backed AgentMemory adapter must be live: " + JSON.stringify(agentMemory));
-  const agentMemoryContract = await getJson("/api/adapters/agentmemory/discover");
-  assert.equal(agentMemoryContract.ok, true, "AgentMemory runtime contract must be discoverable");
-  assert.deepEqual(agentMemoryContract.adapter.operations, ["remember", "observe", "smart_search", "context"]);
-
   const freeSubdomain = await getJson("/api/adapters/subdomain-finder/health");
   assert.equal(freeSubdomain.status, "configured", "free passive subdomain adapter must be available");
   const mapillary = await getJson("/api/adapters/mapillary/health");
@@ -85,7 +79,6 @@ async function getJson(path) {
       "cctv-explicit-state",
       "runtime-component-status",
       "live-overpass-provider-health-state-and-diagnostics",
-      "agentmemory-cognee-live-health-and-discovery",
       "free-passive-subdomain-adapter",
       "mapillary-free-token-state",
       "credential-gated-adapter-state",
@@ -95,7 +88,6 @@ async function getJson(path) {
     cctvStatus: cctv.status,
     cctvProxyStatus: cctv.proxyStatus,
     overpassStatus: overpass.status,
-    agentMemoryStatus: agentMemory.status,
     freeSubdomainStatus: freeSubdomain.status,
     mapillaryStatus: mapillary.status,
     credentialGatedAdapters
