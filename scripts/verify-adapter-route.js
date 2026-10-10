@@ -28,6 +28,33 @@ async function waitHealthy(child) {
 
 (async () => {
   const provider = http.createServer((req, res) => {
+    if (req.method === "GET" && req.url === "/health") {
+      res.writeHead(200, { "content-type": "application/json" });
+      res.end(JSON.stringify({status:"ok"}));
+      return;
+    }
+    if (req.method === "POST" && req.url === "/api/v1/remember") {
+      let body = "";
+      req.on("data", chunk => { body += chunk; });
+      req.on("end", () => {
+        assert.match(body, /agentmemory route test/);
+        assert.match(body, /session_id/);
+        res.writeHead(200, { "content-type": "application/json" });
+        res.end(JSON.stringify({status:"added",session_stored:true}));
+      });
+      return;
+    }
+    if (req.method === "POST" && req.url === "/api/v1/recall") {
+      let body = "";
+      req.on("data", chunk => { body += chunk; });
+      req.on("end", () => {
+        const query = JSON.parse(body);
+        assert.equal(query.session_id, "agentmemory-route-test");
+        res.writeHead(200, { "content-type": "application/json" });
+        res.end(JSON.stringify({results:[{text:"agentmemory route test"}],query:query.query}));
+      });
+      return;
+    }
     if (req.method === "GET" && req.url.startsWith("/crt.sh?")) {
       res.writeHead(200, { "content-type": "application/json" });
       res.end(JSON.stringify([{name_value:"api.example.com\nosiris.example.com\nnotexample.com"}]));
@@ -63,7 +90,7 @@ async function waitHealthy(child) {
       NODE_ENV: "test",
       PORT: String(appPort),
       CCTV_SOURCE_URL: "",
-      COGNEE_SERVICE_URL: "",
+      COGNEE_SERVICE_URL: `http://127.0.0.1:${providerPort}`,
       OVERPASS_API_URL: `http://127.0.0.1:${providerPort}/api/interpreter`,
       CRT_SH_URL: `http://127.0.0.1:${providerPort}/crt.sh`,
       CLOUDFLARE_DNS_URL: `http://127.0.0.1:${providerPort}/dns-query`,
@@ -126,9 +153,30 @@ async function waitHealthy(child) {
     assert.equal(resolved.status, 200);
     assert.equal(resolved.body.ok, true);
     assert.equal(resolved.body.result.answers[0].data, "203.0.113.12");
+    const memoryHealth = await json(await fetch(appBase + "/api/adapters/agentmemory/health"));
+    assert.equal(memoryHealth.status, 200);
+    assert.equal(memoryHealth.body.status, "healthy");
+    const memoryWrite = await json(await fetch(appBase + "/api/adapters/execute", {
+      method: "POST",
+      headers: { "content-type": "application/json", authorization: "Bearer " + token },
+      body: JSON.stringify({ id: "agentmemory", operation: "remember", input: { content: "agentmemory route test", sessionId: "agentmemory-route-test" } })
+    }));
+    assert.equal(memoryWrite.status, 200);
+    assert.equal(memoryWrite.body.ok, true);
+    assert.equal(memoryWrite.body.evidence.sessionId, "agentmemory-route-test");
+    const memoryRecall = await json(await fetch(appBase + "/api/adapters/execute", {
+      method: "POST",
+      headers: { "content-type": "application/json", authorization: "Bearer " + token },
+      body: JSON.stringify({ id: "agentmemory", operation: "smart_search", input: { query: "agentmemory route test", sessionId: "agentmemory-route-test" } })
+    }));
+    assert.equal(memoryRecall.status, 200);
+    assert.equal(memoryRecall.body.ok, true);
+    assert.equal(memoryRecall.body.result.results[0].text, "agentmemory route test");
+    assert.equal(memoryRecall.body.evidence.sessionId, "agentmemory-route-test");
+
     const snapshot = await json(await fetch(appBase + "/api/adapters"));
     assert.equal(snapshot.status, 200);
-    assert.equal(snapshot.body.auditCount, 4);
+    assert.equal(snapshot.body.auditCount, 6);
     console.log(JSON.stringify({
       status: "verified",
       checks: [
@@ -140,7 +188,10 @@ async function waitHealthy(child) {
         "adapter-audit-recorded",
         "subdomain-domain-allowlist-gate",
         "passive-certificate-transparency-discovery",
-        "free-dns-over-https-resolution"
+        "free-dns-over-https-resolution",
+        "Cognee-backed-AgentMemory-health",
+        "AgentMemory-write-through-protected-adapter-route",
+        "AgentMemory-session-scoped-recall-and-evidence"
       ]
     }, null, 2));
   } catch (error) {
