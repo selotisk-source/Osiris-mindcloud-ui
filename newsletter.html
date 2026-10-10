@@ -1,32 +1,125 @@
-<!doctype html><html lang="sv"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Briefing — MindCloud</title><style>
-:root{--bg:#070a0f;--panel:#0d131c;--line:#253142;--text:#e7edf5;--muted:#8290a3;--accent:#79b8ff}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:15px/1.55 Inter,system-ui,sans-serif}.wrap{max-width:1180px;margin:auto;padding:24px}header{display:flex;justify-content:space-between;gap:16px;border-bottom:1px solid var(--line);padding-bottom:18px;margin-bottom:24px}.brand{font-weight:800;letter-spacing:.08em}.brand span{color:var(--accent)}a{color:var(--accent);text-decoration:none}h1{font-size:clamp(30px,5vw,54px);line-height:1.05;margin:10px 0}.sub{color:var(--muted);max-width:800px}.issue{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:22px;margin:22px 0}.head{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}.date,.tag{color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.08em}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:18px}.card{background:#101722;border:1px solid #223044;border-radius:10px;padding:16px}.card h3{margin:6px 0 8px}.card p{color:#b9c4d2}.meta{font-size:12px;color:var(--muted);border-top:1px solid #223044;padding-top:9px;margin-top:9px}.pills{display:flex;flex-wrap:wrap;gap:6px;margin-top:18px}.pill{border:1px solid #2a3a4e;border-radius:999px;padding:4px 8px;color:#9aa9bb;font-size:10px}@media(max-width:760px){.grid{grid-template-columns:1fr}.wrap{padding:16px}}</style></head><body><div class="wrap"><header><div class="brand">MIND<span>CLOUD</span> / BRIEFING</div><a href="/">← Till MindCloud</a></header><div class="date">Redaktionellt flöde</div><h1>Briefing</h1><p class="sub">MindClouds löpande redaktionella lager för verksamheten: utveckling, kartläggning, forskning, nya spår och nästa steg.</p><section id="issues">Laddar…</section></div><script>
-const e=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-const box=document.getElementById("issues");
-async function getJson(path){
-  const r=await fetch(path,{cache:"no-store",headers:{"accept":"application/json"}});
-  if(!r.ok) throw new Error(path+" svarade HTTP "+r.status);
-  const type=r.headers.get("content-type")||"";
-  if(!type.includes("json")) throw new Error(path+" svarade inte med JSON (content-type: "+type+")");
-  return r.json();
+<!doctype html>
+<html lang="sv">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>Briefing — MindCloud</title>
+<style>
+:root{--bg:#070a0f;--panel:#0d131c;--panel2:#101925;--line:#253142;--text:#e7edf5;--muted:#91a0b3;--accent:#79b8ff;--green:#6ee7b7;--amber:#f7c873;--red:#ffb4a9;--shadow:0 16px 44px #0003}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:radial-gradient(ellipse at 82% -8%,#15253a 0,transparent 38%),var(--bg);color:var(--text);font:15px/1.55 Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}.wrap{width:min(1120px,100%);margin:auto;padding:clamp(16px,3vw,34px)}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;border-bottom:1px solid var(--line);padding-bottom:18px;margin-bottom:30px}.brand{font-size:13px;font-weight:850;letter-spacing:.13em}.brand span{color:var(--accent)}.top-actions{display:flex;gap:8px;flex-wrap:wrap}.btn{display:inline-flex;align-items:center;justify-content:center;border:1px solid #2b3c52;border-radius:8px;background:#101925;color:var(--text);padding:8px 11px;font:inherit;font-size:12px;cursor:pointer}.btn:hover{border-color:var(--accent);text-decoration:none}.eyebrow{color:var(--accent);font-size:11px;font-weight:750;text-transform:uppercase;letter-spacing:.14em}.hero{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(220px,.7fr);gap:22px;align-items:end;margin-bottom:24px}.hero h1{font-size:clamp(38px,7vw,68px);line-height:.98;letter-spacing:-.045em;margin:10px 0 15px}.hero p{color:#b6c2d2;max-width:690px;margin:0}.hero-side{border:1px solid #2b4059;border-radius:13px;background:linear-gradient(145deg,#122033,#0c131d);padding:16px;box-shadow:var(--shadow)}.hero-side b{display:block;font-size:14px;margin-bottom:5px}.hero-side p{font-size:12px;color:var(--muted)}
+.summary{border:1px solid #30445d;background:#0c1420;border-radius:14px;padding:16px 18px;margin:24px 0 30px}.section-heading{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px}.section-heading h2{font-size:16px;margin:0}.section-heading small{color:var(--muted)}.summary-list{display:grid;gap:9px}.summary-line{display:grid;grid-template-columns:9px minmax(0,1fr) auto;gap:10px;align-items:start;padding:9px 0;border-top:1px solid #1e2b3c}.summary-line:first-child{border-top:0}.bullet{width:7px;height:7px;border-radius:50%;background:var(--accent);margin-top:7px}.summary-line p{margin:0;font-size:13px}.summary-line .src{font-size:11px;white-space:nowrap}
+.legend{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:22px 0}.badge{display:inline-flex;align-items:center;gap:5px;white-space:nowrap;border:1px solid #3b4b60;border-radius:999px;padding:3px 8px;font-size:10px;font-weight:750;letter-spacing:.02em}.badge::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}.badge.done{color:var(--green);border-color:#285747;background:#0c211b}.badge.progress{color:var(--amber);border-color:#66502b;background:#211a0e}.badge.unknown{color:#c1cad6;border-color:#414d5c;background:#171e27}
+.controls{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:20px 0}.search{flex:1;min-width:180px;border:1px solid var(--line);border-radius:8px;background:#0b1119;color:var(--text);padding:10px 12px;font:inherit}.filter{display:flex;gap:5px;flex-wrap:wrap}.filter button{border:1px solid var(--line);background:#0e1621;color:#aebbd0;border-radius:7px;padding:8px 10px;font:inherit;font-size:12px;cursor:pointer}.filter button[aria-pressed=true]{color:var(--accent);border-color:#42678e;background:#102035}
+.section{margin:28px 0 34px;scroll-margin-top:18px}.section-head{display:flex;justify-content:space-between;align-items:end;gap:12px;border-bottom:1px solid var(--line);padding-bottom:11px;margin-bottom:13px}.section-head h2{margin:0;font-size:clamp(21px,3vw,27px);letter-spacing:-.025em}.section-head p{color:var(--muted);font-size:12px;margin:0}.cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}.post{min-width:0;background:linear-gradient(150deg,#101823,#0c121a);border:1px solid #243247;border-radius:12px;padding:16px;box-shadow:0 8px 22px #0002}.post-top{display:flex;justify-content:space-between;align-items:start;gap:9px;flex-wrap:wrap}.post-date,.kicker{font-size:10px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase}.kicker{color:#9cbde4}.post h3{font-size:16px;line-height:1.3;margin:8px 0}.post p{color:#b8c4d3;font-size:13px;margin:8px 0}.implication{border-left:2px solid #45698f;padding:7px 0 7px 10px;color:#d3dce8!important}.meta{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;border-top:1px solid #202d3d;padding-top:10px;margin-top:12px;font-size:11px;color:var(--muted)}.meta a{overflow-wrap:anywhere}.evidence{color:#aab6c6;font-size:11px;margin-top:9px}.empty{border:1px dashed #2c3c50;border-radius:10px;padding:20px;color:var(--muted);font-size:13px}
+.audit{margin:35px 0 16px;border:1px solid #2c3e54;border-radius:13px;background:#0b121b;overflow:hidden}.audit summary{cursor:pointer;padding:15px 17px;font-weight:750}.audit-body{border-top:1px solid var(--line);padding:14px 17px;color:#b7c4d4;font-size:13px}.audit-body h3{font-size:13px;color:var(--text);margin:13px 0 5px}.audit-body ul{margin:5px 0 12px;padding-left:19px}.audit-body li{margin:5px 0}.audit-note{border-left:2px solid var(--amber);padding-left:10px;color:#d2c6a9}.footer{border-top:1px solid var(--line);padding-top:15px;margin-top:28px;color:var(--muted);font-size:11px;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+@media(max-width:760px){.hero{grid-template-columns:1fr}.hero-side{max-width:none}.cards{grid-template-columns:1fr}.summary-line{grid-template-columns:8px minmax(0,1fr)}.summary-line .src{grid-column:2;white-space:normal}.section-head{align-items:start;flex-direction:column}.topbar{margin-bottom:22px}.post{padding:14px}.wrap{padding:16px}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header class="topbar">
+  <div class="brand">MIND<span>CLOUD</span> / BRIEFING</div>
+  <nav class="top-actions" aria-label="MindCloud navigation"><a class="btn" href="/">← Workspace</a><a class="btn" href="/#neuralMeshBtn">Neural Mesh</a><a class="btn" href="/api/runtime/status" target="_blank" rel="noopener">Runtime-status ↗</a></nav>
+</header>
+<section class="hero">
+  <div><div class="eyebrow">Project overview · 10 October 2026</div><h1>Briefing<span style="color:var(--accent)">.</span></h1><p>En begriplig överblick över MindClouds utveckling och forskningsspår. Varje post visar vad som faktiskt finns dokumenterat, när uppgiften hör hemma och var underlaget går att öppna. Saknas verifiering markeras det uttryckligen.</p></div>
+  <aside class="hero-side"><b>Så läser du sidan</b><p><strong style="color:var(--green)">Klart</strong> = uttryckligt genomfört och belagt. <strong style="color:var(--amber)">Pågår</strong> = arbete eller nästa aktivitet är uttryckligen dokumenterad. <strong>Ej verifierat</strong> = källan eller statusen räcker inte för ett säkrare påstående.</p></aside>
+</section>
+<section class="summary" aria-labelledby="summary-title">
+  <div class="section-heading"><h2 id="summary-title">Sedan senaste briefingen</h2><small>Tre korta förändringar · 7–10 oktober</small></div>
+  <div class="summary-list">
+    <div class="summary-line"><span class="bullet"></span><p><strong>MindClouds senaste release är driftsatt.</strong> GitHub-integrationen och Railway-deploymenten rapporterar lyckad körning; produktionens egen självtest loggade godkänt resultat.</p><a class="src" href="https://github.com/selotisk-source/Osiris-mindcloud-ui/commit/8c8c34b5bff87a9bd8e6214ecc08146180e0df63" target="_blank" rel="noopener">Commit ↗</a></div>
+    <div class="summary-line"><span class="bullet"></span><p><strong>Kontroller och skydd har utökats.</strong> CI kontrollerar bland annat beständig task-/eventdata, versionshistorik, autentisering för skrivningar och adapterflöden.</p><a class="src" href="https://github.com/selotisk-source/Osiris-mindcloud-ui/actions/runs/38060900846" target="_blank" rel="noopener">CI-körning ↗</a></div>
+    <div class="summary-line"><span class="bullet"></span><p><strong>Varna-briefingen har fått ett tydligare historiskt lager.</strong> Odessos, Sankt Athanasius, romerska termer, Varna-guldet, vävkultur och Gallery 33 hålls som skilda spår; vissa uppgifter saknar fortfarande primärkällor.</p><a class="src" href="/newsletters/2026-10-10.json">Briefingpost ↗</a></div>
+  </div>
+</section>
+<div class="legend" aria-label="Statusförklaring"><span class="badge done">Klart</span><span class="badge progress">Pågår</span><span class="badge unknown">Ej verifierat</span><span style="font-size:11px;color:var(--muted)">Status sätts bara när underlaget stöder den.</span></div>
+<div class="controls"><input id="search" class="search" type="search" placeholder="Sök bland rubriker och innehåll…" aria-label="Sök bland briefingposter"><div class="filter" role="group" aria-label="Filtrera status"><button type="button" data-filter="Alla" aria-pressed="true">Alla statusar</button><button type="button" data-filter="Klart" aria-pressed="false">Klart</button><button type="button" data-filter="Pågår" aria-pressed="false">Pågår</button><button type="button" data-filter="Ej verifierat" aria-pressed="false">Ej verifierat</button></div></div>
+<div id="archiveStatus" class="post-date" aria-live="polite">Laddar arkivet…</div>
+<main id="sections">
+  <section class="section" id="development"><div class="section-head"><h2>Utveckling</h2><p>Produkt, runtime och teknisk verifiering</p></div><div class="cards" id="development-cards"></div></section>
+  <section class="section" id="mapping"><div class="section-head"><h2>Kartläggning</h2><p>Platser, kartlager och registrerade observationer</p></div><div class="cards" id="mapping-cards"></div></section>
+  <section class="section" id="research"><div class="section-head"><h2>Forskning</h2><p>Historiska lager och undersökningsspår</p></div><div class="cards" id="research-cards"></div></section>
+  <section class="section" id="new-tracks"><div class="section-head"><h2>Nya spår</h2><p>Hypoteser och nya frågor — inte automatiskt bekräftade fynd</p></div><div class="cards" id="new-tracks-cards"></div></section>
+  <section class="section" id="next-steps"><div class="section-head"><h2>Nästa steg</h2><p>Dokumenterade uppföljningar och öppna verifieringar</p></div><div class="cards" id="next-steps-cards"></div></section>
+</main>
+<details class="audit" open><summary>Ändringslogg · nytt innehåll kontra omformgivning</summary><div class="audit-body">
+<h3>Omformgivning av befintligt innehåll</h3><ul><li>De två arkivutgåvorna från <strong>7 och 10 oktober 2026</strong> är fortsatt källan till befintliga redaktionella poster.</li><li>Det tidigare formatet med stora briefingutgåvor och kategorikort har omstrukturerats till de fem önskade sektionerna, sök/filter, tydligare datum/källa och mobilvänliga kort.</li><li>Texten i arkivposterna ska visas från arkivet, inte skrivas om till nya faktapåståenden. Saknade käll-URL:er markeras öppet.</li></ul>
+<h3>Nytt innehåll på sidan</h3><ul><li>Tre-raders sammanfattning av release, kontroller och den senaste Varna-briefingen, med länkar till befintliga release-/CI-/arkivunderlag.</li><li>Förklaring av vad varje statusmärke betyder samt statusfilter och fritextsökning.</li><li>Den här ändringsloggen för att skilja presentation från sakuppgifter.</li></ul>
+<h3>Viktig evidensgräns</h3><p class="audit-note">Arkivposterna innehåller inte statusfält eller separata käll-URL:er för varje enskilt forskningspåstående. Därför märks de som <strong>Ej verifierat</strong> tills en individuell status och källa finns dokumenterad. Att en post finns i arkivet innebär inte att alla dess påståenden har kontrollerats mot primärkällor.</p>
+</div></details>
+<footer class="footer"><span>MindCloud · Briefing / evidence-first</span><span>Arkivdatum: 2026-10-10 · <a href="/newsletters/index.json">Öppna indexet</a></span></footer>
+</div>
+<script>
+const esc = value => String(value ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const groups = [
+ {id:"development",name:"Utveckling"},
+ {id:"mapping",name:"Kartläggning"},
+ {id:"research",name:"Forskning"},
+ {id:"new-tracks",name:"Nya spår"},
+ {id:"next-steps",name:"Nästa steg"}
+];
+const verifiedPosts = [
+ {group:"development",date:"2026-10-10",status:"Klart",headline:"Release integrerad i main",text:"Ändringarna för godkännandeflöde, versionshistorik, task/event-lagring, Metanoia-utvärdering och evidensgraf finns i den integrerade releasen.",evidence:"GitHub visar commit 8c8c34b5; integrationens CI-körning är grön.",source:"GitHub-commit",url:"https://github.com/selotisk-source/Osiris-mindcloud-ui/commit/8c8c34b5bff87a9bd8e6214ecc08146180e0df63"},
+ {group:"development",date:"2026-10-10",status:"Klart",headline:"Produktionens självtest passerade",text:"Railway-loggen visar godkänt MindCloud E2E-självtest med kärnflöde, minnespersistens och Browser Use-kontroll.",evidence:"Verifierat i deployment-logg. Det ersätter inte en direkt HTTP-kontroll av varje ny endpoint.",source:"CI-körning",url:"https://github.com/selotisk-source/Osiris-mindcloud-ui/actions/runs/38060900846"},
+ {group:"development",date:"2026-10-10",status:"Pågår",headline:"Direkt verifiering av nya evidensgraf-endpoints",text:"Nästa tekniska kontroll är att testa live-svar och verifiera att evidensgrafens data överlever en omstart.",evidence:"Release och självtest är bekräftade; separat direkt endpoint-test och restart-readback är inte bekräftade i den tillgängliga dokumentationen.",source:"Serverkod",url:"https://github.com/selotisk-source/Osiris-mindcloud-ui/blob/main/server.js"}
+];
+let archivePosts = [];
+let activeFilter = "Alla";
+let searchTerm = "";
+function groupFor(post) {
+ const category = String(post.category||"").toLowerCase();
+ const headline = String(post.headline||"").toLowerCase();
+ if (/gallery|depot|skatt|värde|obekräft|hypotes|symbol/.test(category+" "+headline)) return "new-tracks";
+ if (/romersk|therm|odessos|guld|fynd|regional|kart|plats|arkeologi/.test(category+" "+headline)) return "mapping";
+ if (/nästa|uppfölj|tidslinje|steg|implikation/.test(category+" "+headline)) return "next-steps";
+ return "research";
 }
-function render(d){
-  if(!d||!Array.isArray(d.sections)) throw new Error("En briefingpost saknar sections-lista.");
-  return '<article class="issue"><div class="head"><div><div class="date">'+e(d.date)+'</div><h2>'+e(d.title)+'</h2><p class="sub">'+e(d.subtitle)+'</p></div><div class="tag">'+e(d.status)+'</div></div><div class="grid">'+d.sections.map(s=>'<article class="card"><div class="tag">'+e(s.category)+'</div><h3>'+e(s.headline)+'</h3><p>'+e(s.text)+'</p><div class="meta"><b>Implikation:</b> '+e(s.implication)+'</div><div class="meta"><b>Bevisläge:</b> '+e(s.evidence)+'</div></article>').join("")+'</div><div class="pills">'+(d.editorial?.framework||[]).map(x=>'<span class="pill">'+e(x)+'</span>').join("")+'</div></article>';
+function makeArchivePost(issue, item) {
+ return {group:groupFor(item),date:issue.date||"datum saknas",status:"Ej verifierat",headline:item.headline||"Rubrik saknas",text:item.text||"",evidence:item.evidence||"Individuell källa/status saknas i arkivposten.",implication:item.implication||"",source:"Arkivpost "+(issue.date||""),url:"",category:item.category||"Forskning"};
 }
-(async()=>{
-  try{
-    box.textContent="Hämtar briefingarkivet…";
-    const index=await getJson("/newsletters/index.json");
-    if(!Array.isArray(index.issues)||!index.issues.length) throw new Error("Indexet innehåller inga briefingposter.");
-    const docs=await Promise.all(index.issues.map(x=>getJson("/"+String(x.path||"").replace(/^\/+/, ""))));
-    box.innerHTML=docs.map(render).join("");
-    const note=document.createElement("p");
-    note.className="date";
-    note.textContent="Laddat "+docs.length+" briefingposter · senaste index "+e(index.today||"datum saknas");
-    box.prepend(note);
-  }catch(err){
-    box.innerHTML='<article class="issue"><h2>Briefingen kunde inte laddas</h2><p>Det gick inte att hämta arkivets index eller en briefingpost. Fel: <code>'+e(err?.message||String(err))+'</code></p><p><a href="/newsletters/index.json">Testa briefingindexet direkt</a> · <a href="/api/runtime/status">Kontrollera MindClouds runtime</a></p><button id="retryBriefing" type="button">Försök igen</button></article>';
-    document.getElementById("retryBriefing")?.addEventListener("click",()=>location.reload());
-  }
-})();
-</script></body></html>
+function card(post) {
+ const cls = post.status==="Klart"?"done":post.status==="Pågår"?"progress":"unknown";
+ const source = post.url ? '<a href="'+esc(post.url)+'" target="_blank" rel="noopener">'+esc(post.source||"Öppna källa")+' ↗</a>' : '<span>Källlänk saknas i arkivposten</span>';
+ return '<article class="post" data-status="'+esc(post.status)+'" data-search="'+esc([post.headline,post.text,post.evidence,post.implication,post.category,post.date].join(" ").toLowerCase())+'"><div class="post-top"><span class="post-date">'+esc(post.date)+' · '+esc(post.category||"Projekt")+'</span><span class="badge '+cls+'">'+esc(post.status)+'</span></div><h3>'+esc(post.headline)+'</h3><p>'+esc(post.text)+'</p>'+(post.implication?'<p class="implication"><strong>Varför det spelar roll:</strong> '+esc(post.implication)+'</p>':'')+'<div class="evidence"><strong>Bevisläge:</strong> '+esc(post.evidence)+'</div><div class="meta"><span>'+esc(post.source||"Källa ej registrerad")+'</span>'+source+'</div></article>';
+}
+function render() {
+ const all = [...verifiedPosts,...archivePosts];
+ for(const group of groups) {
+  const el=document.getElementById(group.id+"-cards");
+  const posts=all.filter(p=>p.group===group.id && (activeFilter==="Alla"||p.status===activeFilter) && (String([p.headline,p.text,p.evidence,p.implication,p.category].join(" ")).toLowerCase().includes(searchTerm)));
+  el.innerHTML=posts.length?posts.map(card).join(""):'<div class="empty">Inga poster matchar filtret i den här sektionen.</div>';
+ }
+ document.getElementById("archiveStatus").textContent=all.length+" poster · "+archivePosts.length+" arkivposter från 7 och 10 oktober · "+verifiedPosts.length+" tekniska statusposter";
+}
+async function load() {
+ try {
+  const indexResponse=await fetch("/newsletters/index.json",{cache:"no-store"});
+  if(!indexResponse.ok) throw new Error("Briefingindex HTTP "+indexResponse.status);
+  const index=await indexResponse.json();
+  const issues=await Promise.all((index.issues||[]).map(async entry=>{
+   const r=await fetch("/"+String(entry.path||"").replace(/^\/+/, ""),{cache:"no-store"});
+   if(!r.ok) throw new Error("Arkivpost HTTP "+r.status+": "+entry.path);
+   return r.json();
+  }));
+  archivePosts=issues.flatMap(issue=>(issue.sections||[]).map(item=>makeArchivePost(issue,item)));
+  document.getElementById("archiveStatus").textContent="Arkiv hämtat · "+issues.length+" utgåvor · senaste index "+esc(index.today||"datum saknas");
+ } catch(error) {
+  document.getElementById("archiveStatus").textContent="Arkivet kunde inte hämtas: "+String(error.message||error)+". Tekniska statusposter visas fortfarande.";
+ }
+ render();
+}
+document.getElementById("search").addEventListener("input",e=>{searchTerm=e.target.value.trim().toLowerCase();render();});
+document.querySelectorAll("[data-filter]").forEach(button=>button.addEventListener("click",()=>{
+ activeFilter=button.dataset.filter;
+ document.querySelectorAll("[data-filter]").forEach(other=>other.setAttribute("aria-pressed",String(other===button)));
+ render();
+}));
+load();
+</script>
+</body>
+</html>
