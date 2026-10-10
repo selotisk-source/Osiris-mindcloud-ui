@@ -1,5 +1,6 @@
 import type {AgentCapability,TaskContext} from "./contracts";
 import {requireApproval} from "./approval-gate";
+import {createRequestInit} from "./request-init";
 
 export type CogneeOperation = "remember" | "recall" | "improve" | "forget";
 
@@ -35,7 +36,7 @@ export class HttpCogneeAdapter implements CogneeAdapter {
   private async request(path:string,init:RequestInit={}){
     const response=await this.fetchImpl(this.url(path),{
       ...init,
-      headers:{"content-type":"application/json",...(init.headers||{})},
+      ...createRequestInit(init),
     });
     const text=await response.text();
     let body:unknown;
