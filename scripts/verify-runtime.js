@@ -124,7 +124,7 @@ async function waitForHealth(child) {
     const durableGraph = new EvidenceGraph({storePath:evidenceGraphStorePath});
     assert.equal(durableGraph.snapshot().nodeCount,2);
     assert.equal(durableGraph.snapshot().edgeCount,1);
-    assert.throws(()=>durableGraph.addNode({type:"claim",label:"bad",content:{}}),/evidence_node_label_required|evidence_node/);
+    assert.throws(()=>durableGraph.addNode({type:"claim",content:{}}),/evidence_node_label_required/);
 
     const health = await get("/health");
     assert.equal(health.status, 200);
