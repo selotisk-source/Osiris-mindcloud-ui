@@ -1,0 +1,31 @@
+name: RuFlo MCP smoke test
+
+on:
+  push:
+    branches:
+      - "main"
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+    branches:
+      - "main"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  ruflo-mcp-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      RUFLO_MCP_TIMEOUT_MS: 120000
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Verify RuFlo MCP read-only connectivity
+        run: node scripts/verify-ruflo-mcp.mjs
