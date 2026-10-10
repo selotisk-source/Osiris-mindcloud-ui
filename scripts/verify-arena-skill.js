@@ -30,4 +30,4 @@ assert.equal(missingEvidence.status,"no_qualified_winner");
 assert.ok(toolingCatalog.some(tool=>tool.id==="mindcloud-arena-skill" && tool.status==="runtime"));
 assert.ok(recipes.some(recipe=>recipe.id==="arena-compare-verify-promote"));
 assert.ok(suggest({goal:"Evaluation and verification"}).recipes.some(recipe=>recipe.id==="arena-compare-verify-promote"));
-console.log("MindCloud Arena Skill: all 15 assertions passed.");
+console.log("MindCloud Arena Skill: all 18 assertions passed.");
