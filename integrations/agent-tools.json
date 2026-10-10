@@ -65,7 +65,7 @@
         "extract",
         "screenshot"
       ],
-      "status": "planned"
+      "status": "adapter-ready"
     },
     {
       "id": "agentmemory",
