@@ -7,8 +7,9 @@ global.fetch = async (url, options={}) => {
   const urlText=String(url);
   calls.push({url:urlText,options});
   const unavailable=urlText.includes("overpass-primary.test");
+  const failureStatus=urlText.includes("overpass-primary-500.test")?500:502;
   return {
-    ok:!unavailable,status:unavailable?502:200,
+    ok:!unavailable,status:unavailable?failureStatus:200,
     headers:{get:(key)=>key.toLowerCase()==="content-type"?"application/json":"application/json"},
     json:async()=>urlText.includes("graph.mapillary.com")?{data:[{id:"12345",thumb_1024_url:"https://images.example/12345.jpg",geometry:{type:"Point",coordinates:[27.9,43.2]},captured_at:1700000000}]}:urlText.includes("crt.sh")?[{name_value:"www.example.com\napi.example.com\n*.example.com\nnotexample.com"}]:urlText.includes("cloudflare-dns.com")?{Status:0,Answer:[{name:"www.example.com",type:1,data:"203.0.113.10",TTL:60}]}:urlText.includes("overpass.test")?{elements:[{type:"node",id:7,lat:43.2,lon:27.9,tags:{name:"Test point"}}]}:{mock:true,items:[],status:"OK"}
   };
@@ -97,6 +98,15 @@ global.fetch = async (url, options={}) => {
   assert.equal(fallbackQuery.evidence.source,"https://overpass.test/api/interpreter");
   assert.equal(calls[11].url,"https://overpass-primary.test/api/interpreter");
   assert.equal(calls[12].url,"https://overpass.test/api/interpreter");
+
+  process.env.OVERPASS_API_URL="https://overpass-primary-500.test/api/interpreter";
+  process.env.OVERPASS_API_FALLBACKS="https://overpass.test/api/interpreter";
+  const fallback500=await native.execute({id:"overpass-turbo",operation:"query",input:{query:"[out:json];node(1);out;"},requestId:"test-overpass-500-fallback"});
+  assert.equal(fallback500.ok,true);
+  assert.equal(fallback500.status,200);
+  assert.equal(fallback500.evidence.source,"https://overpass.test/api/interpreter");
+  assert.equal(calls[13].url,"https://overpass-primary-500.test/api/interpreter");
+  assert.equal(calls[14].url,"https://overpass.test/api/interpreter");
 
   console.log("native-adapters: verified Overpass mirror failover, free passive subdomain/DNS, Mapillary and credential-gated API contracts");
 })().catch(error=>{console.error(error);process.exitCode=1;}).finally(()=>{global.fetch=originalFetch;});
