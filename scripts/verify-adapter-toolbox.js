@@ -50,4 +50,31 @@ for (const adapter of snapshot.adapters) {
 assert.deepEqual(runtime.discover("overpass-turbo").adapter.operations,["query","export_geojson","health"]);
 assert.deepEqual(runtime.discover("shodan").adapter.operations,["host","search","dns","health"]);
 assert.deepEqual(runtime.discover("ruflo").adapter.operations,["discover_tools","health"]);
-console.log("adapter-toolbox: verified UI syntax, lifecycle controls, native operation conformance, executable operation inventory, and protected execution boundary");
+
+(async () => {
+  const previousEndpoint = process.env.BROWSER_USE_SERVICE_URL;
+  const previousKey = process.env.BROWSER_USE_API_KEY;
+  try {
+    process.env.BROWSER_USE_SERVICE_URL = "http://127.0.0.1:1";
+    delete process.env.BROWSER_USE_API_KEY;
+    const missingKeyRuntime = runtime.discover("browser-use").adapter.runtime;
+    assert.equal(missingKeyRuntime.state, "registered-only",
+      "browser-use must not be executable when its endpoint exists but its bearer credential is missing");
+    assert.ok(missingKeyRuntime.missingConfiguration.includes("BROWSER_USE_API_KEY"));
+    assert.equal(missingKeyRuntime.executableOperations.length, 0);
+    const missingKeyHealth = await runtime.health("browser-use");
+    assert.equal(missingKeyHealth.status, "credentials-missing",
+      "browser-use health must expose missing credentials instead of probing an unauthenticated endpoint");
+
+    process.env.BROWSER_USE_API_KEY = "test-only-placeholder";
+    const readyRuntime = runtime.discover("browser-use").adapter.runtime;
+    assert.equal(readyRuntime.state, "configured");
+    assert.ok(readyRuntime.executableOperations.includes("browse"));
+  } finally {
+    if (previousEndpoint === undefined) delete process.env.BROWSER_USE_SERVICE_URL;
+    else process.env.BROWSER_USE_SERVICE_URL = previousEndpoint;
+    if (previousKey === undefined) delete process.env.BROWSER_USE_API_KEY;
+    else process.env.BROWSER_USE_API_KEY = previousKey;
+  }
+  console.log("adapter-toolbox: verified UI syntax, lifecycle controls, native operation conformance, executable operation inventory, truthful external credentials, and protected execution boundary");
+})().catch(error => { console.error(error); process.exitCode = 1; });
