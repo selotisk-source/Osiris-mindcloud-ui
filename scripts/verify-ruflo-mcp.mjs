@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 import { spawn } from "node:child_process";
 
-const timeoutMs = Number(process.env.RUFLO_MCP_TIMEOUT_MS ?? 120000);
-const child = spawn("npx", ["-y", "ruflo@latest", "mcp", "start"], {
+const timeoutMs = Number(process.env.RUFLO_MCP_TIMEOUT_MS ?? 240000);
+const child = spawn("npx", ["-y", "ruflo@3.56.3", "mcp", "start"], {
   stdio: ["pipe", "pipe", "pipe"],
   env: { ...process.env, NO_COLOR: "1" },
 });
@@ -42,13 +42,15 @@ function consume(chunk) {
 }
 
 child.stdout.on("data", consume);
-child.stderr.on("data", (chunk) => {
-  stderr += chunk.toString();
+child.stderr.on("data", (chunk) => { stderr += chunk.toString(); });
+child.on("error", (error) => {
+  console.error(`RuFlo process failed to start: ${error.message}`);
+  process.exitCode = 1;
 });
 
 const timer = setTimeout(() => {
-  console.error("RuFlo MCP smoke test timed out.");
-  if (stderr.trim()) console.error(stderr.trim());
+  console.error(`RuFlo MCP smoke test timed out after ${timeoutMs}ms.`);
+  if (stderr.trim()) console.error(stderr.trim().slice(-6000));
   child.kill("SIGTERM");
   process.exit(2);
 }, timeoutMs);
@@ -80,6 +82,7 @@ try {
   console.log(
     JSON.stringify({
       ok: true,
+      pinnedVersion: "3.56.3",
       server: initialized.serverInfo,
       protocolVersion: initialized.protocolVersion,
       toolCount,
