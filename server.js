@@ -275,12 +275,18 @@ const server = http.createServer(async (req,res)=>{
   if(pathname==="/api/mindcloud/capabilities"){sendJson(res,{type:"mindcloud_capability_graph",layers:mindcloud.snapshot().capabilityLayers,recipes:mindcloud.snapshot().recipes});return;}
   if(pathname==="/api/mindcloud/suggest"){const task={kind:url.searchParams.get("kind")||"general",goal:url.searchParams.get("goal")||""};sendJson(res,{type:"mindcloud_suggestion",...require("./mindcloud/capability-graph").suggest(task)});return;}
   if(pathname==="/api/mindcloud/route" && req.method==="POST"){
+    const expectedToken = process.env.MINDCLOUD_TASK_WRITE_TOKEN || "";
+    if (!expectedToken) { sendJson(res,{error:"mindcloud_task_write_token_not_configured"},503); return; }
+    if (!tokenMatches(bearerToken(req), expectedToken)) { sendJson(res,{error:"unauthorized"},401); return; }
     try {
       const task = await readJson(req);
-      if (!task || typeof task !== "object") return sendJson(res,{error:"invalid_task"},400);
+      if (!task || typeof task !== "object" || Array.isArray(task)) return sendJson(res,{error:"invalid_task"},400);
       if (!task.taskId) task.taskId = "task-" + Date.now();
       sendJson(res,mindcloud.route(task));
-    } catch (error) { sendJson(res,{error:error instanceof Error ? error.message : String(error)},400); }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      sendJson(res,{error:message},message.includes("store") ? 500 : 400);
+    }
     return;
   }
   if(pathname==="/api/mindcloud/events"){sendJson(res,{type:"mindcloud_events",events:mindcloud.eventsFor(url.searchParams.get("taskId")||undefined)});return;}
