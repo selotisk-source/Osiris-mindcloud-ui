@@ -33,6 +33,12 @@ function readJson(req) {
     req.on("error", reject);
   });
 }
+function isAuthorizedSubdomainScope(domain) {
+  const value = String(domain || "").trim().toLowerCase().replace(/\.$/, "");
+  if (!/^(?=.{1,253}$)(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,63}$/.test(value)) return false;
+  const allowed = (process.env.MINDCLOUD_AUTHORIZED_DOMAINS || "").split(",").map(item => item.trim().toLowerCase().replace(/\.$/, "")).filter(Boolean);
+  return allowed.some(root => value === root || value.endsWith("." + root));
+}
 function cctvResponse() {
   const source = process.env.CCTV_SOURCE_URL || null;
   let protocol = null;
@@ -221,9 +227,9 @@ const server = http.createServer(async (req,res)=>{
       }
       const tool = agentTools.tools.find(item => item.id === task.id);
       if (!tool) { sendJson(res,{ok:false,error:"adapter_not_found"},404); return; }
-      // Client-provided approval is never trusted. Security-gated tools remain blocked
-      // until a server-side human-approval workflow supplies a trusted approval record.
-      const approved = !tool.security;
+      // Client-provided approval is never trusted. Passive subdomain lookups are allowed
+      // only when the requested root is covered by the server-owned domain allowlist.
+      const approved = !tool.security || (tool.id === "subdomain-finder" && isAuthorizedSubdomainScope(task.input?.domain));
       sendJson(res,await adapters.execute({...task,approved}));
     } catch(error) {
       sendJson(res,{ok:false,error:error instanceof Error?error.message:String(error)},400);
