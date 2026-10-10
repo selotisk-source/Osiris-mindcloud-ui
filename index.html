@@ -353,7 +353,7 @@ function safeText(s){return String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<'
  <div class="command-console-actions"><button class="btn active" id="commandRun" type="button">Run command</button><button class="btn" id="commandClearToken" type="button">Clear token</button><span id="commandConsoleStatus" class="command-console-status" role="status" aria-live="polite">Ready · no command executed</span></div>
  <div class="command-cluster" id="providerNetworkPanel">
   <h3>Multi-model collaboration network</h3>
-  <p class="command-console-note">Gemini · Claude · Grok · DeepSeek. Providers run only when their server-side API keys are configured. Model output is unverified until independently checked.</p>
+  <p class="command-console-note">Gemini · Claude · Grok · DeepSeek · Kimi. Providers run only when their server-side API keys are configured. Model output is unverified until independently checked.</p>
   <div id="providerCatalog" class="command-console-result">Loading provider configuration…</div>
   <label>Research / task goal<input id="providerGoal" type="text" maxlength="4000" placeholder="What should the model network research, build, or critique?" /></label>
   <div class="provider-network-options">
@@ -361,6 +361,7 @@ function safeText(s){return String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<'
    <label><input type="checkbox" name="providerChoice" value="claude" checked /> Claude</label>
    <label><input type="checkbox" name="providerChoice" value="grok" checked /> Grok</label>
    <label><input type="checkbox" name="providerChoice" value="deepseek" checked /> DeepSeek</label>
+   <label><input type="checkbox" name="providerChoice" value="kimi" checked /> Kimi</label>
   </div>
   <div class="command-console-grid">
    <label>Handoff rounds<select id="providerRounds"><option value="1">1 round</option><option value="2" selected>2 rounds</option><option value="3">3 rounds</option></select></label>
