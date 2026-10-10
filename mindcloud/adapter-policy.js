@@ -12,8 +12,9 @@ function isRetrySafeOperation(operation) {
 }
 function isTransientFailure(value) {
   if (!value || typeof value !== "object") return false;
-  const status = Number(value.status ?? value.httpStatus ?? value.result?.status ?? value.result?.httpStatus);
-  if (RETRYABLE_HTTP_STATUSES.has(status)) return true;
+  const statuses = [value.status,value.httpStatus,value.result?.status,value.result?.httpStatus]
+    .map(Number).filter(Number.isFinite);
+  if (statuses.some(status => RETRYABLE_HTTP_STATUSES.has(status))) return true;
   const detail = [value.error, value.message, value.result?.error, value.result?.message].filter(Boolean).join(" ");
   return TRANSIENT_ERROR.test(detail);
 }
