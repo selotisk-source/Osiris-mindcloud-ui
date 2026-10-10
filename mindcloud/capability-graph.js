@@ -1,6 +1,7 @@
 const { toolingCatalog } = require("../mindcore/catalog");
 
 const recipes = [
+  { id:"arena-compare-verify-promote", name:"Arena → Evaluate → Verify", layers:["Evaluation","HarnessEngineering","Metanoia","EvidenceIntegrity","Orchestration"], purpose:"Compare competing solutions, reject failed candidates, revalidate the winner and propose evidence-backed skill promotion." },
   { id:"research-to-evidence", name:"Research → Evidence", layers:["Research","WebResearch","EvidenceIntegrity","Knowledge"], purpose:"Collect research, normalize findings and preserve provenance." },
   { id:"code-to-deploy", name:"Code → Verify → Deploy", layers:["CodeIntelligence","Development","HarnessEngineering"], purpose:"Inspect code, validate changes and promote a verified deployment." },
   { id:"signal-to-visual", name:"Signal → Analysis → Visual", layers:["Research","Visualization","GeoOSINT"], purpose:"Turn signals and evidence into an operator-facing visual state." },
