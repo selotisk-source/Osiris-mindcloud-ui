@@ -40,6 +40,9 @@ const fetch = async (url, options) => {
   assert.equal(collaboration.verified, false);
   assert.equal(collaboration.toolExecutionPerformed, false);
   assert.ok(collaboration.callsAttempted <= 10);\n  assert.ok(collaboration.approximateTokenUsage <= collaboration.tokenBudget, "global reserved token usage must never exceed the budget");\n  assert.equal(collaboration.tokenBudgetPolicy, "sequential_pre_dispatch_reservation");\n  assert.ok(collaboration.outputs.filter(item => item.ok).every(item => item.reservedTokens === item.estimatedPromptTokens + item.outputTokenAllowance));
+  const tightBudget = await network.collaborate({ goal: "Budget regression", providerIds: ["gemini", "claude", "grok", "deepseek", "kimi"], rounds: 1, tokenBudget: 256, maxTokensPerCall: 128 });
+  assert.ok(tightBudget.approximateTokenUsage <= 256, "five-provider fan-out must respect a tight global budget");
+  assert.ok(tightBudget.outputs.filter(item => item.ok).every(item => item.reservedTokens <= 256), "every dispatched call must have a bounded reservation");
   const noProvider = await missing.collaborate({ goal: "Test no credentials", providerIds: ["claude"] });
   assert.equal(noProvider.status, "no_provider_response");
   console.log("provider-network: verified provider normalization, credential isolation, bounded multi-round handoff, and unverified-output safety gate");
