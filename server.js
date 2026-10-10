@@ -231,7 +231,7 @@ async function cogneeMemoryRoundTrip() {
       method:"POST",
       headers:{"content-type":"application/json","accept":"application/json"},
       body:JSON.stringify({query:marker,session_id:sessionId,scope:["session"],only_context:true,top_k:5}),
-      signal:AbortSignal.timeout(20000)
+      signal:AbortSignal.timeout(15000)
     });
     return {response,body:await parseResponse(response)};
   };
@@ -248,7 +248,8 @@ async function cogneeMemoryRoundTrip() {
       method:"POST",
       headers:{accept:"application/json"},
       body:form,
-      signal:AbortSignal.timeout(20000)
+      // Cognee can finish persisting the marker before its full response completes on the 1 GB runtime.
+      signal:AbortSignal.timeout(45000)
     });
     const writeBody = await parseResponse(writeResponse);
     if (!writeResponse.ok) {
