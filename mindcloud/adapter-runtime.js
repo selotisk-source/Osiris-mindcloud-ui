@@ -39,8 +39,23 @@ class AdapterRuntime {
       ? [...nativeOperations, ...((tool.operations||[]).includes("health") ? ["health"] : [])]
       : (tool.operations||[]);
     const executableOperations = operations.filter(operation => operation === "health" || configured);
+    const latestHealth = [...this.audit].reverse().find(entry => entry.id === tool.id && entry.operation === "health");
+    const latestSuccessfulExecution = [...this.audit].reverse().find(entry =>
+      entry.id === tool.id && entry.operation !== "health" && entry.ok === true
+    );
+    const readiness = latestSuccessfulExecution ? "verified"
+      : latestHealth?.ok && latestHealth.result?.status === "healthy" ? "healthy"
+      : configured ? "configured" : "registered-only";
     return {
       state:configured?"configured":"registered-only",
+      readiness,
+      healthStatus:latestHealth?.result?.status || "not-checked",
+      verification: latestSuccessfulExecution ? {
+        status:"verified",
+        lastVerifiedAt:latestSuccessfulExecution.timestamp,
+        operation:latestSuccessfulExecution.operation,
+        requestId:latestSuccessfulExecution.requestId
+      } : {status:"not-verified"},
       executable:configured,
       transport:nativeState?(nativeState.mode||"native-http"):(tool.transport||"external-runtime"),
       operations,
