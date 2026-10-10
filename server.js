@@ -254,6 +254,9 @@ const server = http.createServer(async (req,res)=>{
     return;
   }
   if(pathname==="/api/mindcloud/evidence-graph" && req.method==="GET"){
+    const expectedToken = process.env.MINDCLOUD_EVIDENCE_READ_TOKEN || "";
+    if (!expectedToken) { sendJson(res,{error:"mindcloud_evidence_read_token_not_configured"},503); return; }
+    if (!tokenMatches(bearerToken(req), expectedToken)) { sendJson(res,{error:"unauthorized"},401); return; }
     sendJson(res,evidenceGraph.snapshot());
     return;
   }
