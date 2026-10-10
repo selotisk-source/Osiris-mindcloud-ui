@@ -20,6 +20,8 @@ try {
   assert.equal(automatic.route, "AUTO_WITHIN_MANDATE");
   assert.equal(automatic.executionAuthorized, false);
   assert.equal(automatic.executionPerformed, false);
+  assert.equal(automatic.mandateTrust, "caller_supplied_not_authenticated");
+  assert.equal(automatic.evidenceTrust, "caller_asserted_not_independently_verified");
 
   const conditional = evaluate(
     { type: "restart-service", risk: "medium", reversible: true, requiredConditions: ["health-check-failed"] },
