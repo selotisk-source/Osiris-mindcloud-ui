@@ -1,4 +1,5 @@
 const http = require("node:http");
+const crypto = require("node:crypto");
 const fs = require("node:fs");
 const path = require("node:path");
 const { createRouterNetwork } = require("./mindcore/router-network");
@@ -81,6 +82,14 @@ const server = http.createServer(async (req,res)=>{
   if(pathname==="/api/agent-tools"){sendJson(res,agentTools);return;}
   if(pathname==="/api/agent-tools/health"){sendJson(res,inspectToolHealth());return;}
   if(pathname==="/api/agent-tools/execute" && req.method==="POST"){
+    const expectedToken = process.env.MINDCLOUD_TOOL_EXECUTION_TOKEN || "";
+    const suppliedToken = (req.headers.authorization || "").replace(/^Bearer\\s+/i, "");
+    if (!expectedToken) return sendJson(res,{error:"tool_execution_disabled",reason:"execution_token_not_configured"},503);
+    const expected = Buffer.from(expectedToken);
+    const supplied = Buffer.from(suppliedToken);
+    if (expected.length !== supplied.length || !crypto.timingSafeEqual(expected, supplied)) {
+      return sendJson(res,{error:"unauthorized"},401);
+    }
     try {
       const body = await readJson(req);
       const toolId = typeof body.toolId === "string" ? body.toolId : "";
