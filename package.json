@@ -4,7 +4,7 @@
   "version": "0.1.0",
   "scripts": {
     "start": "node server.js",
-    "verify": "node scripts/verify-runtime.js && node scripts/verify-integration-contracts.js && node scripts/verify-native-adapters.js"
+    "verify": "node scripts/verify-runtime.js && node scripts/verify-integration-contracts.js && node scripts/verify-native-adapters.js && node scripts/verify-adapter-route.js"
   },
   "engines": {
     "node": ">=20"
