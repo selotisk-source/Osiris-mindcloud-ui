@@ -199,6 +199,16 @@
       "integration": "typed adapter boundary for Grounded API outputs such as SLAM, depth and hand-tracking data; feed validated spatial observations into OSIRIS Geo and ARGOS ATLAS",
       "status": "adapter-ready",
       "security": "endpoint and credentials are explicit deployment configuration; no undocumented API contract is assumed"
+    },
+    {
+      "id": "gigacity-spatial",
+      "source": "sael.net/gigacity",
+      "role": "procedural planetary spatial visualization",
+      "mindcloud_layer": "SpatialIntelligence",
+      "priority": 1,
+      "integration": "read-only external interactive 3D spatial surface for Gods Eye View, Heritage Map and spatial analysis; may be paired with validated geospatial observations without presenting simulation as sensor evidence",
+      "status": "adapter-ready",
+      "security": "no undocumented endpoint extraction; no credentialed automation; simulated/procedural scene remains explicitly non-sensor data"
     }
   ],
   "shared_contracts": [
