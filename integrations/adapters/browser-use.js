@@ -1,6 +1,6 @@
 const SERVICE_URL = (process.env.BROWSER_USE_SERVICE_URL || "").replace(/\/$/, "");
 const SERVICE_TOKEN = process.env.BROWSER_USE_API_KEY || "";
-const ALLOWED = new Set(["browse", "navigate", "click", "type", "extract", "screenshot"]);
+const ALLOWED = new Set(["browse", "navigate", "click", "type", "extract", "screenshot", "close"]);
 
 function requireService() {
   if (!SERVICE_URL) {
@@ -40,11 +40,17 @@ async function execute(operation, input = {}) {
     click: "On the supplied page, click the specified element and report the result.",
     type: "On the supplied page, enter the supplied text in the specified field and report the result.",
     extract: "Extract the requested information from the supplied URL or current page.",
-    screenshot: "Capture a screenshot of the supplied URL and report the result."
+    screenshot: "Capture a screenshot of the supplied URL and report the result.",
+    close: "Close the supplied browser session."
   })[operation];
   const result = await request("/v1/run", {
     method:"POST",
-    body:JSON.stringify({task, instructions: JSON.stringify(input), max_steps: Number(process.env.BROWSER_USE_MAX_STEPS || 15)})
+    body:JSON.stringify({
+      operation,
+      input,
+      task,
+      max_steps: Number(process.env.BROWSER_USE_MAX_STEPS || 15)
+    })
   }, Number(process.env.BROWSER_USE_TIMEOUT_MS || 60000));
   return {tool:"browser-use", operation, status:"executed", result};
 }
@@ -57,7 +63,7 @@ async function health() {
 module.exports = {
   id:"browser-use",
   mode:"http-rest-bridge",
-  policy:"Uses Browser Use self-hosted REST API /v1/run. Never supply secrets in task input. Execution requires a configured endpoint and model-provider credentials on the Browser Use service.",
+  policy:"Uses the MindCloud-managed Chromium session runner. Session IDs returned by browse/navigate must be passed to later click/type/extract/screenshot operations. Never supply secrets in task input.",
   execute,
   health
 };
