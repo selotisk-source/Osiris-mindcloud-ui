@@ -131,6 +131,27 @@ class AdapterRuntime {
   }
 
   record(requestId,result){this.audit.push({requestId,timestamp:new Date().toISOString(),...result});return result;}
-  snapshot(){return {type:"mindcloud_adapter_runtime",lifecycle:["discover","health","execute","result","audit"],adapters:this.list(),auditCount:this.audit.length};}
+  snapshot(){
+    const adapters=this.list();
+    const readinessSummary={
+      total:adapters.length,
+      registeredOnly:adapters.filter(adapter=>adapter.runtime.readiness==="registered-only").length,
+      configured:adapters.filter(adapter=>adapter.runtime.readiness==="configured").length,
+      healthy:adapters.filter(adapter=>adapter.runtime.readiness==="healthy").length,
+      verified:adapters.filter(adapter=>adapter.runtime.readiness==="verified").length,
+      degraded:adapters.filter(adapter=>adapter.runtime.readiness==="degraded").length,
+      healthNotChecked:adapters.filter(adapter=>adapter.runtime.healthStatus==="not-checked").length,
+      executionNotVerified:adapters.filter(adapter=>adapter.runtime.verification.status!=="verified").length
+    };
+    return {
+      type:"mindcloud_adapter_runtime",
+      contractVersion:"1.0",
+      verificationScope:"current-runtime-session",
+      lifecycle:["discover","health","execute","result","audit"],
+      readinessSummary,
+      adapters,
+      auditCount:this.audit.length
+    };
+  }
 }
 module.exports={AdapterRuntime};
