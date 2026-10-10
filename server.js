@@ -204,7 +204,29 @@ const server = http.createServer(async (req,res)=>{
   if(pathname==="/api/adapters"){sendJson(res,adapters.snapshot());return;}
   if(pathname.startsWith("/api/adapters/") && pathname.endsWith("/discover")){const id=pathname.split("/")[3];sendJson(res,adapters.discover(id));return;}
   if(pathname.startsWith("/api/adapters/") && pathname.endsWith("/health")){const id=pathname.split("/")[3];adapters.health(id).then(result=>sendJson(res,result));return;}
-  if(pathname==="/api/adapters/execute" && req.method==="POST"){try{const task=await readJson(req);sendJson(res,await adapters.execute(task));}catch(error){sendJson(res,{ok:false,error:error instanceof Error?error.message:String(error)},400);}return;}
+  if(pathname==="/api/adapters/execute" && req.method==="POST"){
+    const expectedToken = process.env.MINDCLOUD_TOOL_EXECUTION_TOKEN || "";
+    const suppliedToken = (req.headers.authorization || "").replace(/^Bearer\s+/i, "");
+    if (!expectedToken || !suppliedToken || suppliedToken.length !== expectedToken.length ||
+        !require("node:crypto").timingSafeEqual(Buffer.from(suppliedToken), Buffer.from(expectedToken))) {
+      sendJson(res,{ok:false,error:"unauthorized"},401); return;
+    }
+    try {
+      const task = await readJson(req);
+      if (!task || typeof task.id !== "string" || typeof task.operation !== "string") {
+        sendJson(res,{ok:false,error:"invalid_adapter_request"},400); return;
+      }
+      const tool = agentTools.tools.find(item => item.id === task.id);
+      if (!tool) { sendJson(res,{ok:false,error:"adapter_not_found"},404); return; }
+      // Client-provided approval is never trusted. Security-gated tools remain blocked
+      // until a server-side human-approval workflow supplies a trusted approval record.
+      const approved = !tool.security;
+      sendJson(res,await adapters.execute({...task,approved}));
+    } catch(error) {
+      sendJson(res,{ok:false,error:error instanceof Error?error.message:String(error)},400);
+    }
+    return;
+  }
   if(pathname==="/api/capabilities"){sendJson(res,{type:"mindcloud_capability_registry",source:"MindCore",capabilities:routerNetwork.geospatialCapabilities.list()});return;}
   if(pathname==="/api/liveness/route"){sendJson(res,{type:"mindcloud_live_liveness",capability:"route-variation",status:"available",policy:"safety-first-accessibility-second-controlled-variation",humanApprovalRequired:true});return;}
   if(pathname==="/api/cctv"){sendJson(res,cctvResponse());return;}
