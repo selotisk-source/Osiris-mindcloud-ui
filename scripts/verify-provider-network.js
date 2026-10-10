@@ -40,7 +40,7 @@ const fetch = async (url, options) => {
   assert.equal(collaboration.verified, false);
   assert.equal(collaboration.toolExecutionPerformed, false);
   assert.ok(collaboration.callsAttempted <= 10);
-  const noProvider = await network.collaborate({ goal: "Test no credentials", providerIds: ["claude"] });
+  const noProvider = await missing.collaborate({ goal: "Test no credentials", providerIds: ["claude"] });
   assert.equal(noProvider.status, "no_provider_response");
   console.log("provider-network: verified provider normalization, credential isolation, bounded multi-round handoff, and unverified-output safety gate");
 })().catch(error => { console.error(error); process.exitCode = 1; });
