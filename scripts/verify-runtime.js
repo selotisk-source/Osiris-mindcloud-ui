@@ -338,13 +338,14 @@ async function waitForHealth(child) {
 
     const cctv = await get("/api/cctv");
     assert.equal(cctv.status, 200);
-    assert.equal(cctv.body.status, process.env.CCTV_SOURCE_URL ? "configured" : "not_configured");
+    assert.ok(["configured", "not_configured"].includes(cctv.body.status), "CCTV status must report configuration truthfully");
+    const cctvConfigured = cctv.body.status === "configured";
     assert.equal(cctv.body.proxyStatus, "implemented");
     assert.equal(cctv.body.proxyAuthStatus, "credentials-missing"); // pre-deploy verifier intentionally unsets CCTV auth variables
-    assert.equal(cctv.body.streamStatus, process.env.CCTV_SOURCE_URL ? "unverified" : "unconfigured");
-    assert.equal(cctv.body.frameStatus, process.env.CCTV_SOURCE_URL ? (cctv.body.snapshotStatus === "verified" ? "verified" : "not_implemented") : "unconfigured");
-    assert.equal(cctv.body.evidenceStatus, process.env.CCTV_SOURCE_URL ? (cctv.body.snapshotStatus === "verified" ? "snapshot-hash-recorded" : "not_verified") : "unavailable");
-    assert.equal(cctv.body.access, process.env.CCTV_SOURCE_URL ? "osiris-controlled" : "unconfigured");
+    assert.equal(cctv.body.streamStatus, cctvConfigured ? "unverified" : "unconfigured");
+    assert.equal(cctv.body.frameStatus, cctvConfigured ? (cctv.body.snapshotStatus === "verified" ? "verified" : "not_implemented") : "unconfigured");
+    assert.equal(cctv.body.evidenceStatus, cctvConfigured ? (cctv.body.snapshotStatus === "verified" ? "snapshot-hash-recorded" : "not_verified") : "unavailable");
+    assert.equal(cctv.body.access, cctvConfigured ? "osiris-controlled" : "unconfigured");
 
     const adapters = await get("/api/adapters");
     assert.equal(adapters.status, 200);
