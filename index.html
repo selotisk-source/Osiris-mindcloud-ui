@@ -36,6 +36,47 @@ body{overflow:hidden}.app{height:100%;display:flex;flex-direction:column}
 .module-panel{position:absolute;z-index:40;inset:64px 10px 10px;overflow:auto;background:#0d131c;border:1px solid #35506f;border-radius:10px;box-shadow:0 18px 50px #0009;padding:14px}
 .module-panel h2{font-size:16px}.module-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.module-note{border:1px solid #26384c;border-radius:8px;background:#0a1018;padding:12px}.module-note h3{margin:0 0 7px;font-size:13px}.module-note p{margin:5px 0;color:#aeb9c8}.module-actions{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}.module-actions a{color:var(--accent);text-decoration:none;border:1px solid #2a3d54;border-radius:6px;padding:6px 9px}
 @media(max-width:700px){.app-nav{padding:6px}.module-panel{inset:108px 6px 6px;padding:9px}.module-grid{grid-template-columns:1fr}}
+
+/* MindCloud visual system: restrained surfaces, functional color, clear hierarchy. */
+:root{
+  --bg:#0b0e13;
+  --panel:#11161e;
+  --panel2:#171e28;
+  --line:#2a3442;
+  --text:#e8edf4;
+  --muted:#9aa6b5;
+  --accent:#9abfe8;
+  --good:#8ccdb2;
+  --warn:#e4c27e;
+  --mc-focus:#d5e5f7;
+  --mc-danger:#e6a0a0;
+}
+:focus-visible{outline:2px solid var(--mc-focus);outline-offset:2px}
+.btn,.tab,.geo-place{transition:border-color .12s ease,color .12s ease,background-color .12s ease}
+.btn:hover,.tab:hover,.geo-place:hover{box-shadow:none;background-color:#18212d}
+.btn.active,.geo-toolbar .btn.active{border-color:var(--accent);color:var(--text);background:#182433}
+.station,.card,.metric,.gemini-pane,.quipro-card,.nm-node,.nm-stat,.nm-count,.tool-item{
+  box-shadow:none;
+}
+.station{border-radius:8px}
+.station.coordinator{border-color:#536a84}
+.station-head{background:#151c26}
+.card,.metric,.gemini-pane,.quipro-card,.nm-node,.nm-stat,.nm-count,.tool-item{border-radius:7px}
+.graph,.godview,.nm-graph{
+  background-color:#0d131b;
+  background-image:radial-gradient(circle,#263342 0.8px,transparent 1px);
+  background-size:26px 26px;
+}
+.toolbox,.journal-panel,.quipro-panel,.neuralmesh{
+  box-shadow:none;
+  border-color:#39495d;
+}
+.tag,.quipro-tag,.tool-status{letter-spacing:.01em}
+.status .dot{box-shadow:none}
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+}
+
 </style>
 </head>
 <body>
