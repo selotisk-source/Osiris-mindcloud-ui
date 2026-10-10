@@ -146,6 +146,28 @@ function cctvResponse() {
     access: source ? "osiris-controlled" : "unconfigured"
   };
 }
+async function probeCctvSnapshot() {
+  const source = process.env.CCTV_SOURCE_URL || "";
+  if (!source) return {status:"not_configured",verified:false};
+  try {
+    const result = await proxyCctvRequest({source});
+    if (!result.body) return {status:"failed",verified:false,error:result.error || "cctv_snapshot_probe_failed",httpStatus:result.status};
+    if (!result.isImage || !/^image\/(?:jpeg|png|webp)$/i.test(result.contentType || "")) {
+      return {status:"not_a_snapshot",verified:false,httpStatus:result.status,contentType:result.contentType || null};
+    }
+    return {
+      status:"verified",
+      verified:true,
+      contentType:result.contentType,
+      byteLength:result.body.length,
+      sha256:require("node:crypto").createHash("sha256").update(result.body).digest("hex"),
+      checkedAt:new Date().toISOString()
+    };
+  } catch (error) {
+    return {status:"failed",verified:false,error:error instanceof Error ? error.message : String(error)};
+  }
+}
+
 async function cogneeHealth() {
   const endpoint = (process.env.COGNEE_SERVICE_URL || "").replace(/\/$/, "");
   if (!endpoint) return {status:"not_configured",endpoint:null};
@@ -232,6 +254,7 @@ async function runMindcloudSelfTest() {
   }
   const snapshot = mindcloud.snapshot();
   const events = mindcloud.eventsFor(taskId);
+  const cctvSnapshotProbe = await probeCctvSnapshot();
   const memory = await cogneeHealth();
   const memoryRoundTrip = memory.status === "healthy" ? await cogneeMemoryRoundTrip() : {status:memory.status,persisted:false};
   const browserUse = await adapters.health("browser-use");
@@ -296,7 +319,7 @@ async function runMindcloudSelfTest() {
         message:browserExecution.result?.message || null
       }
     },
-    optional:{cctv:cctvResponse()},
+    optional:{cctv:cctvResponse(),cctvSnapshotProbe},
     timestamp:new Date().toISOString()
   };
 }
