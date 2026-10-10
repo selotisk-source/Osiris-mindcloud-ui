@@ -42,12 +42,12 @@ global.fetch = async (url, options={}) => {
 
   const shodan=await native.execute({id:"shodan",operation:"search",input:{query:"hostname:example.com"},requestId:"test-shodan"});
   assert.equal(shodan.ok,true);
-  assert.match(calls[2].url,/api\.shodan\.io\/shodan\/host\/search/);
+  assert.match(calls[3].url,/api\.shodan\.io\/shodan\/host\/search/);
   assert.match(calls[3].url,/key=test-shodan-key/);
 
   const sanctions=await native.execute({id:"opensanctions",operation:"match",input:{name:"Example Person"},requestId:"test-sanctions"});
   assert.equal(sanctions.ok,true);
-  assert.match(calls[3].url,/api\.opensanctions\.org\/match\/default/);
+  assert.match(calls[4].url,/api\.opensanctions\.org\/match\/default/);
   assert.equal(calls[4].options.headers.authorization,"ApiKey test-sanctions-key");
   const denied=await native.execute({id:"shodan",operation:"host",input:{},requestId:"test-invalid"});
   assert.equal(denied.error,"ip_required");
