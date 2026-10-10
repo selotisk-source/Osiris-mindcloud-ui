@@ -15,6 +15,22 @@ const required = [
   "agentmemory"
 ];
 
+const incomingTools = ["watermelon-ui","watermelon-ai","manus-ai","punkt-ai"];
+for (const id of incomingTools) {
+  const tool = registry.tools.find(item => item.id === id);
+  if (!tool) throw new Error(`missing incoming toolbox candidate: ${id}`);
+  if (!tool.source_url || !tool.layer || !tool.cost_model || !Array.isArray(tool.operations) || !tool.operations.length) {
+    throw new Error(`incomplete incoming toolbox metadata: ${id}`);
+  }
+  if (["watermelon-ai","punkt-ai"].includes(id) && tool.status !== "research-registered") {
+    throw new Error(`unverified product must remain research-registered: ${id}`);
+  }
+  if (id === "watermelon-ui" && tool.status !== "registered-only") throw new Error("Watermelon UI must not claim an executable adapter");
+  if (id === "manus-ai" && (tool.status !== "parked-integration-review" || tool.env !== "MANUS_API_KEY" || !tool.api_docs)) {
+    throw new Error("Manus must remain parked until its supervised adapter is implemented and tested");
+  }
+}
+
 for (const id of required) {
   const tool = registry.tools.find(item => item.id === id);
   if (!tool) throw new Error(`missing integration: ${id}`);
@@ -44,4 +60,4 @@ if (!extensionManifest.optional_host_permissions?.includes("https://*/*")) throw
 if (!sidepanel.includes("chrome.cookies.getAll({url:tab.url})")) throw new Error("cookie viewer must scope to the active tab URL");
 if (!sidepanel.includes("cookies.map(({name,domain,path,secure,httpOnly,sameSite,session,expirationDate})")) throw new Error("cookie viewer must expose metadata only");
 if (sidepanel.includes("cookie.value")) throw new Error("cookie values must never be read into UI output");
-console.log(`integration-contracts: verified ${required.length} tool contracts and AgentMemory/Cognee wiring and local cookie privacy policy`);
+console.log(`integration-contracts: verified ${required.length} existing tool contracts, ${incomingTools.length} incoming toolbox candidates, AgentMemory/Cognee wiring and local cookie privacy policy`);
