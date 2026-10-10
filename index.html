@@ -36,6 +36,9 @@ body{overflow:hidden}.app{height:100%;display:flex;flex-direction:column}
 .module-panel{position:absolute;z-index:40;inset:64px 10px 10px;overflow:auto;background:#0d131c;border:1px solid #35506f;border-radius:10px;box-shadow:0 18px 50px #0009;padding:14px}
 .module-panel h2{font-size:16px}.module-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.module-note{border:1px solid #26384c;border-radius:8px;background:#0a1018;padding:12px}.module-note h3{margin:0 0 7px;font-size:13px}.module-note p{margin:5px 0;color:#aeb9c8}.module-actions{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}.module-actions a{color:var(--accent);text-decoration:none;border:1px solid #2a3d54;border-radius:6px;padding:6px 9px}
 @media(max-width:700px){.app-nav{padding:6px}.module-panel{inset:108px 6px 6px;padding:9px}.module-grid{grid-template-columns:1fr}}
+
+.command-console{position:absolute;z-index:40;inset:64px 10px 10px;overflow:auto;background:#0d131c;border:1px solid #35506f;border-radius:10px;box-shadow:0 18px 50px #0009;padding:14px}
+.command-console[hidden]{display:none}.command-console-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.command-console-head h2{font-size:16px;margin:0}.command-token-row{display:flex;gap:6px}.command-token-row input{flex:1;min-width:0}.provider-network-options{display:flex;gap:12px;flex-wrap:wrap;margin:10px 0}.provider-network-options label{display:flex;align-items:center;gap:5px;border:1px solid #253142;background:#080e15;border-radius:7px;padding:7px 9px;color:#9fb0c5;font-size:12px}.provider-network-options input{width:auto}.command-cluster{margin-top:16px;padding-top:12px;border-top:1px solid #253142}.command-cluster>label{display:grid;gap:5px;color:#9fb0c5;font-size:12px}.command-cluster input,.command-cluster select{width:100%;min-width:0;border:1px solid #253142;background:#080e15;color:#e7edf5;border-radius:7px;padding:9px;font:inherit}.command-console-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px}.command-console label{display:grid;gap:5px;color:#9fb0c5;font-size:12px}.command-console input,.command-console select,.command-console textarea{width:100%;min-width:0;border:1px solid #253142;background:#080e15;color:#e7edf5;border-radius:7px;padding:9px;font:inherit}.command-console textarea{min-height:110px;resize:vertical;font-family:ui-monospace,monospace}.command-console .wide{grid-column:1/-1}.command-console .command-console-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.command-console .command-console-result{min-height:100px;max-height:35vh;overflow:auto;white-space:pre-wrap;overflow-wrap:anywhere;border:1px solid #253142;background:#080e15;border-radius:7px;padding:10px;color:#b9c9da}.command-console .command-console-note{color:#f7c873;font-size:12px}.command-console .command-console-status{color:#6ee7b7;font-size:12px}@media(max-width:650px){.command-console-grid{grid-template-columns:1fr}.command-console .wide{grid-column:auto}}
 </style>
 </head>
 <body>
@@ -47,7 +50,7 @@ body{overflow:hidden}.app{height:100%;display:flex;flex-direction:column}
     <button class="btn active" data-layout="4">4</button>
     <button class="btn" data-layout="2">2</button>
     <button class="btn" data-layout="3">3</button>
-    <button class="btn" id="neuralMeshBtn">BACKSIDE / NEURAL MESH</button><button class="btn" id="drawerBtn">TOOLS</button><button class="btn" id="toolboxBtn">TOOLBOX</button>
+    <button class="btn" id="neuralMeshBtn">BACKSIDE / NEURAL MESH</button><button class="btn" id="drawerBtn">TOOLS</button><button class="btn" id="toolboxBtn">TOOLBOX</button><button class="btn" id="commandConsoleBtn" aria-controls="commandConsole" aria-expanded="false">OSIRIS COMMAND</button>
     <button class="btn" id="godBtn">GOD'S EYE VIEW</button><button class="btn" id="quiproBtn">QUIPRO</button><button class="btn" id="journalBtn">JOURNAL</button>
   </div>
 </header>
@@ -336,6 +339,196 @@ else {const r=await fetch('/api/agent-tools').then(r=>r.json());const found=(r.t
 </script>
 <script>
 function safeText(s){return String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+</script>
+
+<section class="command-console" id="commandConsole" hidden aria-labelledby="commandConsoleTitle">
+ <div class="command-console-head"><h2 id="commandConsoleTitle">OSIRIS · Unified Command Console</h2><span class="tag">Adapter runtime</span><button class="btn" id="commandConsoleRefresh" type="button">Refresh adapters</button><button class="btn" id="commandConsoleClose" type="button" style="margin-left:auto">Close</button></div>
+ <p class="command-console-note">Commands go through the existing authenticated adapter endpoint. The execution token is used only in this page's current memory; it is not saved. Protected operations still require server-side approval.</p>
+ <div class="command-console-grid">
+  <label>Adapter<select id="commandAdapter" required><option value="">Loading adapter registry…</option></select></label>
+  <label>Operation<select id="commandOperation" required><option value="">Choose an adapter first</option></select></label>
+  <label class="wide">Execution token (not stored)<div class="command-token-row"><input id="commandToken" type="password" autocomplete="off" spellcheck="false" placeholder="Paste MINDCLOUD_TOOL_EXECUTION_TOKEN for this session only" /><button class="btn" id="commandTokenToggle" type="button" aria-pressed="false">Show token</button></div></label>
+  <label class="wide">Input JSON<textarea id="commandInput" spellcheck="false">{}</textarea></label>
+ </div>
+ <div class="command-console-actions"><button class="btn active" id="commandRun" type="button">Run command</button><button class="btn" id="commandClearToken" type="button">Clear token</button><span id="commandConsoleStatus" class="command-console-status" role="status" aria-live="polite">Ready · no command executed</span></div>
+ <div class="command-cluster" id="providerNetworkPanel">
+  <h3>Multi-model collaboration network</h3>
+  <p class="command-console-note">Gemini · Claude · Grok · DeepSeek · Kimi. Providers run only when their server-side API keys are configured. Model output is unverified until independently checked.</p>
+  <div id="providerCatalog" class="command-console-result">Loading provider configuration…</div>
+  <label>Research / task goal<input id="providerGoal" type="text" maxlength="4000" placeholder="What should the model network research, build, or critique?" /></label>
+  <div class="provider-network-options">
+   <label><input type="checkbox" name="providerChoice" value="gemini" checked /> Gemini</label>
+   <label><input type="checkbox" name="providerChoice" value="claude" checked /> Claude</label>
+   <label><input type="checkbox" name="providerChoice" value="grok" checked /> Grok</label>
+   <label><input type="checkbox" name="providerChoice" value="deepseek" checked /> DeepSeek</label>
+   <label><input type="checkbox" name="providerChoice" value="kimi" checked /> Kimi</label>
+  </div>
+  <div class="command-console-grid">
+   <label>Handoff rounds<select id="providerRounds"><option value="1">1 round</option><option value="2" selected>2 rounds</option><option value="3">3 rounds</option></select></label>
+   <label>Total token budget<input id="providerBudget" type="number" min="256" max="24000" step="256" value="6000" /></label>
+  </div>
+  <div class="command-console-actions"><button class="btn" id="providerRun" type="button">Run model collaboration</button><span id="providerStatus" class="command-console-status" role="status" aria-live="polite">No provider calls made</span></div>
+  <pre class="command-console-result" id="providerResult" role="region" aria-label="Multi-model collaboration results" tabindex="0">No collaboration started.</pre>
+ </div>
+ <div class="command-cluster">
+  <h3>Hierarchical AI cluster · bounded plan</h3>
+  <p class="command-console-note">Creates a budgeted plan only. No external AI calls or adapter execution are started by this action.</p>
+  <label>Cluster goal<input id="clusterGoal" type="text" maxlength="2000" placeholder="Describe the goal for the coordinator and specialist agents" /></label>
+  <div class="command-console-grid">
+   <label>Agents<select id="clusterAgents"><option value="2">2 agents</option><option value="4" selected>4 agents</option><option value="6">6 agents</option><option value="8">8 agents</option><option value="12">12 agents</option></select></label>
+   <label>Maximum recursion depth<select id="clusterDepth"><option value="1">1</option><option value="2" selected>2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option></select></label>
+   <label class="wide">Total token budget<input id="clusterBudget" type="number" min="256" max="12000" step="256" value="8000" /></label>
+  </div>
+  <div class="command-console-actions"><button class="btn" id="clusterPlan" type="button">Build cluster plan</button><span id="clusterStatus" class="command-console-status" role="status" aria-live="polite">Plan-only mode · provider execution not configured here</span></div>
+  <pre class="command-console-result" id="clusterResult" role="region" aria-label="Agent cluster plan" tabindex="0">No cluster plan created.</pre>
+ </div>
+ <h3>Execution result / audit evidence</h3><pre class="command-console-result" id="commandConsoleResult" role="region" aria-label="Command result" tabindex="0">No command executed in this session.</pre>
+</section>
+
+<script>
+(function(){
+ const panel=document.getElementById('commandConsole');
+ const open=document.getElementById('commandConsoleBtn');
+ const close=document.getElementById('commandConsoleClose');
+ const refresh=document.getElementById('commandConsoleRefresh');
+ const adapterSelect=document.getElementById('commandAdapter');
+ const operationSelect=document.getElementById('commandOperation');
+ const tokenInput=document.getElementById('commandToken');
+ const tokenToggle=document.getElementById('commandTokenToggle');
+ const input=document.getElementById('commandInput');
+ const run=document.getElementById('commandRun');
+ const clearToken=document.getElementById('commandClearToken');
+ const status=document.getElementById('commandConsoleStatus');
+ const result=document.getElementById('commandConsoleResult');
+ const providerCatalog=document.getElementById('providerCatalog');
+ const providerGoal=document.getElementById('providerGoal');
+ const providerRounds=document.getElementById('providerRounds');
+ const providerBudget=document.getElementById('providerBudget');
+ const providerRun=document.getElementById('providerRun');
+ const providerStatus=document.getElementById('providerStatus');
+ const providerResult=document.getElementById('providerResult');
+ const providerChoices=[...document.querySelectorAll('input[name="providerChoice"]')];
+ const loadProviderCatalog=async()=>{
+  try{
+   const response=await fetch('/api/mindcloud/providers',{cache:'no-store'});
+   const data=await response.json();
+   providerCatalog.textContent=(data.providers||[]).map(p=>p.label+' · '+p.model+' · '+(p.configured?'configured':'credentials missing')+' · '+p.protocol).join('\\n')+'\\n\\nAPI keys remain server-side and are never returned.';
+  }catch(error){providerCatalog.textContent='Provider catalog unavailable: '+String(error.message||error);}
+ };
+ loadProviderCatalog();
+ providerRun.addEventListener('click',async()=>{
+  const token=tokenInput.value;
+  const goal=providerGoal.value.trim();
+  const providerIds=providerChoices.filter(input=>input.checked).map(input=>input.value);
+  const tokenBudget=Number(providerBudget.value);
+  if(!token){providerStatus.textContent='Execution token required';tokenInput.focus();return;}
+  if(!goal){providerStatus.textContent='Enter a research goal first';providerGoal.focus();return;}
+  if(!providerIds.length){providerStatus.textContent='Select at least one provider';return;}
+  if(!Number.isInteger(tokenBudget)||tokenBudget<256||tokenBudget>24000){providerStatus.textContent='Budget must be between 256 and 24000';return;}
+  providerRun.disabled=true;providerStatus.textContent='Running bounded provider handoff…';providerResult.textContent='Waiting for provider responses…';
+  try{
+   const response=await fetch('/api/mindcloud/providers/collaborate',{method:'POST',headers:{'content-type':'application/json','authorization':'Bearer '+token},body:JSON.stringify({goal,providerIds,rounds:Number(providerRounds.value),tokenBudget,maxTokensPerCall:1200}),cache:'no-store'});
+   const body=await response.json().catch(()=>({error:'invalid_json_response'}));
+   providerResult.textContent=JSON.stringify({httpStatus:response.status,ok:response.ok,response:body},null,2);
+   providerStatus.textContent=response.ok?(body.status==='responses_received_unverified'?'Responses received · independent verification required':'No provider responses · check server credentials'):'Request rejected · HTTP '+response.status;
+  }catch(error){providerResult.textContent=String(error.message||error);providerStatus.textContent='Network or request error';}
+  finally{providerRun.disabled=false;}
+ });
+ const clusterGoal=document.getElementById('clusterGoal');
+ const clusterAgents=document.getElementById('clusterAgents');
+ const clusterDepth=document.getElementById('clusterDepth');
+ const clusterBudget=document.getElementById('clusterBudget');
+ const clusterPlanButton=document.getElementById('clusterPlan');
+ const clusterStatus=document.getElementById('clusterStatus');
+ const clusterResult=document.getElementById('clusterResult');
+ let tools=[];
+ function setStatus(message){status.textContent=message;}
+ function option(label,value){const el=document.createElement('option');el.textContent=label;el.value=value;return el;}
+ function fillOperations(){
+  const tool=tools.find(item=>item.id===adapterSelect.value);
+  operationSelect.replaceChildren(option('Choose operation',''));
+  (tool?.operations||[]).forEach(op=>operationSelect.appendChild(option(op,op)));
+  if(!tool) return;
+  const executable=tool.runtime?.executableOperations;
+  if(Array.isArray(executable)){
+   for(const item of [...operationSelect.options]){
+    if(item.value && !executable.includes(item.value)) item.disabled=true;
+   }
+  }
+ }
+ async function loadAdapters(){
+  setStatus('Loading live adapter registry…');
+  try{
+   const [registryResponse,runtimeResponse]=await Promise.all([
+    fetch('/api/agent-tools',{cache:'no-store'}),
+    fetch('/api/adapters',{cache:'no-store'})
+   ]);
+   if(!registryResponse.ok||!runtimeResponse.ok) throw new Error('Adapter registry request failed');
+   const registry=await registryResponse.json();
+   const runtime=await runtimeResponse.json();
+   const runtimeById=new Map((runtime.adapters||[]).map(item=>[item.id,item]));
+   tools=(registry.tools||[]).map(item=>({...item,runtime:runtimeById.get(item.id)?.runtime||null}));
+   const prior=adapterSelect.value;
+   adapterSelect.replaceChildren(option('Choose adapter',''));
+   tools.forEach(tool=>{
+    const runtimeState=tool.runtime?.state||'unknown';
+    const label=tool.id+' · '+runtimeState;
+    adapterSelect.appendChild(option(label,tool.id));
+   });
+   if(tools.some(tool=>tool.id===prior)) adapterSelect.value=prior;
+   fillOperations();
+   setStatus('Loaded '+tools.length+' adapters · registry is not proof of execution');
+  }catch(error){setStatus('Registry unavailable: '+String(error.message||error));}
+ }
+ open.addEventListener('click',async()=>{
+  panel.hidden=false;open.setAttribute('aria-expanded','true');
+  await loadAdapters();
+ });
+ function hide(){panel.hidden=true;open.setAttribute('aria-expanded','false');}
+ close.addEventListener('click',hide);
+ refresh.addEventListener('click',loadAdapters);
+ adapterSelect.addEventListener('change',fillOperations);
+ clearToken.addEventListener('click',()=>{tokenInput.value='';setStatus('Execution token cleared from this page');});
+ clusterPlanButton.addEventListener('click',async()=>{
+  const token=tokenInput.value;
+  const goal=clusterGoal.value.trim();
+  if(!token){clusterStatus.textContent='Execution token required';tokenInput.focus();return;}
+  if(!goal){clusterStatus.textContent='Enter a cluster goal first';clusterGoal.focus();return;}
+  const tokenBudget=Number(clusterBudget.value);
+  if(!Number.isInteger(tokenBudget)||tokenBudget<256||tokenBudget>12000){clusterStatus.textContent='Token budget must be between 256 and 12000';return;}
+  clusterPlanButton.disabled=true;clusterStatus.textContent='Creating bounded plan…';clusterResult.textContent='Waiting for plan response…';
+  try{
+   const response=await fetch('/api/mindcloud/agent-cluster/plan',{method:'POST',headers:{'content-type':'application/json','authorization':'Bearer '+token},body:JSON.stringify({goal,requestedAgents:Number(clusterAgents.value),depth:Number(clusterDepth.value),tokenBudget}),cache:'no-store'});
+   const body=await response.json().catch(()=>({error:'invalid_json_response'}));
+   clusterResult.textContent=JSON.stringify({httpStatus:response.status,ok:response.ok,response:body},null,2);
+   clusterStatus.textContent=response.ok?'Plan created · no agents executed':('Plan rejected · HTTP '+response.status);
+  }catch(error){clusterResult.textContent=String(error.message||error);clusterStatus.textContent='Network or request error';}
+  finally{clusterPlanButton.disabled=false;}
+ });
+ tokenToggle.addEventListener('click',()=>{const reveal=tokenInput.type==='password';tokenInput.type=reveal?'text':'password';tokenToggle.textContent=reveal?'Hide token':'Show token';tokenToggle.setAttribute('aria-pressed',String(reveal));});
+ run.addEventListener('click',async()=>{
+  const id=adapterSelect.value, operation=operationSelect.value, token=tokenInput.value;
+  if(!id||!operation){setStatus('Choose an adapter and operation first');return;}
+  if(!token){setStatus('Execution token required');tokenInput.focus();return;}
+  let payload;
+  try{payload=JSON.parse(input.value||'{}');}
+  catch{setStatus('Input must be valid JSON');input.focus();return;}
+  if(!payload||typeof payload!=='object'||Array.isArray(payload)){setStatus('Input JSON must be an object');return;}
+  run.disabled=true;setStatus('Executing '+id+'.'+operation+'…');result.textContent='Waiting for adapter response…';
+  try{
+   const response=await fetch('/api/adapters/execute',{
+    method:'POST',
+    headers:{'content-type':'application/json','authorization':'Bearer '+token},
+    body:JSON.stringify({id,operation,input:payload}),
+    cache:'no-store'
+   });
+   const body=await response.json().catch(()=>({error:'invalid_json_response'}));
+   result.textContent=JSON.stringify({httpStatus:response.status,ok:response.ok,response:body},null,2);
+   setStatus(response.ok?'Request completed · inspect adapter result and evidence':('Request blocked/failed · HTTP '+response.status));
+  }catch(error){result.textContent=String(error.message||error);setStatus('Network or request error');}
+  finally{run.disabled=false;}
+ });
+})();
 </script>
 </body>
 </html>;

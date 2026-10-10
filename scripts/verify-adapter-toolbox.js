@@ -25,7 +25,30 @@ assert.match(html, /adapterDiscoveryCache\[id\]=result/, "discovery result must 
 assert.match(html, /readinessLabel/, "toolbox must display the runtime readiness state");
 assert.match(html, /verificationText/, "toolbox must distinguish execution verification from registration and health");
 assert.match(html, /readinessSummary/, "toolbox must display adapter readiness coverage totals");
-assert.doesNotMatch(html, /fetch\(['"]\/api\/adapters\/execute/, "browser UI must not call the protected execution endpoint or expose its token");
+assert.match(html, /fetch\(['"]\/api\/adapters\/execute['"]/, "integrated command console must call the existing protected execution endpoint");
+assert.match(html, /['"]authorization['"]:'Bearer '\+token/, "protected execution call must attach the session token as a bearer credential");
+assert.doesNotMatch(html, /(?:localStorage|sessionStorage)\.(?:setItem|getItem).*commandToken/i, "execution token must not be persisted in browser storage");
+assert.match(html, /id="commandConsole"/, "OSIRIS must expose the integrated command console");
+assert.match(html, /id="commandAdapter"/, "command console must select a live adapter");
+assert.match(html, /id="commandOperation"/, "command console must select a declared operation");
+assert.match(html, /id="commandToken" type="password"/, "execution credential must be masked in the UI");
+assert.match(html, /id="commandTokenToggle"/, "operator must be able to explicitly reveal or remask the session token");
+assert.match(html, /tokenInput\.type=reveal\?'text':'password'/, "token visibility control must toggle between masked and visible states");
+assert.match(html, /['"]authorization['"]:'Bearer '\+token/, "execution must use the protected bearer-authenticated API");
+assert.match(html, /id="commandConsoleResult"/, "command console must display the real API response");
+assert.match(html, /id="clusterPlan"/, "OSIRIS console must expose bounded agent-cluster planning");
+assert.match(html, /id="providerRun"/, "OSIRIS console must expose multi-provider collaboration");
+assert.match(html, /\/api\/mindcloud\/providers\/collaborate/, "provider handoff must use the protected collaboration API");
+assert.match(html, /name="providerChoice" value="gemini"/, "Gemini must be a selectable provider");
+assert.match(html, /name="providerChoice" value="claude"/, "Claude must be a selectable provider");
+assert.match(html, /name="providerChoice" value="grok"/, "Grok must be a selectable provider");
+assert.match(html, /name="providerChoice" value="deepseek"/, "DeepSeek must be a selectable provider");
+assert.match(html, /name="providerChoice" value="kimi"/, "Kimi must be a selectable provider");
+assert.match(html, /\/api\/mindcloud\/agent-cluster\/plan/, "cluster plan must use the authenticated MindCloud API");
+assert.match(html, /id="clusterBudget"/, "cluster plan must expose a bounded total token budget");
+assert.match(html, /no external AI calls or adapter execution are started/i, "planning UI must not imply external agents were executed");
+assert.doesNotMatch(html, /localStorage\.(?:setItem|getItem).*commandToken/i, "execution token must not be persisted in browser storage");
+
 
 const runtime = new AdapterRuntime(registry);
 const snapshot = runtime.snapshot();
