@@ -37,8 +37,9 @@ async function waitHealthy(child) {
       let body = "";
       req.on("data", chunk => { body += chunk; });
       req.on("end", () => {
-        assert.match(body, /agentmemory route test/);
         assert.match(body, /session_id/);
+        assert.ok(body.includes("agentmemory route test") || body.includes("MINDCLOUD_PERSISTENCE_PROBE_V1"),
+          "mock Cognee must accept both the startup persistence probe and AgentMemory route test");
         res.writeHead(200, { "content-type": "application/json" });
         res.end(JSON.stringify({status:"added",session_stored:true}));
       });
@@ -49,8 +50,12 @@ async function waitHealthy(child) {
       req.on("data", chunk => { body += chunk; });
       req.on("end", () => {
         const query = JSON.parse(body);
-        assert.equal(query.session_id, "agentmemory-route-test");
         res.writeHead(200, { "content-type": "application/json" });
+        if (query.session_id === "mindcloud-e2e-persistence-probe") {
+          res.end(JSON.stringify({results:[{text:"MINDCLOUD_PERSISTENCE_PROBE_V1"}],query:query.query}));
+          return;
+        }
+        assert.equal(query.session_id, "agentmemory-route-test");
         res.end(JSON.stringify({results:[{text:"agentmemory route test"}],query:query.query}));
       });
       return;
