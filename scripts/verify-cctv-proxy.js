@@ -1,5 +1,11 @@
 #!/usr/bin/env node
 const assert = require("node:assert/strict");
+const fs = require("node:fs");
+const dashboardHtml = fs.readFileSync("index.html", "utf8");
+assert.doesNotMatch(dashboardHtml, /The camera proxy is not implemented yet/, "dashboard must not contradict the implemented server proxy");
+assert.match(dashboardHtml, /proxyAuthStatus/, "dashboard must display proxy credential readiness");
+assert.match(dashboardHtml, /frameStatus/, "dashboard must distinguish frame status");
+assert.match(dashboardHtml, /evidenceStatus/, "dashboard must distinguish evidence verification");
 const { spawn } = require("node:child_process");
 const http = require("node:http");
 
@@ -81,6 +87,9 @@ function encoded(url) {
     const status = await statusResponse.json();
     assert.equal(status.proxyStatus, "implemented");
     assert.equal(status.streamStatus, "unverified", "configuration must not be mistaken for stream verification");
+    assert.equal(status.proxyAuthStatus, "configured", "test proxy token must be reported as configured");
+    assert.equal(status.frameStatus, "not_implemented", "configured source must not imply a verified frame");
+    assert.equal(status.evidenceStatus, "not_verified", "configured source must not imply verified evidence");
 
     const manifestResponse = await fetch(appBase + "/api/cctv/stream", {
       headers: { authorization: "Bearer " + token }
