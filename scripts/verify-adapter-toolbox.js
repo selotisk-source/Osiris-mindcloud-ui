@@ -43,6 +43,7 @@ assert.match(html, /name="providerChoice" value="gemini"/, "Gemini must be a sel
 assert.match(html, /name="providerChoice" value="claude"/, "Claude must be a selectable provider");
 assert.match(html, /name="providerChoice" value="grok"/, "Grok must be a selectable provider");
 assert.match(html, /name="providerChoice" value="deepseek"/, "DeepSeek must be a selectable provider");
+assert.match(html, /name="providerChoice" value="kimi"/, "Kimi must be a selectable provider");
 assert.match(html, /\/api\/mindcloud\/agent-cluster\/plan/, "cluster plan must use the authenticated MindCloud API");
 assert.match(html, /id="clusterBudget"/, "cluster plan must expose a bounded total token budget");
 assert.match(html, /no external AI calls or adapter execution are started/i, "planning UI must not imply external agents were executed");
