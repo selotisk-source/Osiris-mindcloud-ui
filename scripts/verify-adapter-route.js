@@ -156,6 +156,8 @@ async function waitHealthy(child) {
     }));
     assert.equal(discovered.status, 200);
     assert.equal(discovered.body.ok, true);
+    assert.match(discovered.body.requestId, /^[0-9a-f-]{36}$/i, "native response must expose a correlation ID");
+    assert.equal(discovered.body.evidence.requestId, discovered.body.requestId, "evidence and adapter result must share a correlation ID");
     assert.deepEqual(discovered.body.result.subdomains, ["api.example.com", "osiris.example.com"]);
     assert.equal(discovered.body.result.method, "passive-certificate-transparency");
 
@@ -166,6 +168,8 @@ async function waitHealthy(child) {
     }));
     assert.equal(resolved.status, 200);
     assert.equal(resolved.body.ok, true);
+    assert.match(resolved.body.requestId, /^[0-9a-f-]{36}$/i, "DNS response must expose a correlation ID");
+    assert.equal(resolved.body.evidence.requestId, resolved.body.requestId, "DNS evidence must preserve the correlation ID");
     assert.equal(resolved.body.result.answers[0].data, "203.0.113.12");
     const snapshot = await json(await fetch(appBase + "/api/adapters"));
     assert.equal(snapshot.status, 200);
