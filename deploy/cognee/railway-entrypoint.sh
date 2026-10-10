@@ -7,4 +7,4 @@ mkdir -p /data
 chown cognee:cognee /data
 
 # Keep Cognee's own entrypoint/migration logic, but run it as the non-root user.
-exec su -s /bin/sh cognee -c 'exec /app/entrypoint.sh'
+exec su -p -s /bin/sh cognee -c 'exec /app/entrypoint.sh'
