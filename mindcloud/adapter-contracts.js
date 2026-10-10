@@ -100,7 +100,7 @@ function validateAdapterInput(id, operation, input = {}) {
   const maxBytes = contract.maxBytes || MAX_INPUT_BYTES;
   if (byteLength > maxBytes) details.push("input exceeds operation payload limit");
   for (const key of contract.required || []) {
-    if (!(key in input)) details.push("missing required field: " + key);
+    if (!(key in input) || input[key] === undefined || input[key] === null) details.push("missing required field: " + key);
   }
   for (const group of contract.requiredAny || []) {
     if (!group.some(key => key in input && input[key] !== undefined && input[key] !== null && input[key] !== "")) {
