@@ -37,6 +37,14 @@ const CONTRACTS = Object.freeze({
     smart_search: { requiredAny: [["query", "text", "context"]], properties: { query: "string", text: "string", context: "string", sessionId: "string", session_id: "string", limit: "number" } },
     context: { requiredAny: [["query", "text", "context"]], properties: { query: "string", text: "string", context: "string", sessionId: "string", session_id: "string", limit: "number" } }
   },
+  "speech-figure": {
+    inspect: { properties: {} },
+    start_session: { required: ["locale", "camera_enabled"], properties: { locale: "string", camera_enabled: "boolean", model_profile: "string", session_id: "string" } },
+    stop_session: { required: ["session_id"], properties: { session_id: "string" } },
+    get_transcript: { required: ["session_id"], properties: { session_id: "string" } },
+    export_transcript: { required: ["session_id", "format"], properties: { session_id: "string", format: "string" } },
+    render_preview: { required: ["text"], properties: { text: "string", style: "string", locale: "string" } }
+  },
   ruflo: {
     discover_tools: { properties: {} }
   }
@@ -75,6 +83,7 @@ function matchesType(value, type) {
   switch (type) {
     case "string": return typeof value === "string" && value.trim().length > 0;
     case "number": return typeof value === "number" && Number.isFinite(value);
+    case "boolean": return typeof value === "boolean";
     case "numberOrString": return (typeof value === "number" && Number.isFinite(value)) || (typeof value === "string" && value.trim().length > 0);
     case "stringOrNumber": return (typeof value === "string" && value.trim().length > 0) || (typeof value === "number" && Number.isFinite(value));
     case "stringOrStringArray": return (typeof value === "string" && value.trim().length > 0) || (Array.isArray(value) && value.length > 0 && value.every(item => typeof item === "string" && item.trim().length > 0));
