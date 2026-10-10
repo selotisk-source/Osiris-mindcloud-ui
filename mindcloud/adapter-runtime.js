@@ -23,7 +23,7 @@ class AdapterRuntime {
   runtimeState(tool) {
     const nativeState = native.state(tool.id);
     const configured = nativeState ? nativeState.configured : Boolean(this.endpointFor(tool.id));
-    return {state:configured?"configured":"registered-only",executable:configured,transport:nativeState?"native-http":(tool.transport||"external-runtime"),operations:tool.operations||[],...(nativeState?.required?{required:nativeState.required}:{})};
+    return {state:configured?"configured":"registered-only",executable:configured,transport:nativeState?(nativeState.mode||"native-http"):(tool.transport||"external-runtime"),operations:tool.operations||[],...(nativeState?.required?{required:nativeState.required}:{})};
   }
 
   discover(id) {
@@ -53,6 +53,10 @@ class AdapterRuntime {
     const tool=this.registry.tools.find(item=>item.id===id);
     if(!tool)return this.record(requestId,{ok:false,error:"adapter_not_found",id,operation});
     if(!tool.operations?.includes(operation))return this.record(requestId,{ok:false,error:"operation_not_allowed",id,operation});
+    if(operation==="health") {
+      const result=await this.health(id);
+      return this.record(requestId,{ok:Boolean(result?.ok),id,operation,result,execution:{contractVersion:"1.0",attempts:1,retries:0,retryPolicy:"health-probe",recovered:false}});
+    }
     if(tool.security&&!approved)return this.record(requestId,{ok:false,error:"human_approval_required",id,operation});
     if(native.supports(id)) {
       const run = await require("./adapter-policy").executeWithRetry(operation, () => native.execute({id,operation,input,requestId}));
