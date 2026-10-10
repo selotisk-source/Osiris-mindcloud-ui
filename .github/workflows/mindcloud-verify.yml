@@ -14,4 +14,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-      - run: npm run verify
+      - name: Run local end-to-end and integration checks
+        run: npm run verify
+      - name: Smoke-test live production endpoints
+        run: node scripts/verify-production.js

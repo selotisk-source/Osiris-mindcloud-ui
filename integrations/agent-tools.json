@@ -167,7 +167,7 @@
         "export_geojson",
         "health"
       ],
-      "env": "OVERPASS_TURBO_URL",
+      "env": "OVERPASS_API_URL",
       "status": "adapter-ready"
     },
     {
@@ -193,7 +193,8 @@
         "image",
         "health"
       ],
-      "env": "GOOGLE_STREET_VIEW_URL",
+      "env": "GOOGLE_MAPS_API_KEY",
+      "endpoint_env": "GOOGLE_STREET_VIEW_URL",
       "status": "adapter-ready"
     },
     {
@@ -207,7 +208,8 @@
         "dns",
         "health"
       ],
-      "env": "SHODAN_URL",
+      "env": "SHODAN_API_KEY",
+      "endpoint_env": "SHODAN_API_BASE_URL",
       "status": "adapter-ready",
       "security": "authorized targets and scopes only"
     },
@@ -235,7 +237,8 @@
         "match",
         "health"
       ],
-      "env": "OPENSANCTIONS_URL",
+      "env": "OPENSANCTIONS_API_KEY",
+      "endpoint_env": "OPENSANCTIONS_API_BASE_URL",
       "status": "adapter-ready"
     },
     {
