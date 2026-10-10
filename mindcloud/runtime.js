@@ -1,11 +1,13 @@
 const { createRouterNetwork } = require("../mindcore/router-network");
 const { capabilitiesByLayer, suggest, recipes } = require("./capability-graph");
+const { VersionHistory } = require("./version-history");
 
 class MindCloudRuntime {
   constructor() {
     this.network = createRouterNetwork();
     this.tasks = new Map();
     this.events = [];
+    this.versionHistory = new VersionHistory({ name: "mindcore-model", state: { status: "baseline" } });
   }
 
   snapshot() {
@@ -14,6 +16,7 @@ class MindCloudRuntime {
       health: "ok",
       topology: this.network.snapshot(),
       tasks: [...this.tasks.values()],
+      modelVersions: this.versionHistory.list(),
       eventCount: this.events.length,
       capabilityLayers: capabilitiesByLayer(),
       recipes
@@ -39,6 +42,18 @@ class MindCloudRuntime {
       data: { action: "route", target: routed.target, recipes: record.composition.recipes.map(r => r.id) }
     });
     return record;
+  }
+
+  createModelVersion(input) {
+    const version = this.versionHistory.create(input);
+    this.events.push({
+      taskId: null,
+      type: "model_version_created",
+      timestamp: version.createdAt,
+      source: "MindCloudRuntime",
+      data: { versionId: version.id, parentId: version.parentId, rationale: version.rationale, modelHash: version.modelHash, evidenceRefs: version.evidenceRefs }
+    });
+    return version;
   }
 
   eventsFor(taskId) {
