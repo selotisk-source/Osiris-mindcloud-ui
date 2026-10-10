@@ -8,7 +8,7 @@ const plan = cluster.plan({ goal: "Implement a secure OSIRIS command console", d
 assert.equal(plan.type, "mindcloud_agent_cluster_plan");
 assert.equal(plan.status, "plan_only");
 assert.equal(plan.limits.maxDepth, 4);
-assert.equal(plan.tasks.length, 8);
+assert.equal(plan.tasks.length, 6);
 assert.equal(plan.budget.maxTokens, 8000);
 assert.ok(plan.budget.allocatedTokens <= plan.budget.maxTokens);
 assert.ok(plan.tasks.every(task => task.mayExecuteTools === false));
