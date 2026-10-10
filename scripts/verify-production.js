@@ -41,8 +41,19 @@ async function getJson(path) {
   assert.equal(runtime.coreHealth, "ok");
   assert.ok(runtime.mindcloud && runtime.memory && runtime.cctv, "runtime status missing component state");
 
-  const overpass = await getJson("/api/adapters/overpass-turbo/health");
-  assert.equal(overpass.status, "healthy", "live Overpass provider health failed: " + JSON.stringify(overpass));
+  // A third-party Overpass outage is operationally important, but should not
+  // mask regressions in our own API/runtime contract. Keep it visible as a
+  // degraded provider result while continuing the remaining production checks.
+  let overpass;
+  let overpassWarning = null;
+  try {
+    overpass = await getJson("/api/adapters/overpass-turbo/health");
+    if (overpass.status !== "healthy") {
+      overpassWarning = "Overpass provider degraded: " + JSON.stringify(overpass);
+    }
+  } catch (error) {
+    overpassWarning = "Overpass health endpoint unavailable: " + (error instanceof Error ? error.message : String(error));
+  }
 
   const freeSubdomain = await getJson("/api/adapters/subdomain-finder/health");
   assert.equal(freeSubdomain.status, "configured", "free passive subdomain adapter must be available");
@@ -51,9 +62,9 @@ async function getJson(path) {
 
   const credentialGatedAdapters = {};
   for (const id of ["google-street-view", "shodan", "opensanctions"]) {
-    const health = await getJson("/api/adapters/" + id + "/health");
-    assert.ok(["credentials-missing", "configured"].includes(health.status), id + " did not report an explicit credential state");
-    credentialGatedAdapters[id] = health.status;
+    const adapterHealth = await getJson("/api/adapters/" + id + "/health");
+    assert.ok(["credentials-missing", "configured"].includes(adapterHealth.status), id + " did not report an explicit credential state");
+    credentialGatedAdapters[id] = adapterHealth.status;
   }
 
   const unauthenticated = await fetch(base + "/api/adapters/execute", {
@@ -67,13 +78,14 @@ async function getJson(path) {
   console.log(JSON.stringify({
     status: "production-smoke-passed",
     base,
+    warnings: overpassWarning ? [overpassWarning] : [],
     checks: [
       "health-http-200",
       "mindcloud-status-json",
       "adapter-registry-and-lifecycle",
       "cctv-explicit-state",
       "runtime-component-status",
-      "live-overpass-provider-health",
+      "overpass-provider-health-reported-with-degradation-tolerance",
       "free-passive-subdomain-adapter",
       "mapillary-free-token-state",
       "credential-gated-adapter-state",
@@ -82,7 +94,7 @@ async function getJson(path) {
     memoryStatus: runtime.memory.status,
     cctvStatus: cctv.status,
     cctvProxyStatus: cctv.proxyStatus,
-    overpassStatus: overpass.status,
+    overpassStatus: overpass?.status || "unavailable",
     freeSubdomainStatus: freeSubdomain.status,
     mapillaryStatus: mapillary.status,
     credentialGatedAdapters
