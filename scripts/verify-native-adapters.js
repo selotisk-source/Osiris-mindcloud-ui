@@ -37,8 +37,8 @@ global.fetch = async (url, options={}) => {
 
   const street=await native.execute({id:"google-street-view",operation:"metadata",input:{location:"Varna, Bulgaria"},requestId:"test-street"});
   assert.equal(street.ok,true);
-  assert.match(calls[1].url,/maps\.googleapis\.com\/maps\/api\/streetview\/metadata/);
-  assert.match(calls[1].url,/key=test-google-key/);
+  assert.match(calls[2].url,/maps\.googleapis\.com\/maps\/api\/streetview\/metadata/);
+  assert.match(calls[2].url,/key=test-google-key/);
 
   const shodan=await native.execute({id:"shodan",operation:"search",input:{query:"hostname:example.com"},requestId:"test-shodan"});
   assert.equal(shodan.ok,true);
