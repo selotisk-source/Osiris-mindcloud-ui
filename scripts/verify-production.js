@@ -22,6 +22,44 @@ async function getJson(path) {
   const status = await getJson("/api/mindcloud/status");
   assert.ok(Array.isArray(status.tasks), "MindCloud status missing task registry");
 
+  const arenaResponse = await fetch(base + "/api/mindcloud/arena/evaluate", {
+    method: "POST",
+    headers: { "content-type": "application/json", accept: "application/json" },
+    body: JSON.stringify({
+      task: "Production Arena API smoke test",
+      candidates: [
+        {
+          id: "production-pass",
+          approach: "All acceptance tests pass",
+          tests: [{ id: "api-contract", passed: true, evidenceRef: "smoke://arena/api-contract" }],
+          requiredChecks: [{ id: "safety", passed: true }]
+        },
+        {
+          id: "production-fail",
+          approach: "Acceptance test fails",
+          tests: [{ id: "api-contract", passed: false, evidenceRef: "smoke://arena/api-contract-fail" }],
+          requiredChecks: [{ id: "safety", passed: true }]
+        }
+      ]
+    }),
+    signal: AbortSignal.timeout(timeout)
+  });
+  assert.equal(arenaResponse.status, 200, "Arena evaluation API must respond HTTP 200");
+  const arena = await arenaResponse.json();
+  assert.equal(arena.type, "mindcloud_arena_report");
+  assert.equal(arena.status, "verified_winner");
+  assert.equal(arena.winnerId, "production-pass");
+  assert.equal(arena.promotion.allowed, false, "production smoke must not promote a skill");
+  const arenaInvalidResponse = await fetch(base + "/api/mindcloud/arena/evaluate", {
+    method: "POST",
+    headers: { "content-type": "application/json", accept: "application/json" },
+    body: JSON.stringify({ task: "invalid request", candidates: [] }),
+    signal: AbortSignal.timeout(timeout)
+  });
+  assert.equal(arenaInvalidResponse.status, 400, "Arena API must reject invalid candidate sets");
+  const arenaInvalid = await arenaInvalidResponse.json();
+  assert.equal(arenaInvalid.error, "arena_requires_competing_candidates");
+
   const adapters = await getJson("/api/adapters");
   assert.equal(adapters.type, "mindcloud_adapter_runtime");
   assert.deepEqual(adapters.lifecycle, ["discover", "health", "execute", "result", "audit"]);
@@ -88,6 +126,7 @@ async function getJson(path) {
     base,
     checks: [
       "health-http-200",
+      "arena-production-post-and-fail-closed-contract",
       "mindcloud-status-json",
       "adapter-registry-and-lifecycle",
       "cctv-explicit-state",
