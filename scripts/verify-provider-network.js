@@ -28,7 +28,9 @@ const fetch = async (url, options) => {
   assert.ok(results.every(result => result.ok));
   assert.deepEqual(results.map(result => result.output), ["Gemini result", "Claude result", "Grok result", "DeepSeek result", "Kimi result"]);
   assert.equal(calls.length, 5);
-  assert.ok(calls.every(call => !call.url.includes("secret") && !call.url.includes("key=")), "API secrets must not be sent in URLs");
+  assert.ok(calls.every(call => !call.url.includes("secret") && !/[?&]key=/.test(call.url)), "API secrets must not be sent in URLs");
+  const geminiCall = calls.find(call => call.url.includes("generativelanguage.googleapis.com"));
+  assert.equal(geminiCall.options.headers["x-goog-api-key"], env.GEMINI_API_KEY, "Gemini credentials must use the API-key header");
   assert.ok(calls.every(call => call.options.signal instanceof AbortSignal), "provider calls must have timeout cancellation");
   const missing = createProviderNetwork({ env: {}, fetch });
   assert.equal((await missing.call("claude", "test")).error, "provider_credentials_missing");
