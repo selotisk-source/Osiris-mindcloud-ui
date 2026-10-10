@@ -27,6 +27,16 @@ assert.match(html, /verificationText/, "toolbox must distinguish execution verif
 assert.match(html, /readinessSummary/, "toolbox must display adapter readiness coverage totals");
 assert.doesNotMatch(html, /fetch\(['"]\/api\/adapters\/execute/, "browser UI must not call the protected execution endpoint or expose its token");
 
+// Keep baseline readiness assertions independent of secrets injected by CI/Railway.
+const isolatedBrowserEnv = {
+  serviceUrl: process.env.BROWSER_USE_SERVICE_URL,
+  apiKey: process.env.BROWSER_USE_API_KEY,
+  adapterUrl: process.env.ADAPTER_BROWSER_USE_URL
+};
+delete process.env.BROWSER_USE_SERVICE_URL;
+delete process.env.BROWSER_USE_API_KEY;
+delete process.env.ADAPTER_BROWSER_USE_URL;
+
 const runtime = new AdapterRuntime(registry);
 const snapshot = runtime.snapshot();
 assert.equal(snapshot.adapters.length, registry.tools.length, "runtime status must cover every registered adapter");
@@ -78,6 +88,15 @@ assert.equal(browserVerified.healthStatus, "healthy", "execution verification mu
 const verifiedSnapshot = runtime.snapshot();
 assert.equal(verifiedSnapshot.readinessSummary.verified, 1);
 assert.equal(verifiedSnapshot.readinessSummary.executionNotVerified, registry.tools.length - 1);
+
+for (const [key, value] of Object.entries({
+  BROWSER_USE_SERVICE_URL: isolatedBrowserEnv.serviceUrl,
+  BROWSER_USE_API_KEY: isolatedBrowserEnv.apiKey,
+  ADAPTER_BROWSER_USE_URL: isolatedBrowserEnv.adapterUrl
+})) {
+  if (value === undefined) delete process.env[key];
+  else process.env[key] = value;
+}
 
 (async () => {
   const previousEndpoint = process.env.BROWSER_USE_SERVICE_URL;
