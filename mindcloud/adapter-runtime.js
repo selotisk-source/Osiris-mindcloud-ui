@@ -48,7 +48,17 @@ class AdapterRuntime {
     if (!endpoint) return {ok:true,status:"registered-only",endpoint:null};
     try {
       const response = await fetch(endpoint + "/health", {signal:AbortSignal.timeout(2500)});
-      return {ok:response.ok,status:response.ok ? "healthy" : "degraded",httpStatus:response.status,endpoint};
+      let details = {};
+      try { details = await response.json(); } catch {}
+      const browserReady = id !== "browser-use" || details.browserEngine === "browserless-chromium";
+      const healthy = response.ok && browserReady;
+      return {
+        ok:healthy,
+        status:healthy ? "healthy" : "degraded",
+        httpStatus:response.status,
+        endpoint,
+        ...(id === "browser-use" ? {browserEngine:details.browserEngine || "unknown",persistentSessions:details.persistentSessions === true} : {})
+      };
     } catch (error) {
       return {ok:false,status:"offline",endpoint,error:error instanceof Error ? error.message : String(error)};
     }
@@ -62,15 +72,30 @@ class AdapterRuntime {
     if (tool.security && !approved) return this.record(requestId,{ok:false,error:"human_approval_required",id,operation});
     const endpoint = this.endpointFor(id);
     if (!endpoint) return this.record(requestId,{ok:false,error:"adapter_not_configured",id,operation});
+    const isBrowserUse = id === "browser-use";
+    const token = process.env.BROWSER_USE_API_KEY || "";
+    if (isBrowserUse && !token) return this.record(requestId,{ok:false,error:"adapter_credentials_missing",id,operation});
+    const requestPath = isBrowserUse ? "/v1/run" : "/execute";
+    const headers = {"content-type":"application/json"};
+    if (isBrowserUse) headers.authorization = "Bearer " + token;
+    const requestBody = isBrowserUse ? {requestId,operation,input} : {requestId,operation,input};
     try {
-      const response = await fetch(endpoint + "/execute", {
+      const response = await fetch(endpoint + requestPath, {
         method:"POST",
-        headers:{"content-type":"application/json"},
-        body:JSON.stringify({requestId,operation,input}),
-        signal:AbortSignal.timeout(15000)
+        headers,
+        body:JSON.stringify(requestBody),
+        signal:AbortSignal.timeout(30000)
       });
-      const text = await response.text();
-      let result; try { result = JSON.parse(text); } catch { result = {raw:text}; }
+      const contentType = response.headers.get("content-type") || "";
+      let result;
+      if (contentType.includes("application/json")) {
+        const text = await response.text();
+        try { result = JSON.parse(text); } catch { result = {raw:text}; }
+      } else if (contentType.startsWith("image/")) {
+        result = {contentType,base64:Buffer.from(await response.arrayBuffer()).toString("base64")};
+      } else {
+        result = {contentType,raw:await response.text()};
+      }
       return this.record(requestId,{ok:response.ok,id,operation,status:response.status,result});
     } catch (error) {
       return this.record(requestId,{ok:false,id,operation,error:error instanceof Error ? error.message : String(error)});
