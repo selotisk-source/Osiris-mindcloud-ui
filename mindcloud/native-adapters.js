@@ -1,9 +1,17 @@
 const rufloMcp = require("./ruflo-mcp");
 const NATIVE = new Set(["overpass-turbo","google-street-view","shodan","opensanctions","subdomain-finder","mapillary","agentmemory","ruflo"]);
 
+function authorizedDomains() {
+  return (process.env.MINDCLOUD_AUTHORIZED_DOMAINS || "").split(",").map(value => value.trim().toLowerCase().replace(/^[*.]+/, "").replace(/[.]$/, "")).filter(value => /^(?=.{1,253}$)(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?[.])+[a-z]{2,63}$/.test(value));
+}
+function isAuthorizedDomain(domain) {
+  return authorizedDomains().some(allowed => domain === allowed || domain.endsWith("." + allowed));
+}
+
 function state(id) {
   if (id === "ruflo") return {configured:process.env.RUFLO_MCP_ENABLED === "true",required:process.env.RUFLO_MCP_ENABLED === "true"?undefined:"RUFLO_MCP_ENABLED=true",mode:"stdio-mcp-readonly",operations:["health","discover_tools"]};
-  if (id === "overpass-turbo" || id === "subdomain-finder") return {configured:true,mode:id === "subdomain-finder" ? "passive-public-data" : "native-http"};
+  if (id === "overpass-turbo") return {configured:true,mode:"native-http"};
+  if (id === "subdomain-finder") return {configured:authorizedDomains().length > 0,required:authorizedDomains().length ? undefined : "MINDCLOUD_AUTHORIZED_DOMAINS",mode:"passive-public-data"};
   if (id === "agentmemory") return {configured:Boolean(process.env.COGNEE_SERVICE_URL),required:process.env.COGNEE_SERVICE_URL?undefined:"COGNEE_SERVICE_URL",mode:"cognee-persistent-memory",operations:["remember","observe","smart_search","context"]};
   if (id === "google-street-view") return {configured:Boolean(process.env.GOOGLE_MAPS_API_KEY),required:process.env.GOOGLE_MAPS_API_KEY?undefined:"GOOGLE_MAPS_API_KEY"};
   if (id === "shodan") return {configured:Boolean(process.env.SHODAN_API_KEY),required:process.env.SHODAN_API_KEY?undefined:"SHODAN_API_KEY"};
@@ -31,7 +39,7 @@ async function health(id) {
       return {ok:false,status:"offline",endpoint,mode:"cognee-persistent-memory",error:error instanceof Error?error.message:String(error)};
     }
   }
-  if (id === "subdomain-finder") return {ok:true,status:"configured",mode:"passive-public-data",providers:["crt.sh","Cloudflare DNS-over-HTTPS"]};
+  if (id === "subdomain-finder") return {ok:true,status:"configured",mode:"passive-public-data",authorizedDomainCount:authorizedDomains().length,providers:["crt.sh","Cloudflare DNS-over-HTTPS"]};
   if (id === "mapillary") return {ok:true,status:"configured",mode:"free-street-level-imagery",provider:"Mapillary"};
   if (id !== "overpass-turbo") return {ok:true,status:"configured",mode:"native-http"};
   try {
@@ -152,6 +160,8 @@ async function execute({id,operation,input={},requestId}) {
   } else if(id==="subdomain-finder") {
     const domain=String(input.domain||"").trim().toLowerCase().replace(/\.$/,"");
     if(!domain || domain.length>253 || !/^(?=.{1,253}$)(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,63}$/.test(domain)) return {ok:false,error:"valid_domain_required"};
+    if(!authorizedDomains().length) return {ok:false,id,operation,error:"authorized_domain_allowlist_missing",required:"MINDCLOUD_AUTHORIZED_DOMAINS"};
+    if(!isAuthorizedDomain(domain)) return {ok:false,id,operation,error:"domain_not_authorized",domain};
     if(operation==="discover") {
       const base=process.env.NODE_ENV==="test"&&process.env.CRT_SH_URL?process.env.CRT_SH_URL:"https://crt.sh/";
       const endpoint=base+"?q="+encodeURIComponent("%."+domain)+"&output=json";
