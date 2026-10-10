@@ -8,10 +8,12 @@ const os = require("node:os");
 const { VersionHistory } = require("../mindcloud/version-history");
 const { MindCloudRuntime } = require("../mindcloud/runtime");
 const { evaluateMetanoia } = require("../mindcloud/metanoia-engine");
+const { EvidenceGraph } = require("../mindcloud/evidence-graph");
 const storeDir = fs.mkdtempSync(path.join(os.tmpdir(), "mindcloud-versions-"));
 const storePath = path.join(storeDir, "versions.json");
 const unitStorePath = path.join(storeDir, "unit-versions.json");
 const taskEventStorePath = path.join(storeDir, "task-events.json");
+const evidenceGraphStorePath = path.join(storeDir, "evidence-graph.json");
 
 const port = 39127;
 const base = `http://127.0.0.1:${port}`;
@@ -56,7 +58,7 @@ async function waitForHealth(child) {
   await new Promise(resolve => mockAdapter.listen(39128,"127.0.0.1",resolve));
   const child = spawn(process.execPath, ["server.js"], {
     cwd: root,
-    env: { ...process.env, PORT: String(port), CCTV_SOURCE_URL: "", COGNEE_SERVICE_URL: "", BROWSER_USE_SERVICE_URL: "http://127.0.0.1:39128", BROWSER_USE_API_KEY: "test-token", MINDCLOUD_TOOL_EXECUTION_TOKEN: "mindcloud-test-execution-token", MINDCLOUD_MODEL_VERSION_WRITE_TOKEN: "mindcloud-version-write-test-token", MINDCLOUD_MODEL_VERSION_STORE: storePath, MINDCLOUD_TASK_WRITE_TOKEN: "mindcloud-task-write-test-token", MINDCLOUD_TASK_EVENT_STORE: taskEventStorePath },
+    env: { ...process.env, PORT: String(port), CCTV_SOURCE_URL: "", COGNEE_SERVICE_URL: "", BROWSER_USE_SERVICE_URL: "http://127.0.0.1:39128", BROWSER_USE_API_KEY: "test-token", MINDCLOUD_TOOL_EXECUTION_TOKEN: "mindcloud-test-execution-token", MINDCLOUD_MODEL_VERSION_WRITE_TOKEN: "mindcloud-version-write-test-token", MINDCLOUD_MODEL_VERSION_STORE: storePath, MINDCLOUD_TASK_WRITE_TOKEN: "mindcloud-task-write-test-token", MINDCLOUD_TASK_EVENT_STORE: taskEventStorePath, MINDCLOUD_EVIDENCE_WRITE_TOKEN: "mindcloud-evidence-write-test-token", MINDCLOUD_EVIDENCE_GRAPH_STORE: evidenceGraphStorePath },
     stdio: ["ignore", "pipe", "pipe"]
   });
 
@@ -100,6 +102,29 @@ async function waitForHealth(child) {
     assert.equal(metanoiaApi.body.status,"review_required");
     assert.equal(metanoiaApi.body.proposal.writesPerformed,false);
     assert.equal(metanoiaApi.body.proposal.humanApprovalRequired,true);
+
+    const emptyEvidenceGraph = await get("/api/mindcloud/evidence-graph");
+    assert.equal(emptyEvidenceGraph.status,200);
+    assert.equal(emptyEvidenceGraph.body.type,"mindcloud_evidence_graph");
+    assert.equal(emptyEvidenceGraph.body.nodeCount,0);
+    const blockedEvidenceWrite = await post("/api/mindcloud/evidence-graph/nodes",{type:"claim",label:"blocked",content:{value:true}});
+    assert.equal(blockedEvidenceWrite.status,401);
+    const claimNode = await post("/api/mindcloud/evidence-graph/nodes",{id:"claim-runtime-health",type:"claim",label:"Runtime health claim",content:{subject:"runtime",predicate:"health",value:"ok"},sourceRef:"test:claim-1"},"mindcloud-evidence-write-test-token");
+    assert.equal(claimNode.status,201);
+    assert.match(claimNode.body.node.contentHash,/^[a-f0-9]{64}$/);
+    const evidenceNode = await post("/api/mindcloud/evidence-graph/nodes",{id:"evidence-runtime-health",type:"evidence",label:"Runtime health test evidence",content:{kind:"test-result",passed:true},sourceRef:"test:runtime-health"},"mindcloud-evidence-write-test-token");
+    assert.equal(evidenceNode.status,201);
+    const evidenceEdge = await post("/api/mindcloud/evidence-graph/edges",{from:"evidence-runtime-health",to:"claim-runtime-health",relation:"supports"},"mindcloud-evidence-write-test-token");
+    assert.equal(evidenceEdge.status,201);
+    const invalidEdge = await post("/api/mindcloud/evidence-graph/edges",{from:"missing-node",to:"claim-runtime-health",relation:"supports"},"mindcloud-evidence-write-test-token");
+    assert.equal(invalidEdge.status,400);
+    const evidenceSnapshot = await get("/api/mindcloud/evidence-graph");
+    assert.equal(evidenceSnapshot.body.nodeCount,2);
+    assert.equal(evidenceSnapshot.body.edgeCount,1);
+    const durableGraph = new EvidenceGraph({storePath:evidenceGraphStorePath});
+    assert.equal(durableGraph.snapshot().nodeCount,2);
+    assert.equal(durableGraph.snapshot().edgeCount,1);
+    assert.throws(()=>durableGraph.addNode({type:"claim",label:"bad",content:{}}),/evidence_node_label_required|evidence_node/);
 
     const health = await get("/health");
     assert.equal(health.status, 200);
