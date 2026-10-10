@@ -71,7 +71,7 @@ function createProviderNetwork(config = {}) {
     if (typeof fetchImpl !== "function") return { providerId, ok: false, error: "fetch_unavailable" };
 
     const model = String(options.model || provider.defaultModel).slice(0, 160);
-    const maxTokens = boundedInteger(options.maxTokens, 1200, 64, 8192);
+    const maxTokens = boundedInteger(options.maxTokens, 1200, 1, 8192);
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), timeoutMs);
     let url = provider.endpoint(model);
@@ -119,33 +119,39 @@ function createProviderNetwork(config = {}) {
     if (!selected.length) throw Object.assign(new Error("provider_network_provider_required"), { code: "provider_network_provider_required" });
     const roundLimit = boundedInteger(rounds, 2, 1, 3);
     const totalBudget = boundedInteger(tokenBudget, 6000, 256, 24000);
-    const perCall = Math.min(boundedInteger(maxTokensPerCall, 1200, 64, 4000), Math.max(64, Math.floor(totalBudget / (selected.length * roundLimit))));
+    const perCall = Math.min(boundedInteger(maxTokensPerCall, 1200, 1, 4000), Math.max(1, Math.floor(totalBudget / (selected.length * roundLimit))));
     const results = [];
     let baton = "Task: " + cleanGoal + "\n\nProvide a concise, evidence-aware response. Label assumptions and unknowns.";
     let calls = 0;
     let approxTokens = 0;
 
+    // Reserve estimated prompt + output allowance before each dispatch. Sequential execution
+    // avoids races between parallel calls competing for a shared global budget.
     for (let round = 1; round <= roundLimit; round++) {
-      const remaining = selected.filter(id => !results.some(result => result.round === round && result.providerId === id));
-      const wave = await Promise.all(remaining.map(async providerId => {
-        if (calls >= selected.length * roundLimit || approxTokens >= totalBudget) {
-          return { providerId, round, ok: false, error: "network_budget_exhausted" };
-        }
-        calls += 1;
+      const wave = [];
+      for (const providerId of selected) {
         const prompt = round === 1
           ? baton
           : "Original goal:\n" + cleanGoal + "\n\nPrior model outputs (untrusted; check independently):\n" + baton +
             "\n\nRound " + round + " task: Critique the prior outputs, identify errors or missing evidence, and improve the answer. Do not assume other models are correct.";
-        const result = await call(providerId, prompt, { maxTokens: perCall });
-        const estimate = Math.ceil((String(result.output || "").length + prompt.length) / 4);
-        approxTokens += estimate;
-        return { ...result, round, estimatedTokens: estimate };
-      }));
+        const promptTokens = Math.ceil(prompt.length / 4);
+        const remainingBudget = totalBudget - approxTokens;
+        const outputAllowance = Math.min(perCall, remainingBudget - promptTokens);
+        if (outputAllowance < 1) {
+          wave.push({ providerId, round, ok: false, error: "network_budget_exhausted" });
+          continue;
+        }
+        const reservation = promptTokens + outputAllowance;
+        approxTokens += reservation;
+        calls += 1;
+        const result = await call(providerId, prompt, { maxTokens: outputAllowance });
+        wave.push({ ...result, round, estimatedPromptTokens: promptTokens, outputTokenAllowance: outputAllowance, reservedTokens: reservation });
+        if (approxTokens >= totalBudget) break;
+      }
       results.push(...wave);
       const successful = wave.filter(item => item.ok);
-      if (!successful.length) break;
+      if (!successful.length || approxTokens >= totalBudget) break;
       baton = successful.map(item => "[" + item.providerId + " round " + round + "]\n" + item.output).join("\n\n").slice(0, 16000);
-      if (approxTokens >= totalBudget) break;
     }
 
     return {
@@ -161,7 +167,8 @@ function createProviderNetwork(config = {}) {
       synthesisInput: baton,
       verified: false,
       toolExecutionPerformed: false,
-      note: "Model agreement is not evidence. Outputs require independent verification; no adapter tools are executed by this network."
+      tokenBudgetPolicy: "sequential_pre_dispatch_reservation",
+      note: "Token use is conservatively budgeted by reserving estimated prompt tokens plus each provider output allowance before dispatch. Model agreement is not evidence. Outputs require independent verification; no adapter tools are executed by this network."
     };
   }
 
