@@ -4,6 +4,10 @@ const { spawn } = require("node:child_process");
 const http = require("node:http");
 const fs = require("node:fs");
 const path = require("node:path");
+const os = require("node:os");
+const { VersionHistory } = require("../mindcloud/version-history");
+const storeDir = fs.mkdtempSync(path.join(os.tmpdir(), "mindcloud-versions-"));
+const storePath = path.join(storeDir, "versions.json");
 
 const port = 39127;
 const base = `http://127.0.0.1:${port}`;
@@ -15,8 +19,10 @@ function get(url) {
     body: await res.json()
   }));
 }
-function post(url, body={}) {
-  return fetch(base + url, {method:"POST",headers:{"content-type":"application/json","accept":"application/json"},body:JSON.stringify(body)}).then(async res=>({status:res.status,body:await res.json()}));
+function post(url, body={}, token="") {
+  const headers={"content-type":"application/json","accept":"application/json"};
+  if(token) headers.authorization="Bearer "+token;
+  return fetch(base + url, {method:"POST",headers,body:JSON.stringify(body)}).then(async res=>({status:res.status,body:await res.json()}));
 }
 
 async function waitForHealth(child) {
@@ -46,7 +52,7 @@ async function waitForHealth(child) {
   await new Promise(resolve => mockAdapter.listen(39128,"127.0.0.1",resolve));
   const child = spawn(process.execPath, ["server.js"], {
     cwd: root,
-    env: { ...process.env, PORT: String(port), CCTV_SOURCE_URL: "", COGNEE_SERVICE_URL: "", BROWSER_USE_SERVICE_URL: "http://127.0.0.1:39128", BROWSER_USE_API_KEY: "test-token", MINDCLOUD_TOOL_EXECUTION_TOKEN: "mindcloud-test-execution-token" },
+    env: { ...process.env, PORT: String(port), CCTV_SOURCE_URL: "", COGNEE_SERVICE_URL: "", BROWSER_USE_SERVICE_URL: "http://127.0.0.1:39128", BROWSER_USE_API_KEY: "test-token", MINDCLOUD_TOOL_EXECUTION_TOKEN: "mindcloud-test-execution-token", MINDCLOUD_MODEL_VERSION_WRITE_TOKEN: "mindcloud-version-write-test-token", MINDCLOUD_MODEL_VERSION_STORE: storePath },
     stdio: ["ignore", "pipe", "pipe"]
   });
 
@@ -70,6 +76,13 @@ async function waitForHealth(child) {
     const taskEvents = await get("/api/mindcloud/events?taskId="+encodeURIComponent(taskId));
     assert.ok(taskEvents.body.events.some(event=>event.taskId===taskId && event.type==="complete"));
 
+    const persistedHistory = new VersionHistory({name:"test-model"},{storePath});
+    const persistedVersion = persistedHistory.create({model:{durable:true},rationale:"Persist for restart test",evidenceRefs:["test:durable"]});
+    const reopenedHistory = new VersionHistory({name:"ignored-on-load"},{storePath});
+    assert.equal(reopenedHistory.get(persistedVersion.id).model.durable,true);
+    assert.equal(reopenedHistory.get(persistedVersion.id).rationale,"Persist for restart test");
+    assert.equal(reopenedHistory.get(persistedVersion.id).modelHash,persistedVersion.modelHash);
+
     const initialVersions = await get("/api/mindcloud/versions");
     assert.equal(initialVersions.status,200);
     assert.equal(initialVersions.body.type,"mindcloud_model_version_history");
@@ -77,7 +90,11 @@ async function waitForHealth(child) {
     assert.equal(initialVersions.body.versions[0].id,"model-v1");
     assert.match(initialVersions.body.versions[0].modelHash,/^[a-f0-9]{64}$/);
 
-    const versionWithoutRationale = await post("/api/mindcloud/versions",{model:{state:"changed"}});
+    const unauthenticatedVersionWrite = await post("/api/mindcloud/versions",{model:{state:"blocked"},rationale:"This should not be allowed"});
+    assert.equal(unauthenticatedVersionWrite.status,401);
+    assert.equal(unauthenticatedVersionWrite.body.error,"unauthorized");
+
+    const versionWithoutRationale = await post("/api/mindcloud/versions",{model:{state:"changed"}},"mindcloud-version-write-test-token");
     assert.equal(versionWithoutRationale.status,400);
     assert.equal(versionWithoutRationale.body.error,"rationale_required_min_8_chars");
 
@@ -86,7 +103,7 @@ async function waitForHealth(child) {
       rationale:"Raise threshold after validation test",
       changeType:"policy_update",
       evidenceRefs:["test:evidence-001"]
-    });
+    },"mindcloud-version-write-test-token");
     assert.equal(createdVersion.status,201);
     assert.equal(createdVersion.body.version.id,"model-v2");
     assert.equal(createdVersion.body.version.parentId,"model-v1");
@@ -206,6 +223,8 @@ async function waitForHealth(child) {
         "router",
         "task-route-readback-events",
         "model-version-history-rationale-parent-hash-readback",
+        "version-history-disk-persistence-and-reload",
+        "model-version-write-api-requires-dedicated-token",
         "capabilities",
         "liveness-approval-gate",
         "cctv-state-reported",
@@ -230,6 +249,7 @@ async function waitForHealth(child) {
     process.exitCode = 1;
   } finally {
     child.kill("SIGKILL");
+    fs.rmSync(storeDir,{recursive:true,force:true});
     mockAdapter.closeAllConnections?.();
     await new Promise(resolve => mockAdapter.close(resolve));
   }
