@@ -37,6 +37,24 @@ async function getJson(path) {
   assert.equal(runtime.coreHealth, "ok");
   assert.ok(runtime.mindcloud && runtime.memory && runtime.cctv, "runtime status missing component state");
 
+  const overpass = await getJson("/api/adapters/overpass-turbo/health");
+  assert.equal(overpass.status, "healthy", "live Overpass provider health failed");
+
+  const credentialGatedAdapters = {};
+  for (const id of ["google-street-view", "shodan", "opensanctions"]) {
+    const health = await getJson("/api/adapters/" + id + "/health");
+    assert.ok(["credentials-missing", "configured"].includes(health.status), id + " did not report an explicit credential state");
+    credentialGatedAdapters[id] = health.status;
+  }
+
+  const unauthenticated = await fetch(base + "/api/adapters/execute", {
+    method: "POST",
+    headers: { "content-type": "application/json", accept: "application/json" },
+    body: JSON.stringify({ id: "overpass-turbo", operation: "query", input: { query: "[out:json];out;" } }),
+    signal: AbortSignal.timeout(timeout)
+  });
+  assert.equal(unauthenticated.status, 401, "adapter execution must reject requests without a bearer token");
+
   console.log(JSON.stringify({
     status: "production-smoke-passed",
     base,
@@ -45,11 +63,16 @@ async function getJson(path) {
       "mindcloud-status-json",
       "adapter-registry-and-lifecycle",
       "cctv-explicit-state",
-      "runtime-component-status"
+      "runtime-component-status",
+      "live-overpass-provider-health",
+      "credential-gated-adapter-state",
+      "adapter-execution-rejects-unauthenticated-request"
     ],
     memoryStatus: runtime.memory.status,
     cctvStatus: cctv.status,
-    cctvProxyStatus: cctv.proxyStatus
+    cctvProxyStatus: cctv.proxyStatus,
+    overpassStatus: overpass.status,
+    credentialGatedAdapters
   }, null, 2));
 })().catch(error => {
   console.error(JSON.stringify({
