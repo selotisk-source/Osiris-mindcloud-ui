@@ -12,6 +12,7 @@ const tradingHtml = fs.readFileSync(path.join(__dirname, "trading.html"), "utf8"
 const newsletterHtml = fs.readFileSync(path.join(__dirname, "newsletter.html"), "utf8");
 const agentTools = JSON.parse(fs.readFileSync(path.join(__dirname, "integrations", "agent-tools.json"), "utf8"));
 const { inspectAll: inspectToolHealth } = require("./integrations/tool-health");
+const toolHealth = require("./integrations/tool-health");
 
 function sendJson(res, data, status=200) {
   res.writeHead(status, {"content-type":"application/json; charset=utf-8","cache-control":"no-store"});
@@ -79,6 +80,26 @@ const server = http.createServer(async (req,res)=>{
   if(pathname==="/api/router"){const kind=url.searchParams.get("kind")||"general";sendJson(res,{network:routerNetwork.snapshot(),route:routerNetwork.route({taskId:"ui-route",kind})});return;}
   if(pathname==="/api/agent-tools"){sendJson(res,agentTools);return;}
   if(pathname==="/api/agent-tools/health"){sendJson(res,inspectToolHealth());return;}
+  if(pathname==="/api/agent-tools/execute" && req.method==="POST"){
+    try {
+      const body = await readJson(req);
+      const toolId = typeof body.toolId === "string" ? body.toolId : "";
+      const operation = typeof body.operation === "string" ? body.operation : "";
+      const health = toolHealth.inspectAll().tools.find(tool => tool.id === toolId);
+      if (!health || health.status === "DISCOVERY-ONLY" || health.status === "PLANNED") {
+        return sendJson(res,{error:"tool_not_executable",toolId,status:health?.status||"UNKNOWN"},409);
+      }
+      if (!health.adapter) return sendJson(res,{error:"adapter_missing",toolId},409);
+      const adapterPath = path.join(__dirname, health.adapter);
+      const adapter = require(adapterPath);
+      if (typeof adapter.execute !== "function") return sendJson(res,{error:"adapter_execute_missing",toolId},409);
+      const result = await adapter.execute(operation, body.input && typeof body.input === "object" ? body.input : {});
+      sendJson(res,{type:"mindcloud_tool_execution",toolId,operation,result});
+    } catch (error) {
+      sendJson(res,{type:"mindcloud_tool_execution",status:"failed",error:error instanceof Error ? error.message : String(error),code:error?.code||null},502);
+    }
+    return;
+  }
   if(pathname==="/api/capabilities"){sendJson(res,{type:"mindcloud_capability_registry",source:"MindCore",capabilities:routerNetwork.geospatialCapabilities.list()});return;}
   if(pathname==="/api/liveness/route"){sendJson(res,{type:"mindcloud_live_liveness",capability:"route-variation",status:"available",policy:"safety-first-accessibility-second-controlled-variation",humanApprovalRequired:true});return;}
   if(pathname==="/api/cctv"){sendJson(res,cctvResponse());return;}
