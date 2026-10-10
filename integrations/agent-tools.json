@@ -353,6 +353,24 @@
       "cost_model": "free-app-with-in-app-purchases (store listing; verify current terms)",
       "authentication": "app account; API availability not verified",
       "evidence_status": "App Store listing located; no public API or export contract verified"
+    },
+    {
+      "id": "ruflo",
+      "source": "ruvnet/ruflo",
+      "source_url": "https://github.com/ruvnet/ruflo",
+      "layer": "Orchestration",
+      "integration": "Optional read-only MCP discovery bridge. MindCloud can inspect the RuFlo tool catalog when explicitly enabled; invoking discovered tools is deliberately not supported.",
+      "operations": [
+        "health",
+        "discover_tools"
+      ],
+      "status": "registered-only",
+      "transport": "stdio-mcp",
+      "env": "RUFLO_MCP_ENABLED",
+      "cost_model": "open-source; runtime package fetched by npm when explicitly enabled",
+      "authentication": "local process; inherits only a minimal environment allowlist",
+      "security": "disabled by default; read-only initialize/tools/list; no tool invocation, no arbitrary command input; process timeout and bounded output",
+      "evidence_status": "official MCP handshake and tools/list verified in GitHub Actions; production adapter not yet enabled or live-tested"
     }
   ]
 }
