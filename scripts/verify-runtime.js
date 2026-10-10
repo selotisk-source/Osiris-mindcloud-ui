@@ -46,7 +46,7 @@ async function waitForHealth(child) {
   await new Promise(resolve => mockAdapter.listen(39128,"127.0.0.1",resolve));
   const child = spawn(process.execPath, ["server.js"], {
     cwd: root,
-    env: { ...process.env, PORT: String(port), CCTV_SOURCE_URL: "", COGNEE_SERVICE_URL: "", BROWSER_USE_SERVICE_URL: "http://127.0.0.1:39128", BROWSER_USE_API_KEY: "test-token" },
+    env: { ...process.env, PORT: String(port), CCTV_SOURCE_URL: "", COGNEE_SERVICE_URL: "", BROWSER_USE_SERVICE_URL: "http://127.0.0.1:39128", BROWSER_USE_API_KEY: "test-token", MINDCLOUD_TOOL_EXECUTION_TOKEN: "mindcloud-test-execution-token" },
     stdio: ["ignore", "pipe", "pipe"]
   });
 
@@ -115,12 +115,17 @@ async function waitForHealth(child) {
     assert.equal(adapterHealth.status,200);
     assert.equal(adapterHealth.body.status,"healthy");
     assert.equal(adapterHealth.body.browserEngine,"browserless-chromium");
-    const adapterRun = await post("/api/adapters/execute",{id:"browser-use",operation:"browse",input:{url:"https://example.com"}});
+    const unauthenticated = await fetch(base + "/api/adapters/execute", {method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({id:"browser-use",operation:"browse",input:{url:"https://example.com"},approved:true})}).then(async res=>({status:res.status,body:await res.json()}));
+    assert.equal(unauthenticated.status,401);
+    assert.equal(unauthenticated.body.error,"unauthorized");
+
+    const executionHeaders = {"content-type":"application/json","authorization":"Bearer mindcloud-test-execution-token"};
+    const adapterRun = await fetch(base + "/api/adapters/execute",{method:"POST",headers:executionHeaders,body:JSON.stringify({id:"browser-use",operation:"browse",input:{url:"https://example.com"},approved:true})}).then(async res=>({status:res.status,body:await res.json()}));
     assert.equal(adapterRun.status,200);
     assert.equal(adapterRun.body.ok,true);
     assert.equal(adapterRun.body.result.received.operation,"browse");
 
-    const blocked = await fetch(base + "/api/adapters/execute", {method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({id:"anthropic-cybersecurity-skills",operation:"assess",input:{target:"test"}})}).then(async res=>({status:res.status,body:await res.json()}));
+    const blocked = await fetch(base + "/api/adapters/execute", {method:"POST",headers:executionHeaders,body:JSON.stringify({id:"anthropic-cybersecurity-skills",operation:"assess",input:{target:"test"},approved:true})}).then(async res=>({status:res.status,body:await res.json()}));
     assert.equal(blocked.status, 200);
     assert.equal(blocked.body.error, "human_approval_required");
 
@@ -171,8 +176,9 @@ async function waitForHealth(child) {
         "adapter-runtime-lifecycle",
         "adapter-discovery",
         "adapter-health-alias",
+        "adapter-execution-requires-bearer-token",
         "adapter-execution-roundtrip",
-        "adapter-approval-gate",
+        "client-cannot-forge-human-approval",
         "selftest-core-vs-integration-status",
         "live-browser-execution-probe",
         "unknown-api-returns-404",
