@@ -24,7 +24,7 @@ const PROVIDERS = Object.freeze({
   kimi: {
     id: "kimi", label: "Kimi", envKey: "KIMI_API_KEY", protocol: "openai-chat-completions",
     defaultModel: process.env.KIMI_MODEL || "kimi-k3",
-    endpoint: () => (process.env.KIMI_BASE_URL || "https://api.moonshot.ai/v1").replace(/\\/$/, "") + "/chat/completions"
+    endpoint: () => (process.env.KIMI_BASE_URL || "https://api.moonshot.ai/v1").replace(/\/$/, "") + "/chat/completions"
   }
 });
 
