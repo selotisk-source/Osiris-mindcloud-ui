@@ -6,12 +6,12 @@ const calls = [];
 global.fetch = async (url, options={}) => {
   const urlText=String(url);
   calls.push({url:urlText,options});
-  const unavailable=urlText.includes("overpass-primary");
+  const unavailable=urlText.includes("overpass-primary") || urlText.includes("overpass-api.de") || urlText.includes("overpass.private.coffee") || urlText.includes("maps.mail.ru");
   const failureStatus=urlText.includes("overpass-primary-500.test")?500:502;
   return {
     ok:!unavailable,status:unavailable?failureStatus:200,
     headers:{get:(key)=>key.toLowerCase()==="content-type"?"application/json":"application/json"},
-    json:async()=>urlText.includes("graph.mapillary.com")?{data:[{id:"12345",thumb_1024_url:"https://images.example/12345.jpg",geometry:{type:"Point",coordinates:[27.9,43.2]},captured_at:1700000000}]}:urlText.includes("crt.sh")?[{name_value:"www.example.com\napi.example.com\n*.example.com\nnotexample.com"}]:urlText.includes("cloudflare-dns.com")?{Status:0,Answer:[{name:"www.example.com",type:1,data:"203.0.113.10",TTL:60}]}:urlText.includes("overpass.test")?{elements:[{type:"node",id:7,lat:43.2,lon:27.9,tags:{name:"Test point"}}]}:{mock:true,items:[],status:"OK"}
+    json:async()=>urlText.includes("graph.mapillary.com")?{data:[{id:"12345",thumb_1024_url:"https://images.example/12345.jpg",geometry:{type:"Point",coordinates:[27.9,43.2]},captured_at:1700000000}]}:urlText.includes("crt.sh")?[{name_value:"www.example.com\napi.example.com\n*.example.com\nnotexample.com"}]:urlText.includes("cloudflare-dns.com")?{Status:0,Answer:[{name:"www.example.com",type:1,data:"203.0.113.10",TTL:60}]}:urlText.includes("overpass.osm.jp")?{elements:[]}:urlText.includes("overpass.test")?{elements:[{type:"node",id:7,lat:43.2,lon:27.9,tags:{name:"Test point"}}]}:{mock:true,items:[],status:"OK"}
   };
 };
 
@@ -108,5 +108,17 @@ global.fetch = async (url, options={}) => {
   assert.equal(calls[13].url,"https://overpass-primary-500.test/api/interpreter");
   assert.equal(calls[14].url,"https://overpass.test/api/interpreter");
 
-  console.log("native-adapters: verified Overpass mirror failover, free passive subdomain/DNS, Mapillary and credential-gated API contracts");
+  delete process.env.OVERPASS_API_FALLBACKS;
+  process.env.OVERPASS_API_URL="https://overpass-api.de/api/interpreter";
+  const defaultMirrorHealth=await native.health("overpass-turbo");
+  assert.equal(defaultMirrorHealth.status,"healthy");
+  assert.equal(defaultMirrorHealth.endpoint,"https://overpass.osm.jp/api/interpreter");
+  assert.deepEqual(calls.slice(15,19).map(call=>call.url),[
+    "https://overpass-api.de/api/interpreter",
+    "https://overpass.private.coffee/api/interpreter",
+    "https://maps.mail.ru/osm/tools/overpass/api/interpreter",
+    "https://overpass.osm.jp/api/interpreter"
+  ]);
+
+  console.log("native-adapters: verified Overpass 500/four-mirror failover, free passive subdomain/DNS, Mapillary and credential-gated API contracts");
 })().catch(error=>{console.error(error);process.exitCode=1;}).finally(()=>{global.fetch=originalFetch;});
