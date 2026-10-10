@@ -42,7 +42,7 @@ body{overflow:hidden}.app{height:100%;display:flex;flex-direction:column}
 <div class="app">
 <header class="topbar">
   <div class="brand">MIND<span>CLOUD</span></div>
-  <div class="status"><i class="dot"></i> four-station workspace</div>
+  <div class="status" id="workspaceStatus"><i class="dot"></i> two-station workspace</div>
   <div class="actions">
     <button class="btn active" data-layout="4">4</button>
     <button class="btn" data-layout="2">2</button>
@@ -164,12 +164,14 @@ document.getElementById('journalBtn').onclick=()=>journalPanel.hidden=!journalPa
 function setWorkspaceLayout(n){
   document.querySelectorAll('[data-layout]').forEach(x=>x.classList.toggle('active',Number(x.dataset.layout)===n));
   ws.dataset.layoutMode=String(n);
+  const status=document.getElementById('workspaceStatus');
+  if(status)status.innerHTML='<i class="dot"></i> '+n+'-station workspace';
   ws.style.gridTemplateColumns=n===3?'repeat(3,minmax(0,1fr))':'repeat(2,minmax(0,1fr))';
   ws.style.gridTemplateRows=(n===2||n===3)?'minmax(0,1fr)':'repeat(2,minmax(0,1fr))';
   const stations=[...ws.children];
   stations.forEach((s,i)=>{
     const id=Number(s.dataset.station);
-    const show=n===2?(id===1||id===3):(id<=n);
+    const show=n===2?(id===1||id===2):(id<=n);
     s.style.display=show?'flex':'none';
     s.style.gridColumn='';
     s.style.gridRow='';
