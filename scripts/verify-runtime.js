@@ -338,13 +338,13 @@ async function waitForHealth(child) {
 
     const cctv = await get("/api/cctv");
     assert.equal(cctv.status, 200);
-    assert.equal(cctv.body.status, "not_configured");
+    assert.equal(cctv.body.status, process.env.CCTV_SOURCE_URL ? "configured" : "not_configured");
     assert.equal(cctv.body.proxyStatus, "implemented");
-    assert.equal(cctv.body.proxyAuthStatus, "credentials-missing");
-    assert.equal(cctv.body.streamStatus, "unconfigured");
-    assert.equal(cctv.body.frameStatus, "unconfigured");
-    assert.equal(cctv.body.evidenceStatus, "unavailable");
-    assert.equal(cctv.body.access, "unconfigured");
+    assert.equal(cctv.body.proxyAuthStatus, (process.env.CCTV_PROXY_TOKEN || process.env.CCTV_PUBLIC_ACCESS === "true") ? "configured" : "credentials-missing");
+    assert.equal(cctv.body.streamStatus, process.env.CCTV_SOURCE_URL ? "unverified" : "unconfigured");
+    assert.equal(cctv.body.frameStatus, process.env.CCTV_SOURCE_URL ? (cctv.body.snapshotStatus === "verified" ? "verified" : "not_implemented") : "unconfigured");
+    assert.equal(cctv.body.evidenceStatus, process.env.CCTV_SOURCE_URL ? (cctv.body.snapshotStatus === "verified" ? "snapshot-hash-recorded" : "not_verified") : "unavailable");
+    assert.equal(cctv.body.access, process.env.CCTV_SOURCE_URL ? "osiris-controlled" : "unconfigured");
 
     const adapters = await get("/api/adapters");
     assert.equal(adapters.status, 200);
