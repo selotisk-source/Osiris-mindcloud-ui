@@ -21,6 +21,7 @@ const mindcloud = new MindCloudRuntime();
 const evidenceGraph = new EvidenceGraph();
 const port = Number(process.env.PORT || 3000);
 const html = fs.readFileSync(path.join(__dirname, "index.html"), "utf8");
+const osirisHtml = fs.readFileSync(path.join(__dirname, "osiris.html"), "utf8");
 const tradingHtml = fs.readFileSync(path.join(__dirname, "trading.html"), "utf8");
 const newsletterHtml = fs.readFileSync(path.join(__dirname, "newsletter.html"), "utf8");
 const agentTools = JSON.parse(fs.readFileSync(path.join(__dirname, "integrations", "agent-tools.json"), "utf8"));
@@ -365,6 +366,7 @@ async function runMindcloudSelfTest() {
 const server = http.createServer(async (req,res)=>{
   const url = new URL(req.url, "http://"+(req.headers.host||"localhost"));
   const pathname = url.pathname;
+  if(pathname==="/osiris"||pathname==="/osiris/"){res.writeHead(200,{"content-type":"text/html; charset=utf-8","cache-control":"no-store"});res.end(osirisHtml);return;}
   if(pathname==="/trading"||pathname==="/trading/"){res.writeHead(200,{"content-type":"text/html; charset=utf-8"});res.end(tradingHtml);return;}
   if(pathname==="/newsletter"||pathname==="/newsletter/"||pathname==="/briefing"||pathname==="/briefing/"||pathname==="/nyheter"||pathname==="/nyheter/"){res.writeHead(200,{"content-type":"text/html; charset=utf-8"});res.end(newsletterHtml);return;}
   if(pathname==="/health"){sendJson(res,{status:"ok",service:"osiris-mindcloud-ui"});return;}
