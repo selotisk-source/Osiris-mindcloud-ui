@@ -235,7 +235,9 @@ async function waitForHealth(child) {
       checks: [
         "health",
         "router",
-        "task-route-readback-events",\n        "task-event-store-persists-across-runtime-restart",\n        "task-route-write-requires-dedicated-token",
+        "task-route-readback-events",
+        "task-event-store-persists-across-runtime-restart",
+        "task-route-write-requires-dedicated-token",
         "model-version-history-rationale-parent-hash-readback",
         "version-history-disk-persistence-and-reload",
         "model-version-write-api-requires-dedicated-token",
