@@ -74,6 +74,10 @@ global.fetch = async (url, options={}) => {
   assert.match(calls[6].url,/cloudflare-dns\.com/);
   const outOfScope=await native.execute({id:"subdomain-finder",operation:"resolve",input:{domain:"example.com",name:"example.net"},requestId:"test-dns-scope"});
   assert.equal(outOfScope.error,"name_outside_requested_domain");
+  const callsBeforeInvalidDns=calls.length;
+  const invalidDns=await native.execute({id:"subdomain-finder",operation:"resolve",input:{domain:"example.com",name:"not a dns name",type:"A"},requestId:"test-invalid-dns-name"});
+  assert.equal(invalidDns.error,"valid_dns_name_required");
+  assert.equal(calls.length,callsBeforeInvalidDns,"invalid DNS names must be rejected before a provider request");
   const unauthorizedDomain=await native.execute({id:"subdomain-finder",operation:"discover",input:{domain:"example.net"},requestId:"test-unauthorized-domain"});
   assert.equal(unauthorizedDomain.error,"domain_not_authorized");
   const savedAllowlist=process.env.MINDCLOUD_AUTHORIZED_DOMAINS;
