@@ -1,10 +1,7 @@
 {
-  "today": "2026-10-07",
+  "today": "2026-10-10",
   "issues": [
-    {
-      "date": "2026-10-07",
-      "path": "newsletters/2026-10-07.json",
-      "title": "Nyhetsbrev 7 oktober 2026"
-    }
+    {"date":"2026-10-10","path":"newsletters/2026-10-10.json","title":"Briefing · Odessos: Sankt Athanasius och de romerska termerna"},
+    {"date":"2026-10-07","path":"newsletters/2026-10-07.json","title":"Nyhetsbrev 7 oktober 2026"}
   ]
 }
