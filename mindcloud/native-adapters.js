@@ -82,7 +82,7 @@ async function fetchOverpass(query, timeoutMs=15000) {
         },
         body:new URLSearchParams({data:query}).toString(),
         // The timeout is a total budget across all mirrors, not a fresh timeout per mirror.
-        signal:AbortSignal.timeout(Math.min(5000, remainingMs))
+        signal:AbortSignal.timeout(Math.min(2500, remainingMs))
       });
       if(response.ok) {
         let validOverpassJson=false;
