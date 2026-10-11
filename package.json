@@ -3,7 +3,8 @@
   "private": true,
   "version": "0.1.0",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "verify:evidence": "node --experimental-default-type=module tests/evidence-validation.test.mjs"
   },
   "engines": {
     "node": ">=20"
