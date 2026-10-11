@@ -12,7 +12,9 @@ const STATIC_FILES = {
   "/": ["index.html", "text/html; charset=utf-8"],
   "/index.html": ["index.html", "text/html; charset=utf-8"],
   "/trading.html": ["trading.html", "text/html; charset=utf-8"],
-  "/newsletter.html": ["newsletter.html", "text/html; charset=utf-8"]
+  "/newsletter.html": ["newsletter.html", "text/html; charset=utf-8"],
+  "/osiris": ["osiris.html", "text/html; charset=utf-8"],
+  "/osiris/": ["osiris.html", "text/html; charset=utf-8"]
 };
 
 function send(res, status, body, type = "application/json; charset=utf-8") {
