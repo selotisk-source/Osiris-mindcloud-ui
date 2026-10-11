@@ -104,6 +104,7 @@ async function waitHealthy(child) {
   child.stderr.on("data", chunk => { stderr += chunk.toString(); });
   try {
     await waitHealthy(child);
+    const recordsBeforeExplicitSelftest = records.size;
     const response = await fetch(appBase + "/api/mindcloud/selftest", { method: "POST" });
     const result = await response.json();
     assert.equal(response.status, 200, JSON.stringify(result));
@@ -116,11 +117,18 @@ async function waitHealthy(child) {
     assert.ok(result.integrations.memoryRoundTrip.readbackAttempts >= 1);
     assert.match(result.integrations.memoryRoundTrip.sessionId, /^mindcloud-persistence-probe-/);
     assert.match(result.integrations.memoryRoundTrip.markerHash, /^[a-f0-9]{64}$/);
-    assert.ok(records.has(result.integrations.memoryRoundTrip.sessionId), "fresh write must reach the memory service");
+    assert.ok(records.has(result.integrations.memoryRoundTrip.sessionId), "the result's probe marker must exist in the memory service");
     assert.ok(records.get(result.integrations.memoryRoundTrip.sessionId).startsWith("MINDCLOUD_PERSISTENCE_PROBE_V1_"));
-    assert.ok(records.size >= 2, "startup and explicit self-test should use distinct probe sessions");
+    if (result.cached === true) {
+      assert.ok(recordsBeforeExplicitSelftest >= 1, "a cached result must follow a completed startup persistence probe");
+      assert.equal(records.size, recordsBeforeExplicitSelftest, "serving a cached E2E result must not write another memory probe");
+      assert.equal(result.freshness?.memory?.status, "healthy", "cached E2E result must refresh current memory health");
+      assert.equal(result.freshness?.browserUse?.status, "healthy", "cached E2E result must refresh current browser health");
+    } else {
+      assert.ok(records.size >= 2, "uncached startup and explicit self-tests should use distinct probe sessions");
+    }
     assert.equal(new Set(records.keys()).size, records.size, "every persistence probe session must be unique");
-    console.log(JSON.stringify({ status: "verified", checks: ["unique-persistence-probe-per-run", "fresh-write-before-readback", "bounded-readback-retries", "persisted-marker-found-in-same-session", "prior-record-cannot-mask-write-failure"], readbackAttempts: result.integrations.memoryRoundTrip.readbackAttempts, probesWritten: records.size }, null, 2));
+    console.log(JSON.stringify({ status: "verified", checks: ["unique-persistence-probe-per-run", "fresh-write-before-readback", "bounded-readback-retries", "persisted-marker-found-in-same-session", "cache-reuses-persisted-result-with-fresh-health", "prior-record-cannot-mask-write-failure"], cached: result.cached === true, readbackAttempts: result.integrations.memoryRoundTrip.readbackAttempts, probesWritten: records.size }, null, 2));
   } catch (error) { console.error(stderr); console.error(error); process.exitCode = 1; }
   finally {
     child.kill("SIGKILL");
