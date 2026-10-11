@@ -9,7 +9,7 @@
     "sidePanel"
   ],
   "host_permissions": [
-    "https://mindcloud-live.up.railway.app/*"
+    "https://osiris-mindcloud-ui-production.up.railway.app/*"
   ],
   "action": {
     "default_title": "Open MindCloud Split Screen"
