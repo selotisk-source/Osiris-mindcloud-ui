@@ -8,7 +8,7 @@ const manifest = JSON.parse(fs.readFileSync(path.join(root, "extension/manifest.
 const panel = fs.readFileSync(path.join(root, "extension/sidepanel.html"), "utf8");
 const runtimeUrl = panel.match(/const base='([^']+)'/)?.[1];
 assert.ok(runtimeUrl, "side panel must declare a runtime base URL");
-assert.ok(manifest.host_permissions.some(permission => runtimeUrl.startsWith(permission.endsWith("*") ? permission.slice(0, -1) : permission)), "manifest must grant host access to the side-panel runtime origin");
+assert.ok(manifest.host_permissions.some(permission => { const origin = permission.replace("/*", ""); return runtimeUrl === origin || runtimeUrl.startsWith(origin + "/"); }), "manifest must grant host access to the side-panel runtime origin");
 const response = { status: 200, headers: { get: name => name.toLowerCase() === "content-type" ? "application/json; charset=utf-8" : null } };
 const now = "2026-10-11T05:00:00.000Z";
 const snapshotOnly = { status:"configured", streamStatus:"unverified", proxyStatus:"implemented", snapshotStatus:"verified", snapshotContentType:"image/jpeg", snapshotByteLength:54656, snapshotSha256:"a".repeat(64), snapshotCheckedAt:now };
