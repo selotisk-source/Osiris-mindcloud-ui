@@ -8,6 +8,16 @@ MindCloud/MindCore reference implementation and visualization surface.
 
 MindCore owns typed state, task graphs, capability routing, lifecycle, policy and verification. OSIRIS is a client/testbed, not the architectural core.
 
+## Persistent project memory (Claude / cross-chat handover)
+
+Start here when continuing work across conversations:
+
+- [Master architecture and operating rules](MINDCORE_MINDCLOUD_MASTER.md)
+- [Current verified state, gaps and next actions](MINDCORE_CURRENT_STATE.md)
+- [Claude project instructions](CLAUDE.md)
+
+Keep the master document focused on durable architecture; update the current-state file after real changes and tests. These documents are continuity aids, not evidence that an implementation or deployment works.
+
 ## Current reference patterns
 
 - **AutoHarness** → self-learning skill lifecycle: extract, merge, validate, version, prune.
