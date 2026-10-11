@@ -1,5 +1,14 @@
 import assert from "node:assert/strict";
+import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { validateCctvEvidence } from "../extension/evidence-validation.js";
+const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+const manifest = JSON.parse(fs.readFileSync(path.join(root, "extension/manifest.json"), "utf8"));
+const panel = fs.readFileSync(path.join(root, "extension/sidepanel.html"), "utf8");
+const runtimeUrl = panel.match(/const base='([^']+)'/)?.[1];
+assert.ok(runtimeUrl, "side panel must declare a runtime base URL");
+assert.ok(manifest.host_permissions.some(permission => runtimeUrl.startsWith(permission.replace(/\\*$/, ""))), "manifest must grant host access to the side-panel runtime origin");
 const response = { status: 200, headers: { get: name => name.toLowerCase() === "content-type" ? "application/json; charset=utf-8" : null } };
 const now = "2026-10-11T05:00:00.000Z";
 const snapshotOnly = { status:"configured", streamStatus:"unverified", proxyStatus:"implemented", snapshotStatus:"verified", snapshotContentType:"image/jpeg", snapshotByteLength:54656, snapshotSha256:"a".repeat(64), snapshotCheckedAt:now };
