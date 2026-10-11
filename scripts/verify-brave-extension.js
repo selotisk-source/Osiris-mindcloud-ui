@@ -1,0 +1,15 @@
+const assert = require("node:assert/strict");
+const fs = require("node:fs");
+const manifest = JSON.parse(fs.readFileSync("extension/manifest.json", "utf8"));
+const html = fs.readFileSync("extension/sidepanel.html", "utf8");
+const validator = fs.readFileSync("extension/evidence-validation-v2.js", "utf8");
+assert.equal(manifest.manifest_version, 3);
+assert.equal(manifest.side_panel.default_path, "sidepanel.html");
+const match = validator.match(/DEFAULT_ORIGIN\s*=\s*["'](https:\/\/[^"']+)["']/);
+assert.ok(match, "API origin must be declared");
+assert.ok(manifest.host_permissions.includes(match[1] + "/*"), "host permission must match API origin");
+const scripts = [...html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script\s*>/gi)];
+assert.ok(scripts.length >= 1);
+assert.ok(scripts.every(([, attrs, body]) => /\bsrc\s*=/.test(attrs) && !body.trim()), "all scripts must be external for MV3 CSP");
+assert.equal((html.match(/class="station"/g) || []).length, 2, "workspace must have two stations");
+console.log("brave-extension static contract passed");
