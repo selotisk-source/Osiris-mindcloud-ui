@@ -10,12 +10,19 @@
 - README documents an Arena skill and verification script: `skills/arena/SKILL.md`, `mindcore/arena-skill.js`, `scripts/verify-arena-skill.js`, and says it is part of `npm run verify`.
 - README describes multiple supervised adapters and guarded promotion/approval behavior.
 
-## Not verified in this update
-- Whether current CI is green.
-- Whether the public Railway deployment is healthy or reflects the current `main` commit.
-- Whether the complete backend → adapter/runtime → persisted evidence/state → frontend flow passes end-to-end.
-- Whether every README-listed adapter is configured and executes successfully in the current environment.
-- Whether prior-reported Cognee ONLINE status still holds.
+## Deployment verification — 2026-10-11
+- Frontend Railway deployment `08168b83-6575-437e-9c4a-428e65a5c233` completed successfully from `main` commit `228feaab20b45fc5fe12f8c7d44c55d2d428c25d`.
+- Backend Railway deployment `27862fd5-15f1-4979-8ab8-782dd082fd9e` completed successfully with the single-flight self-test change from commit `6e065ce9c1845d222b110497ae867eac84cd87b7`.
+- The frontend pre-deploy command completed `node scripts/run-verify.js` with the explicit result `MindCloud verification suite passed.` This included Arena, adapter contracts and failure audit, Speech Figure promotion gate, four-station workspace layout, provider-network, agent-cluster and OSIRIS console checks.
+- Backend startup self-test logged `status: passed`: all four core checks passed, Cognee health and write/readback persistence passed, and Browser Use executed successfully with HTTP 200.
+- Post-deploy frontend smoke requests returned HTTP 200 for `/health`, `/ready`, `/osiris`, `/api/mindcloud/status`, valid Arena evaluation, `/api/adapters`, `/api/agent-tools` and `/api/cctv`. Invalid Arena input returned the expected 400; unauthorized Metanoia approval and adapter execution returned the expected 401.
+- The shared self-test promise is implemented in `server.js` and both startup and the API route use it.
+
+## Still not verified
+- Three simultaneous production `POST /api/mindcloud/selftest` requests returned 502 during frontend rollout with upstream connection-closed/refused errors. The frontend deployment subsequently passed its smoke checks and is online, but this self-test failure mode has not yet been retested against a stable deployment.
+- The complete production backend → authorized adapter execution → persisted evidence/state → frontend display flow has not been verified as one transaction.
+- Not every README-listed adapter has been proven executable in production; some correctly remain credential-gated or research-only.
+- GitHub commit-status API returned no status checks for the inspected commits; the Railway pre-deploy verification is the observed green suite.
 
 Do not silently convert these items into “working” status without fresh evidence.
 
