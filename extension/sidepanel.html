@@ -1,43 +1,55 @@
-<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>MindCloud Two-Station Brave Workspace</title><style>
-*{box-sizing:border-box}body{margin:0;background:#070a0f;color:#e7edf5;font:13px system-ui,sans-serif}header{padding:12px;border-bottom:1px solid #253142;font-weight:700;letter-spacing:.08em}header span{color:#79b8ff}.grid{display:grid;grid-template-columns:1fr 1fr;height:calc(100vh - 45px);gap:6px;padding:6px}.station{border:1px solid #253142;border-radius:8px;background:#0d131c;overflow:hidden}.head{padding:9px;border-bottom:1px solid #253142;font-weight:650}.body{height:calc(100% - 39px);padding:10px}.tool{display:block;width:100%;margin:7px 0;padding:9px;border:1px solid #253142;border-radius:6px;background:#101722;color:#e7edf5;text-align:left}.muted{color:#8290a3;font-size:11px}.evidence{margin-top:14px;padding:9px;border:1px dashed #3a4a60;border-radius:6px}.tag{display:inline-block;padding:3px 6px;border-radius:4px;background:#172335;font-size:10px;margin-right:5px}</style></head><body><header>MIND<span>CLOUD</span> · TWO-STATION BRAVE WORKSPACE</header><main class="grid">
-<div class="station"><div class="head">Station A · Brave / Runtime</div><div class="body"><div><span class="tag">RUNTIME</span><span class="tag">OSIRIS</span></div><p>Browser execution, live observation, media/sensor interaction and task execution.</p><button class="tool" id="open">Open MindCloud</button><button class="tool" id="probe">Probe OSIRIS CCTV (read-only)</button><div class="evidence"><strong>Shared evidence ID</strong><div id="evidenceId" class="muted">Awaiting runtime observation.</div></div><div class="evidence"><strong>Verification</strong><div id="verification" class="muted">No OSIRIS response captured.</div></div></div></div>
-<div class="station"><div class="head">Station B · Source / Evidence</div><div class="body"><div><span class="tag">VERIFY</span><span class="tag">PROVENANCE</span></div><p>Repository/API inspection, source validation, provenance and evidence promotion into MindCore.</p><button class="tool" id="cookies">Inspect active-tab cookie metadata</button><div class="evidence"><strong>Local cookie metadata</strong><div id="cookieResults" class="muted">Nothing inspected. Cookie values are never displayed or transmitted.</div></div><div class="evidence"><strong>Promotion gate</strong><div class="muted">Evidence remains provisional until source, API response and provenance checks succeed.</div></div></div></div>
-</main><script type="module">
-import {validateCctvEvidence} from './evidence-validation.js';
-const base='https://mindcloud-live.up.railway.app';
-document.getElementById('open').onclick=()=>chrome.tabs.create({url:base});
-document.getElementById('cookies').onclick=async()=>{
-  const output=document.getElementById('cookieResults');
-  output.textContent='Checking active tab and requesting per-site permission…';
-  try{
-    const [tab]=await chrome.tabs.query({active:true,lastFocusedWindow:true});
-    if(!tab?.url) throw new Error('No active tab URL available');
-    const target=new URL(tab.url);
-    if(!['http:','https:'].includes(target.protocol)) throw new Error('Only HTTP/HTTPS sites are supported');
-    const origin=target.origin+'/*';
-    const allowed=await chrome.permissions.request({permissions:['cookies'],origins:[origin]});
-    if(!allowed) throw new Error('Per-site cookie permission was not granted');
-    const cookies=await chrome.cookies.getAll({url:tab.url});
-    const metadata=cookies.map(({name,domain,path,secure,httpOnly,sameSite,session,expirationDate})=>({name,domain,path,secure,httpOnly,sameSite,session,...(Number.isFinite(expirationDate)?{expirationDate}:{})}));
-    output.textContent=JSON.stringify({site:target.origin,count:metadata.length,metadata,valuesCollected:false,networkTransfer:false},null,2);
-  }catch(error){output.textContent=String(error);}
-};
-document.getElementById('probe').onclick=async()=>{
-  const verification=document.getElementById('verification');
-  const evidenceId=document.getElementById('evidenceId');
-  const id=crypto.randomUUID();
-  evidenceId.textContent=id;
-  verification.textContent='Requesting /api/cctv…';
-  try{
-    const response=await fetch(base+'/api/cctv',{method:'GET',headers:{accept:'application/json'}});
-    const text=await response.text();
-    let payload; try{payload=JSON.parse(text)}catch{payload={raw:text}}
-    const capturedAt=new Date().toISOString();
-    const evidence={evidenceId:id,source:base+'/api/cctv',capturedAt,httpStatus:response.status,ok:response.ok,payload};
-    const validation=validateCctvEvidence({source:evidence.source,response,payload,capturedAt});
-    verification.textContent=JSON.stringify({evidence,validation});
-  }catch(error){
-    verification.textContent=JSON.stringify({evidenceId:id,error:String(error),capturedAt:new Date().toISOString()});
-  }
-};
-</script></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MindCloud Two-Station Brave Workspace</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#070a0f;color:#e7edf5;font:13px system-ui,sans-serif}
+header{padding:12px;border-bottom:1px solid #253142;font-weight:700;letter-spacing:.08em}
+header span{color:#79b8ff}
+.grid{display:grid;grid-template-columns:1fr 1fr;height:calc(100vh - 45px);gap:6px;padding:6px}
+.station{border:1px solid #253142;border-radius:8px;background:#0d131c;overflow:auto;min-width:0}
+.head{padding:9px;border-bottom:1px solid #253142;font-weight:650}
+.body{padding:10px}
+.tool{display:block;width:100%;margin:7px 0;padding:9px;border:1px solid #253142;border-radius:6px;background:#101722;color:#e7edf5;text-align:left;cursor:pointer}
+.tool:focus-visible{outline:2px solid #79b8ff;outline-offset:2px}
+.muted{color:#8290a3;font-size:11px;overflow-wrap:anywhere}
+.evidence{margin-top:14px;padding:9px;border:1px dashed #3a4a60;border-radius:6px;overflow-wrap:anywhere}
+.tag{display:inline-block;padding:3px 6px;border-radius:4px;background:#172335;font-size:10px;margin-right:5px}
+.checks{padding-left:18px;margin:8px 0;font-size:11px;overflow-wrap:anywhere}
+.check-pass{color:#9ee6b0}.check-fail{color:#ff9d9d}
+pre{white-space:pre-wrap;overflow-wrap:anywhere;margin:6px 0;font:11px ui-monospace,monospace}
+@media(max-width:520px){.grid{grid-template-columns:1fr;height:auto}.station{min-height:260px}}
+</style>
+</head>
+<body>
+<header>MIND<span>CLOUD</span> · TWO-STATION BRAVE WORKSPACE</header>
+<main class="grid">
+<section class="station">
+<div class="head">Station A · Brave / Runtime</div>
+<div class="body">
+<div><span class="tag">RUNTIME</span><span class="tag">OSIRIS</span></div>
+<p>Open MindCloud and make a read-only CCTV status request.</p>
+<button class="tool" id="open" type="button">Open MindCloud</button>
+<button class="tool" id="probe" type="button">Probe OSIRIS CCTV (read-only)</button>
+<div class="evidence"><strong>Shared evidence ID</strong><div id="evidenceId" class="muted">Awaiting runtime observation.</div></div>
+<div class="evidence"><strong>Response</strong><pre id="verification" class="muted">No OSIRIS response captured.</pre></div>
+</div>
+</section>
+<section class="station">
+<div class="head">Station B · Source / Evidence</div>
+<div class="body">
+<div><span class="tag">VERIFY</span><span class="tag">PROVENANCE</span></div>
+<p>Inspect active-tab metadata locally and validate the response record. No cookies or page contents are read.</p>
+<button class="tool" id="inspectTab" type="button">Inspect active-tab metadata</button>
+<div class="evidence"><strong>Local tab metadata</strong><pre id="tabMetadata" class="muted">Nothing inspected.</pre></div>
+<div class="evidence"><strong>Evidence validation</strong><div id="evidenceValidation" class="muted">Awaiting Station A response.</div><ul id="validationChecks" class="checks"></ul><div id="promotionGate" class="muted">BLOCKED — no validated response or stream proof.</div></div>
+</div>
+</section>
+</main>
+<script src="evidence-validation-v2.js"></script>
+<script src="sidepanel.js"></script>
+</body>
+</html>
