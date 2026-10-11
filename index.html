@@ -187,7 +187,7 @@ function setWorkspaceLayout(n){
 }
 document.querySelectorAll('[data-layout]').forEach(b=>b.onclick=()=>setWorkspaceLayout(Number(b.dataset.layout)));
 // Default to the full four-station 2×2 workspace.
-setWorkspaceLayout(4);
+setWorkspaceLayout(2);
 document.getElementById('godBtn').onclick=()=>document.querySelector('[data-station="4"]').scrollIntoView({behavior:'smooth'});
 </script><script>
 (async function(){
