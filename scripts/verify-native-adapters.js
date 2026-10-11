@@ -151,6 +151,29 @@ global.fetch = async (url, options={}) => {
   assert.equal(calls[21].url,"https://overpass-invalid-200.test/api/interpreter");
   assert.equal(calls[22].url,"https://overpass.test/api/interpreter");
 
+  // A degraded upstream must not multiply the advertised health-check timeout by the mirror count.
+  const realFetch=global.fetch;
+  const realNow=Date.now;
+  const deadlineCalls=[];
+  let simulatedNow=0;
+  process.env.OVERPASS_API_URL="https://overpass-deadline.test/api/interpreter";
+  delete process.env.OVERPASS_API_FALLBACKS;
+  global.fetch=async(url,options={})=>{deadlineCalls.push({url:String(url),options});throw new Error("simulated_upstream_timeout");};
+  Date.now=()=>{const value=simulatedNow;simulatedNow+=3000;return value;};
+  let boundedHealth;
+  try { boundedHealth=await native.health("overpass-turbo"); }
+  finally { Date.now=realNow;global.fetch=realFetch; }
+  assert.equal(boundedHealth.status,"offline");
+  assert.ok(deadlineCalls.length<=2,"Overpass health probing must stop at the shared deadline instead of trying every mirror for a full timeout");
+  assert.ok(deadlineCalls.every(call=>call.options.signal instanceof AbortSignal),"each mirror attempt must remain cancellable");
+
+  global.fetch=async(url,options={})=>{
+    const urlText=String(url);
+    calls.push({url:urlText,options});
+    const body=()=>urlText.includes("cloudflare-dns.com")?{Status:0,Answer:[{name:"www.example.com",type:1,data:"203.0.113.10",TTL:60}]}:{mock:true,items:[],status:"OK"};
+    return {ok:true,status:200,headers:{get:()=> "application/json"},json:async()=>body(),clone:()=>({json:async()=>body()}),body:{cancel:async()=>{}}};
+  };
+
   assert.equal(native.supports("agentmemory"),true);
   assert.equal(native.state("agentmemory").configured,true);
   assert.deepEqual(native.state("agentmemory").operations,["remember","observe","smart_search","context"]);

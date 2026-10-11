@@ -11,4 +11,7 @@ assert.match(html, /\.workspace\[data-layout-mode="4"\] \[data-station="2"\]\{gr
 assert.match(html, /\.workspace\[data-layout-mode="4"\] \[data-station="3"\]\{grid-column:1;grid-row:2\}/, "Sensor Fabric must occupy bottom-left");
 assert.match(html, /\.workspace\[data-layout-mode="4"\] \[data-station="4"\]\{grid-column:2;grid-row:2\}/, "God’s Eye View must occupy bottom-right");
 assert.match(html, /data-layout="4"/, "four-station layout must remain available");
-console.log("workspace-layout: verified four-station default, dynamic station selection, and 2x2 grid rows");
+assert.match(html, /if\(name==='Heritage Map'\)\{\s*closeAll\(\);\s*const layout4=document\.querySelector\('\[data-layout="4"\]'\)/, "Heritage Map must preserve the four-station workspace");
+assert.match(html, /const geo=document\.querySelector\('\[data-station="2"\]'\)/, "Heritage Map must target the visible GEO / Heritage station");
+assert.doesNotMatch(html, /if\(name==='Heritage Map'\)\{closeAll\(\);const layout2=/, "Heritage Map must not switch to a layout that hides its target station");
+console.log("workspace-layout: verified four-station default, 2x2 grid rows, and visible Heritage Map module routing");

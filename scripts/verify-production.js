@@ -5,14 +5,39 @@ const base = (process.env.MINDCLOUD_PRODUCTION_URL || "https://mindcloud-live.up
 const timeout = 10000;
 
 async function getJson(path) {
-  const response = await fetch(base + path, {
-    headers: { accept: "application/json" },
-    signal: AbortSignal.timeout(timeout)
-  });
-  const contentType = response.headers.get("content-type") || "";
-  assert.equal(response.status, 200, `${path} returned HTTP ${response.status}`);
-  assert.match(contentType, /application\/json/i, `${path} did not return JSON`);
-  return response.json();
+  let lastError;
+  for (let attempt = 0; attempt < 3; attempt++) {
+    let response;
+    try {
+      response = await fetch(base + path, {
+        headers: { accept: "application/json" },
+        signal: AbortSignal.timeout(timeout)
+      });
+    } catch (error) {
+      lastError = error;
+      if (attempt < 2) {
+        await new Promise(resolve => setTimeout(resolve, 500 * (attempt + 1)));
+        continue;
+      }
+      throw new Error(`${path} request failed after 3 attempts: ${error instanceof Error ? error.message : String(error)}`);
+    }
+
+    if (response.status >= 500 && attempt < 2) {
+      lastError = new Error(`${path} returned HTTP ${response.status}`);
+      await response.body?.cancel().catch(() => {});
+      await new Promise(resolve => setTimeout(resolve, 500 * (attempt + 1)));
+      continue;
+    }
+    const contentType = response.headers.get("content-type") || "";
+    assert.equal(response.status, 200, `${path} returned HTTP ${response.status}`);
+    assert.match(contentType, /application\/json/i, `${path} did not return JSON`);
+    try {
+      return await response.json();
+    } catch (error) {
+      throw new Error(`${path} returned invalid JSON: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  }
+  throw lastError || new Error(`${path} request failed`);
 }
 
 (async () => {
@@ -159,7 +184,14 @@ async function getJson(path) {
   let overpass;
   let overpassWarning = null;
   try {
-    overpass = await getJson("/api/adapters/overpass-turbo/health");
+    // Overpass is an optional public dependency: probe once and report a warning
+    // on timeout instead of spending three generic GET retries on a known flaky provider.
+    const overpassResponse = await fetch(base + "/api/adapters/overpass-turbo/health", {
+      headers: { accept: "application/json" },
+      signal: AbortSignal.timeout(timeout)
+    });
+    assert.equal(overpassResponse.status, 200, "Overpass health endpoint returned HTTP " + overpassResponse.status);
+    overpass = await overpassResponse.json();
     assert.ok(["healthy", "degraded", "offline"].includes(overpass.status),
       "Overpass must return an explicit provider health state: " + JSON.stringify(overpass));
     assert.equal(overpass.probe, "interpreter-json", "Overpass health must identify the live probe");
