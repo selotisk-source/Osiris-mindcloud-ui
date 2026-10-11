@@ -123,7 +123,8 @@ async function waitHealthy(child) {
       assert.ok(recordsBeforeExplicitSelftest >= 1, "a cached result must follow a completed startup persistence probe");
       assert.equal(records.size, recordsBeforeExplicitSelftest, "serving a cached E2E result must not write another memory probe");
       assert.equal(result.freshness?.memory?.status, "healthy", "cached E2E result must refresh current memory health");
-      assert.equal(result.freshness?.browserUse?.status, "healthy", "cached E2E result must refresh current browser health");
+      assert.ok(["healthy", "degraded"].includes(result.freshness?.browserUse?.status), "cached E2E result must report current browser health explicitly");
+      assert.equal(result.integrations.browserUse.status, "credentials-missing", "this isolated test intentionally leaves Browser Use unconfigured");
     } else {
       assert.ok(records.size >= 2, "uncached startup and explicit self-tests should use distinct probe sessions");
     }
