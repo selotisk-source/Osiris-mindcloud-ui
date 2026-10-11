@@ -28,6 +28,17 @@
 
 Do not silently convert these items into “working” status without fresh evidence.
 
+## Live verification refresh — 2026-10-11 15:46 Europe/Sofia
+
+- Railway production environment `lively-nurturing` was queried directly: all five services are online, each has one running replica, there are zero current service failures, zero warnings/criticals, and no pending staged/deployment work.
+- Current backend `mindcloud-osiris` deployment `a4300731-dad5-458c-b433-49cb09babfec`: `SUCCESS`; persistent runtime volume `/data` is attached.
+- Current frontend `Osiris-mindcloud-ui` deployment `b2c63945-a4c0-4777-b96f-d4169b5ad06b`: `SUCCESS`; public domain is `https://mindcloud-live.up.railway.app`; pre-deploy verification command is `node scripts/run-verify.js`.
+- Railway frontend HTTP telemetry for the last hour: 84 requests, 72 HTTP 2xx, 12 HTTP 4xx, zero HTTP 5xx; reported 5xx error rate 0%. The 4xx responses are not automatically classified as defects; route/request context is needed.
+- The production frontend-to-backend ready probe is covered by `scripts/verify-production.js`, which checks `/health`, `/ready` (including proxy verified/backend reachable), OSIRIS route, MindCloud status, Arena contract and additional endpoints.
+- The end-to-end adapter test `scripts/verify-adapter-route.js` proves local authorized adapter execution, request ID, evidence-graph node creation and denial without a bearer token. Its current fixture explicitly expects `evidenceGraph.status === "in-memory"`; it does **not** prove durable production readback or frontend display. This is still the active integration gap.
+- Open PR #122, `fix: make Brave two-station workspace CSP-compliant`, is draft and explicitly requires CI plus Brave installation checks before merge/deploy. Preserve the separate two-station Brave variant; the primary MindCloud workspace remains 2×2 / four stations by default.
+- No evidence found in the current state/repository metadata that identifies the user-mentioned `TR6` label. Keep it unresolved rather than guessing.
+
 ## Session checkpoint — PAUSED
 **Checkpoint date:** 2026-10-11
 **Scope:** The Claude handover-document task is paused for later resumption. Engineering work on the existing MindCore/MindCloud runtime and adapter integration continues separately.
