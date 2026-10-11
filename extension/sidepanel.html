@@ -4,7 +4,7 @@
 <div class="station"><div class="head">Station B · Source / Evidence</div><div class="body"><div><span class="tag">VERIFY</span><span class="tag">PROVENANCE</span></div><p>Repository/API inspection, source validation, provenance and evidence promotion into MindCore.</p><button class="tool" id="cookies">Inspect active-tab cookie metadata</button><div class="evidence"><strong>Local cookie metadata</strong><div id="cookieResults" class="muted">Nothing inspected. Cookie values are never displayed or transmitted.</div></div><div class="evidence"><strong>Promotion gate</strong><div class="muted">Evidence remains provisional until source, API response and provenance checks succeed.</div></div></div></div>
 </main><script type="module">
 import {validateCctvEvidence} from './evidence-validation.js';
-const base='https://mindcloud-live.up.railway.app';
+const base='https://osiris-mindcloud-ui-production.up.railway.app';
 document.getElementById('open').onclick=()=>chrome.tabs.create({url:base});
 document.getElementById('cookies').onclick=async()=>{
   const output=document.getElementById('cookieResults');
