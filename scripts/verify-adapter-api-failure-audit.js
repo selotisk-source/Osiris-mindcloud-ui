@@ -47,6 +47,7 @@ async function waitHealthy(child) {
       CCTV_SOURCE_URL: "",
       COGNEE_SERVICE_URL: "",
       ADAPTER_GRAFT_URL: `http://127.0.0.1:${providerPort}`,
+      ADAPTER_OPENMONTAGE_URL: `http://127.0.0.1:${providerPort}`,
       MINDCLOUD_TOOL_EXECUTION_TOKEN: token,
       MINDCLOUD_EVIDENCE_READ_TOKEN: "mindcloud-api-failure-evidence-read",
       MINDCLOUD_EVIDENCE_WRITE_TOKEN: "mindcloud-api-failure-evidence-write",
@@ -91,26 +92,52 @@ async function waitHealthy(child) {
     assert.equal(typeof response.body.requestId, "string");
     assert.ok(response.body.requestId.length > 0);
 
+    // Exercise the same API failure/audit contract through a second independently
+    // registered adapter, not only through the Graft route.
+    const secondResponse = await json(await fetch(appBase + "/api/adapters/execute", {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        authorization: "Bearer " + token
+      },
+      body: JSON.stringify({
+        id: "openmontage",
+        operation: "plan",
+        input: { target: "second-fixture" }
+      })
+    }));
+    assert.equal(providerCalls, 2, "second non-read-only adapter operation must not be retried");
+    assert.equal(secondResponse.status, 200);
+    assert.equal(secondResponse.body.ok, false);
+    assert.equal(secondResponse.body.status, 503);
+    assert.equal(secondResponse.body.id, "openmontage");
+    assert.equal(secondResponse.body.operation, "plan");
+    assert.ok(secondResponse.body.requestId);
+
     const after = await json(await fetch(appBase + "/api/adapters"));
     assert.equal(after.status, 200);
-    assert.equal(after.body.auditCount, beforeAuditCount + 1);
+    assert.equal(after.body.auditCount, beforeAuditCount + 2);
     const adapter = after.body.adapters.find(item => item.id === "graft");
+    const secondAdapter = after.body.adapters.find(item => item.id === "openmontage");
     assert.ok(adapter);
+    assert.ok(secondAdapter);
     assert.equal(adapter.runtime.verification.status, "not-verified");
+    assert.equal(secondAdapter.runtime.verification.status, "not-verified");
 
     console.log(JSON.stringify({
       status: "verified",
       checks: [
         "API-rejects-unauthenticated-execution",
-        "HTTP-503-provider-failure-is-returned",
-        "failure-is-recorded-in-runtime-audit",
-        "request-result-has-request-id",
-        "failed-execution-does-not-promote-adapter",
-        "non-read-only-operation-is-not-retried"
+        "HTTP-503-provider-failure-is-returned-for-two-adapters",
+        "both-failures-are-recorded-in-runtime-audit",
+        "both-results-have-request-ids",
+        "failed-executions-do-not-promote-either-adapter",
+        "non-read-only-operations-are-not-retried"
       ],
+      adaptersTested: 2,
       providerCalls,
       auditDelta: after.body.auditCount - beforeAuditCount,
-      providerStatus: response.body.status
+      providerStatuses: [response.body.status, secondResponse.body.status]
     }, null, 2));
   } catch (error) {
     console.error(stderr);
