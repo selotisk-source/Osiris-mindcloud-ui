@@ -31,6 +31,17 @@ Do not silently convert these items into “working” status without fresh evid
 - Change commit: `b3435aee728049679e9cb404f7d42ffac830403e`.
 - Previous commit `891b9f564f1eca71dedb79c36b23576a8dbce6dc`: MindCloud Runtime Verification passed; full MindCloud Verification including production smoke passed. New workflows for the two-adapter API test are queued and must be checked before treating this change as verified.
 
+## Unified Build Loop progress — 2026-10-11
+
+- User priority: complete the real MindCore/MindCloud loop; preserve the 2×2 four-station default.
+- Fixed `index.html` Heritage Map routing: it no longer switches to two stations and targets hidden station 3; it preserves four stations and selects visible GEO / Heritage station 2. Added regression assertions in `scripts/verify-workspace-layout.js`.
+- Bounded Overpass failover in `mindcloud/native-adapters.js`: one shared deadline across mirrors, 2.5-second per-attempt cap, 8-second health budget and 15-second execution budget. Added a stalled-upstream regression test in `scripts/verify-native-adapters.js`.
+- `scripts/verify-production.js` now retries transient failures for required GET checks with endpoint-specific diagnostics. Optional Overpass health is probed once and reports an outage as a warning instead of retrying repeatedly.
+- `main` has since gained deep E2E result caching with refreshed memory/browser health (`f6b7dc99`) and a test-runtime cache bypass (`ee508a85`). Those are concurrent main-branch changes; confirm deployment status before treating them as live.
+- Evidence from production smoke on PR head `ddf6f4f6`: passed the required smoke checks, including Cognee write/readback and OSIRIS route. Overpass was explicitly reported offline; it was not marked healthy.
+- CI on the next PR head initially failed because the persistence test assumed an explicit self-test always performs a second memory write. The test was updated to accept either a fresh run or the production cached-result contract while checking that cached health is refreshed. The newest commit and its CI still need verification.
+- Railway at the last check: frontend online on commit `228feaab`; backend deployment for `ee508a85` was building; Cognee Memory, browser-use-runner and browser-chromium were online. Do not call the full deployment verified until that backend deployment and the latest production smoke finish.
+
 ## Current milestone
 Establish and verify the real MindCore/MindCloud execution loop across backend and frontend, reusing the existing implementation.
 
