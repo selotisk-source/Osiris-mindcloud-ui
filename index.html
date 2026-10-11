@@ -13,7 +13,7 @@ body{overflow:hidden}.app{height:100%;display:flex;flex-direction:column}
 .brand{font-weight:700;letter-spacing:.08em}.brand span{color:var(--accent)}
 .status{display:flex;align-items:center;gap:7px;color:var(--muted);font-size:12px}.dot{width:8px;height:8px;border-radius:50%;background:var(--good);box-shadow:0 0 10px #6ee7b755}
 .actions{margin-left:auto;display:flex;gap:6px}.btn{border:1px solid var(--line);background:#101722;color:var(--text);border-radius:7px;padding:7px 10px;cursor:pointer}.btn:hover{border-color:#3b4c63}.btn.active{border-color:var(--accent);color:var(--accent)}
-.workspace{flex:1;min-height:0;padding:10px;display:grid;gap:10px;grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-rows:minmax(0,1fr) minmax(0,1fr)}
+.workspace{flex:1;min-height:0;padding:10px;display:grid;gap:10px;grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-rows:minmax(0,1fr) minmax(0,1fr)}.workspace[data-layout-mode="2"]{grid-template-rows:minmax(0,1fr)}
 .station{min-width:0;min-height:0;border:1px solid var(--line);border-radius:10px;background:var(--panel);display:flex;flex-direction:column;overflow:hidden;position:relative}
 .station.coordinator{border-color:#36587b}.station-head{height:42px;display:flex;align-items:center;gap:8px;padding:0 10px;border-bottom:1px solid var(--line);background:var(--panel2);cursor:grab}.station-head:active{cursor:grabbing}
 .handle{color:#526277;font-size:15px}.station-title{font-weight:650}.station-role{margin-left:auto;color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.08em}
