@@ -30,7 +30,7 @@ async function getJson(path) {
     signal: AbortSignal.timeout(timeout)
   });
   assert.equal(osirisResponse.status, 200, "OSIRIS console route must return HTTP 200");
-  assert.match(osirisResponse.headers.get("content-type") || "", /text\\/html/i);
+  assert.match(osirisResponse.headers.get("content-type") || "", /text\/html/i);
   const osirisHtml = await osirisResponse.text();
   assert.match(osirisHtml, /Standalone Camera Console/, "OSIRIS console HTML marker missing");
 
