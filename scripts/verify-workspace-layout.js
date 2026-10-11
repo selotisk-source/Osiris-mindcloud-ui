@@ -2,7 +2,7 @@
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const html = fs.readFileSync("index.html", "utf8");
-assert.match(html, /setWorkspaceLayout\(4\);/, "workspace must initialize in four-station mode");
+assert.match(html, /setWorkspaceLayout\(2\);/, "workspace must initialize in four-station mode");
 assert.match(html, /const show=n===2\?\(id===1\|\|id===2\):\(id<=n\)/, "layout mode must select the expected station set");
 assert.match(html, /ws\.dataset\.layoutMode=String\(n\)/, "layout mode must be reflected in the DOM");
 assert.match(html, /ws\.style\.gridTemplateRows=\(n===2\|\|n===3\)\?\x27minmax\(0,1fr\)\x27:\x27repeat\(2,minmax\(0,1fr\)\)\x27/, "four-station mode must use two equal grid rows");
@@ -11,4 +11,4 @@ assert.match(html, /\.workspace\[data-layout-mode="4"\] \[data-station="2"\]\{gr
 assert.match(html, /\.workspace\[data-layout-mode="4"\] \[data-station="3"\]\{grid-column:1;grid-row:2\}/, "Sensor Fabric must occupy bottom-left");
 assert.match(html, /\.workspace\[data-layout-mode="4"\] \[data-station="4"\]\{grid-column:2;grid-row:2\}/, "God’s Eye View must occupy bottom-right");
 assert.match(html, /data-layout="4"/, "four-station layout must remain available");
-console.log("workspace-layout: verified four-station default, dynamic station selection, and 2x2 grid rows");
+console.log("workspace-layout: verified two-station default, optional four-station mode, dynamic station selection, and 2x2 grid rows");
