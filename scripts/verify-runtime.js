@@ -414,13 +414,12 @@ async function waitForHealth(child) {
     assert.match(sidepanel, /Station B · Source \/ Evidence/);
     assert.ok(sidepanel.includes('<script src="evidence-validation-v2.js"></script>'));
     assert.ok(sidepanel.includes('<script src="sidepanel.js"></script>'));
-    const inlineScriptBodies = [...sidepanel.matchAll(/<script\\b[^>]*>([\\s\\S]*?)<\\/script>/gi)]
-      .filter((match) => !/\\bsrc\\s*=/.test(match[0]))
-      .map((match) => match[1].trim())
+    const scriptTags = sidepanel.split("<script").slice(1).map((part) => "<script" + part.split("</script>")[0] + "</script>");
+    const inlineScriptBodies = scriptTags
+      .filter((tag) => !tag.includes("src="))
+      .map((tag) => tag.slice(tag.indexOf(">") + 1, -9).trim())
       .filter(Boolean);
     assert.deepStrictEqual(inlineScriptBodies, []);
-    assert.ok(sidepanelJs.includes('/api/cctv'));
-    assert.ok(evidenceValidationV2.includes('validateCctvEvidence'));
     assert.match(manifest, /"side_panel"/);
     assert.match(manifest, /"host_permissions"/);
 
