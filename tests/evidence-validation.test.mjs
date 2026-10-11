@@ -1,0 +1,14 @@
+import assert from "node:assert/strict";
+import { validateCctvEvidence } from "../extension/evidence-validation.js";
+const response = { status: 200, headers: { get: name => name.toLowerCase() === "content-type" ? "application/json; charset=utf-8" : null } };
+const now = "2026-10-11T05:00:00.000Z";
+const snapshotOnly = { status:"configured", streamStatus:"unverified", proxyStatus:"implemented", snapshotStatus:"verified", snapshotContentType:"image/jpeg", snapshotByteLength:54656, snapshotSha256:"a".repeat(64), snapshotCheckedAt:now };
+const result = validateCctvEvidence({source:"https://example.test/api/cctv",response,payload:snapshotOnly,capturedAt:now});
+assert.equal(result.snapshotRecordValid,true);
+assert.equal(result.promotionReady,false);
+assert.equal(result.valid,false);
+const promoted = validateCctvEvidence({source:"https://example.test/api/cctv",response,capturedAt:now,payload:{...snapshotOnly,streamStatus:"verified",proxyStatus:"verified",frame:{verified:true,sha256:"b".repeat(64),capturedAt:now}}});
+assert.equal(promoted.snapshotRecordValid,true); assert.equal(promoted.promotionReady,true); assert.equal(promoted.valid,true);
+const badHash = validateCctvEvidence({source:"https://example.test/api/cctv",response,payload:{...snapshotOnly,snapshotSha256:"bad"},capturedAt:now});
+assert.equal(badHash.snapshotRecordValid,false); assert.equal(badHash.valid,false);
+console.log("CCTV evidence contract: 3 scenarios passed");
