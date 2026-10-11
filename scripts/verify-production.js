@@ -184,7 +184,14 @@ async function getJson(path) {
   let overpass;
   let overpassWarning = null;
   try {
-    overpass = await getJson("/api/adapters/overpass-turbo/health");
+    // Overpass is an optional public dependency: probe once and report a warning
+    // on timeout instead of spending three generic GET retries on a known flaky provider.
+    const overpassResponse = await fetch(base + "/api/adapters/overpass-turbo/health", {
+      headers: { accept: "application/json" },
+      signal: AbortSignal.timeout(timeout)
+    });
+    assert.equal(overpassResponse.status, 200, "Overpass health endpoint returned HTTP " + overpassResponse.status);
+    overpass = await overpassResponse.json();
     assert.ok(["healthy", "degraded", "offline"].includes(overpass.status),
       "Overpass must return an explicit provider health state: " + JSON.stringify(overpass));
     assert.equal(overpass.probe, "interpreter-json", "Overpass health must identify the live probe");
