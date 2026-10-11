@@ -5,14 +5,39 @@ const base = (process.env.MINDCLOUD_PRODUCTION_URL || "https://mindcloud-live.up
 const timeout = 10000;
 
 async function getJson(path) {
-  const response = await fetch(base + path, {
-    headers: { accept: "application/json" },
-    signal: AbortSignal.timeout(timeout)
-  });
-  const contentType = response.headers.get("content-type") || "";
-  assert.equal(response.status, 200, `${path} returned HTTP ${response.status}`);
-  assert.match(contentType, /application\/json/i, `${path} did not return JSON`);
-  return response.json();
+  let lastError;
+  for (let attempt = 0; attempt < 3; attempt++) {
+    let response;
+    try {
+      response = await fetch(base + path, {
+        headers: { accept: "application/json" },
+        signal: AbortSignal.timeout(timeout)
+      });
+    } catch (error) {
+      lastError = error;
+      if (attempt < 2) {
+        await new Promise(resolve => setTimeout(resolve, 500 * (attempt + 1)));
+        continue;
+      }
+      throw new Error(`${path} request failed after 3 attempts: ${error instanceof Error ? error.message : String(error)}`);
+    }
+
+    if (response.status >= 500 && attempt < 2) {
+      lastError = new Error(`${path} returned HTTP ${response.status}`);
+      await response.body?.cancel().catch(() => {});
+      await new Promise(resolve => setTimeout(resolve, 500 * (attempt + 1)));
+      continue;
+    }
+    const contentType = response.headers.get("content-type") || "";
+    assert.equal(response.status, 200, `${path} returned HTTP ${response.status}`);
+    assert.match(contentType, /application\/json/i, `${path} did not return JSON`);
+    try {
+      return await response.json();
+    } catch (error) {
+      throw new Error(`${path} returned invalid JSON: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  }
+  throw lastError || new Error(`${path} request failed`);
 }
 
 (async () => {
