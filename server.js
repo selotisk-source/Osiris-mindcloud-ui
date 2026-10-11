@@ -373,7 +373,7 @@ function getMindcloudSelfTest() {
 
   const now = Date.now();
   const cacheAgeMs = now - selftestLastCompletedAt;
-  if (selftestLastResult && cacheAgeMs >= 0 && cacheAgeMs < SELFTEST_CACHE_TTL_MS) {
+  if (process.env.NODE_ENV !== "test" && selftestLastResult && cacheAgeMs >= 0 && cacheAgeMs < SELFTEST_CACHE_TTL_MS) {
     selftestInFlight = (async () => {
       const [memory, browserUse] = await Promise.all([
         cogneeHealth(),
