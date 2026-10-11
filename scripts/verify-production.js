@@ -17,7 +17,22 @@ async function getJson(path) {
 
 (async () => {
   const health = await getJson("/health");
-  assert.equal(health.status, "ok");
+  assert.equal(health.status, "healthy");
+  assert.equal(health.service, "mindcloud-frontend");
+
+  const ready = await getJson("/ready");
+  assert.equal(ready.status, "ready", "frontend readiness must include a successful backend proxy probe");
+  assert.equal(ready.proxy, "verified");
+  assert.equal(ready.backend, "reachable");
+
+  const osirisResponse = await fetch(base + "/osiris", {
+    headers: { accept: "text/html" },
+    signal: AbortSignal.timeout(timeout)
+  });
+  assert.equal(osirisResponse.status, 200, "OSIRIS console route must return HTTP 200");
+  assert.match(osirisResponse.headers.get("content-type") || "", /text\\/html/i);
+  const osirisHtml = await osirisResponse.text();
+  assert.match(osirisHtml, /Standalone Camera Console/, "OSIRIS console HTML marker missing");
 
   const status = await getJson("/api/mindcloud/status");
   assert.ok(Array.isArray(status.tasks), "MindCloud status missing task registry");
