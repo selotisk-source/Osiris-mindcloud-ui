@@ -86,7 +86,7 @@ async function main() {
 
     const osiris = await fetch("http://127.0.0.1:" + frontendPort + "/osiris");
     assert.equal(osiris.status, 200, "frontend should serve the OSIRIS console route");
-    assert.match(osiris.headers.get("content-type") || "", /text\\/html/i);
+    assert.match(osiris.headers.get("content-type") || "", /text\/html/i);
     assert.match(await osiris.text(), /Standalone Camera Console/);
 
     const osirisSlash = await fetch("http://127.0.0.1:" + frontendPort + "/osiris/");
