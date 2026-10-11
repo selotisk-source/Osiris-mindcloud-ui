@@ -19,6 +19,12 @@
 
 Do not silently convert these items into “working” status without fresh evidence.
 
+## Session checkpoint — PAUSED
+**Checkpoint date:** 2026-10-11
+**Reason:** User explicitly paused this workstream; preserve it for later resumption.
+**Resume instruction:** Continue from this checkpoint without recreating the handover. First inspect the repository, read this file and `MINDCORE_MINDCLOUD_MASTER.md`, then resume the next actions below: inspect the tree/package scripts/CI, run the prescribed verification, identify and fix the highest-impact gap in the backend-to-frontend execution loop, test it, and update this state with observed evidence.
+**Last completed work in this handover session:** Added and read back `MINDCORE_MINDCLOUD_MASTER.md`, `MINDCORE_CURRENT_STATE.md`, and `CLAUDE.md` on `main`; linked them from `README.md`. No application tests or deployment verification were performed in this session.
+
 ## Current milestone
 Establish and verify the real MindCore/MindCloud execution loop across backend and frontend, reusing the existing implementation.
 
