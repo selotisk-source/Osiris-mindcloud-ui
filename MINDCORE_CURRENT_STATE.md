@@ -21,9 +21,15 @@ Do not silently convert these items into “working” status without fresh evid
 
 ## Session checkpoint — PAUSED
 **Checkpoint date:** 2026-10-11
-**Reason:** User explicitly paused this workstream; preserve it for later resumption.
-**Resume instruction:** Continue from this checkpoint without recreating the handover. First inspect the repository, read this file and `MINDCORE_MINDCLOUD_MASTER.md`, then resume the next actions below: inspect the tree/package scripts/CI, run the prescribed verification, identify and fix the highest-impact gap in the backend-to-frontend execution loop, test it, and update this state with observed evidence.
+**Scope:** The Claude handover-document task is paused for later resumption. Engineering work on the existing MindCore/MindCloud runtime and adapter integration continues separately.
+**Handover resume instruction:** Resume the document/Claude-project setup from this checkpoint without recreating the handover. For active engineering, follow the current milestone and next actions below.
 **Last completed work in this handover session:** Added and read back `MINDCORE_MINDCLOUD_MASTER.md`, `MINDCORE_CURRENT_STATE.md`, and `CLAUDE.md` on `main`; linked them from `README.md`. No application tests or deployment verification were performed in this session.
+
+## Adapter API failure/audit coverage — 2026-10-11
+- Extended `scripts/verify-adapter-api-failure-audit.js` to exercise the same provider HTTP 503 failure path through two independently registered adapters: Graft (`build`) and OpenMontage (`plan`).
+- The test now expects two provider calls, two audit entries, request IDs for both responses, and neither adapter promoted to verified after failed executions.
+- Change commit: `b3435aee728049679e9cb404f7d42ffac830403e`.
+- Previous commit `891b9f564f1eca71dedb79c36b23576a8dbce6dc`: MindCloud Runtime Verification passed; full MindCloud Verification including production smoke passed. New workflows for the two-adapter API test are queued and must be checked before treating this change as verified.
 
 ## Current milestone
 Establish and verify the real MindCore/MindCloud execution loop across backend and frontend, reusing the existing implementation.
