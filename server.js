@@ -363,12 +363,68 @@ async function runMindcloudSelfTest() {
     timestamp:new Date().toISOString()
   };
 }
-// Coalesce overlapping self-tests to prevent concurrent memory/browser probes.
+// Reuse the last deep E2E result briefly; refresh lightweight dependency health on reads.
+const SELFTEST_CACHE_TTL_MS = 6 * 60 * 60 * 1000;
 let selftestInFlight = null;
+let selftestLastResult = null;
+let selftestLastCompletedAt = 0;
 function getMindcloudSelfTest() {
-  if (!selftestInFlight) {
-    selftestInFlight = runMindcloudSelfTest().finally(() => { selftestInFlight = null; });
+  if (selftestInFlight) return selftestInFlight;
+
+  const now = Date.now();
+  const cacheAgeMs = now - selftestLastCompletedAt;
+  if (selftestLastResult && cacheAgeMs >= 0 && cacheAgeMs < SELFTEST_CACHE_TTL_MS) {
+    selftestInFlight = (async () => {
+      const [memory, browserUse] = await Promise.all([
+        cogneeHealth(),
+        adapters.health("browser-use")
+      ]);
+      const memoryHealthy = memory.status === "healthy";
+      const browserHealthy = browserUse.status === "healthy";
+      const checks = (selftestLastResult.integrations?.checks || []).map(check => {
+        if (check.id === "cognee-memory-health") {
+          return {...check, ok: memoryHealthy, status: memory.status};
+        }
+        if (check.id === "browser-use-health") {
+          return {...check, ok: browserHealthy, status: browserUse.status};
+        }
+        return check;
+      });
+      const deepStatus = selftestLastResult.status;
+      const integrationsStatus = checks.every(check => check.ok) &&
+        selftestLastResult.integrations?.status === "passed" ? "passed" : "degraded";
+      const status = deepStatus === "passed" && integrationsStatus === "passed" ? "passed" :
+        selftestLastResult.core?.status === "passed" ? "degraded" : "failed";
+      return {
+        ...selftestLastResult,
+        status,
+        cached: true,
+        cacheAgeSeconds: Math.floor(cacheAgeMs / 1000),
+        freshness: {
+          status: memoryHealthy && browserHealthy ? "healthy" : "degraded",
+          checkedAt: new Date().toISOString(),
+          memory,
+          browserUse
+        },
+        integrations: {
+          ...selftestLastResult.integrations,
+          status: integrationsStatus,
+          checks,
+          memory,
+          browserUse
+        }
+      };
+    })().finally(() => { selftestInFlight = null; });
+    return selftestInFlight;
   }
+
+  selftestInFlight = runMindcloudSelfTest()
+    .then(result => {
+      selftestLastResult = result;
+      selftestLastCompletedAt = Date.now();
+      return result;
+    })
+    .finally(() => { selftestInFlight = null; });
   return selftestInFlight;
 }
 
