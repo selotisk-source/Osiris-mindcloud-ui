@@ -363,6 +363,15 @@ async function runMindcloudSelfTest() {
     timestamp:new Date().toISOString()
   };
 }
+// Coalesce overlapping self-tests to prevent concurrent memory/browser probes.
+let selftestInFlight = null;
+function getMindcloudSelfTest() {
+  if (!selftestInFlight) {
+    selftestInFlight = runMindcloudSelfTest().finally(() => { selftestInFlight = null; });
+  }
+  return selftestInFlight;
+}
+
 const server = http.createServer(async (req,res)=>{
   const url = new URL(req.url, "http://"+(req.headers.host||"localhost"));
   const pathname = url.pathname;
@@ -532,7 +541,7 @@ const server = http.createServer(async (req,res)=>{
     return;
   }
   if(pathname==="/api/mindcloud/selftest" && req.method==="POST"){
-    try { sendJson(res,await runMindcloudSelfTest()); }
+    try { sendJson(res,await getMindcloudSelfTest()); }
     catch (error) { sendJson(res,{type:"mindcloud_e2e_selftest",status:"failed",error:error instanceof Error ? error.message : String(error)},500); }
     return;
   }
@@ -755,7 +764,7 @@ const server = http.createServer(async (req,res)=>{
 });
 server.listen(port,"0.0.0.0",()=>{
   console.log("OSIRIS MindCloud listening on port "+port);
-  runMindcloudSelfTest()
+  getMindcloudSelfTest()
     .then(result=>console.log("MINDCLOUD_E2E_SELFTEST "+JSON.stringify(result)))
     .catch(error=>console.error("MINDCLOUD_E2E_SELFTEST_FAILED "+String(error?.message||error)));
 });
