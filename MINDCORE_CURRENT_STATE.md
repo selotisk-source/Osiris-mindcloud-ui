@@ -11,16 +11,18 @@
 - README describes multiple supervised adapters and guarded promotion/approval behavior.
 
 ## Deployment verification — 2026-10-11
-- Frontend Railway deployment `08168b83-6575-437e-9c4a-428e65a5c233` completed successfully from `main` commit `228feaab20b45fc5fe12f8c7d44c55d2d428c25d`.
-- Backend Railway deployment `27862fd5-15f1-4979-8ab8-782dd082fd9e` completed successfully with the single-flight self-test change from commit `6e065ce9c1845d222b110497ae867eac84cd87b7`.
-- The frontend pre-deploy command completed `node scripts/run-verify.js` with the explicit result `MindCloud verification suite passed.` This included Arena, adapter contracts and failure audit, Speech Figure promotion gate, four-station workspace layout, provider-network, agent-cluster and OSIRIS console checks.
-- Backend startup self-test logged `status: passed`: all four core checks passed, Cognee health and write/readback persistence passed, and Browser Use executed successfully with HTTP 200.
-- Post-deploy frontend smoke requests returned HTTP 200 for `/health`, `/ready`, `/osiris`, `/api/mindcloud/status`, valid Arena evaluation, `/api/adapters`, `/api/agent-tools` and `/api/cctv`. Invalid Arena input returned the expected 400; unauthorized Metanoia approval and adapter execution returned the expected 401.
-- The shared self-test promise is implemented in `server.js` and both startup and the API route use it.
+- Latest backend deployment `a4d43a34-88a1-40aa-9fbd-4012a630f85b` is `SUCCESS` on commit `ee508a851a744c08204a0e3d9ece234f2eaf998a`.
+- Latest frontend deployment `99085441-80cd-4629-a8be-1cf6a84df100` is `SUCCESS` on the same commit.
+- The frontend pre-deploy command completed `node scripts/run-verify.js` with the explicit result `MindCloud verification suite passed.` This included runtime, Cognee persistence, adapter route/contracts/failure audit, Arena, Speech Figure promotion gate, four-station workspace layout, provider-network, agent-cluster and OSIRIS console checks.
+- Backend startup self-test on the latest backend deployment logged `status: passed`: all four core checks passed, Cognee health and write/readback persistence passed, and Browser Use executed successfully with HTTP 200.
+- Frontend production smoke on the preceding successful deployment returned HTTP 200 for `/health`, `/ready`, `/osiris`, `/api/mindcloud/status`, valid Arena evaluation, `/api/adapters`, `/api/agent-tools` and `/api/cctv`. Invalid Arena input returned the expected 400; unauthorized Metanoia approval and adapter execution returned the expected 401.
+- `server.js` coalesces overlapping deep self-tests and caches the last deep result for six hours while refreshing Cognee and Browser Use health. Cache-enabled production self-test requests returned HTTP 200 in 49 ms and 55 ms.
+- The cache initially caused the Cognee test-mode verifier to reuse the startup result. This was corrected so `NODE_ENV=test` bypasses the cache; the complete verification suite then passed on the latest frontend deployment.
+- Latest environment status: all five services online, no pending work, and no current service failures. The frontend has one historical failed deployment from the intermediate cache/test mismatch; the subsequent deployment succeeded.
 
 ## Still not verified
-- Three simultaneous production `POST /api/mindcloud/selftest` requests returned 502 during frontend rollout with upstream connection-closed/refused errors. The frontend deployment subsequently passed its smoke checks and is online, but this self-test failure mode has not yet been retested against a stable deployment.
-- The complete production backend → authorized adapter execution → persisted evidence/state → frontend display flow has not been verified as one transaction.
+- Three simultaneous production `POST /api/mindcloud/selftest` requests returned 502 during an earlier rollout with upstream connection-closed/refused errors. Cache-enabled requests subsequently returned quickly and the latest deployments are healthy, but a controlled repeat of the exact three-request scenario has not been completed.
+- The complete production backend → authorized adapter execution → persisted evidence/state → frontend display flow has not been verified as one transaction, although the local adapter-route suite verifies adapter output linked to evidence-graph nodes.
 - Not every README-listed adapter has been proven executable in production; some correctly remain credential-gated or research-only.
 - GitHub commit-status API returned no status checks for the inspected commits; the Railway pre-deploy verification is the observed green suite.
 
