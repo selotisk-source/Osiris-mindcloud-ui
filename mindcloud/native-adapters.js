@@ -43,7 +43,7 @@ async function health(id) {
   if (id === "mapillary") return {ok:true,status:"configured",mode:"free-street-level-imagery",provider:"Mapillary"};
   if (id !== "overpass-turbo") return {ok:true,status:"configured",mode:"native-http"};
   try {
-    const {response,endpoint}=await fetchOverpass("[out:json];node(1);out;",2500);
+    const {response,endpoint}=await fetchOverpass("[out:json];node(1);out;",8000);
     let body=null;
     try { body=await response.json(); } catch {}
     const healthy=response.ok && Array.isArray(body?.elements);
@@ -66,8 +66,11 @@ function overpassEndpoints() {
 
 async function fetchOverpass(query, timeoutMs=15000) {
   const endpoints = overpassEndpoints();
+  const deadline = Date.now() + Math.max(1, timeoutMs);
   let lastError;
   for (let index=0; index<endpoints.length; index++) {
+    const remainingMs = deadline - Date.now();
+    if (remainingMs <= 0) break;
     const endpoint=endpoints[index];
     try {
       const response=await fetch(endpoint,{
@@ -78,7 +81,8 @@ async function fetchOverpass(query, timeoutMs=15000) {
           "user-agent":"MindCloud/1.0 (https://github.com/selotisk-source/Osiris-mindcloud-ui)"
         },
         body:new URLSearchParams({data:query}).toString(),
-        signal:AbortSignal.timeout(timeoutMs)
+        // The timeout is a total budget across all mirrors, not a fresh timeout per mirror.
+        signal:AbortSignal.timeout(Math.min(5000, remainingMs))
       });
       if(response.ok) {
         let validOverpassJson=false;
@@ -86,19 +90,19 @@ async function fetchOverpass(query, timeoutMs=15000) {
           const payload=await response.clone().json();
           validOverpassJson=Array.isArray(payload?.elements);
         } catch {}
-        if(validOverpassJson || index===endpoints.length-1) return {response,endpoint};
+        if(validOverpassJson || index===endpoints.length-1 || Date.now() >= deadline) return {response,endpoint};
         await response.body?.cancel().catch(()=>{});
         continue;
       }
       const retryable=[429,500,502,503,504].includes(response.status);
-      if(!retryable || index===endpoints.length-1) return {response,endpoint};
+      if(!retryable || index===endpoints.length-1 || Date.now() >= deadline) return {response,endpoint};
       await response.body?.cancel().catch(()=>{});
     } catch(error) {
       lastError=error;
-      if(index===endpoints.length-1) throw error;
+      if(index===endpoints.length-1 || Date.now() >= deadline) throw error;
     }
   }
-  throw lastError || new Error("overpass_all_endpoints_failed");
+  throw lastError || new Error("overpass_deadline_exceeded");
 }
 
 async function readResponse(response) {
