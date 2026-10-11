@@ -199,6 +199,18 @@ async function waitHealthy(child) {
     assert.equal(approvedDecision.status, 200);
     assert.equal(approvedDecision.body.request.status, "approved");
 
+    const changedInputExecution = await json(await fetch(appBase + "/api/adapters/execute", {
+      method: "POST",
+      headers: { "content-type": "application/json", authorization: "Bearer " + token },
+      body: JSON.stringify({ id: "anthropic-cybersecurity-skills", operation: "assess", input: { target: "different-test-target" }, approvalId })
+    }));
+    assert.equal(changedInputExecution.status, 200);
+    assert.equal(changedInputExecution.body.error, "human_approval_required", "an approval ticket must not authorize changed input");
+    const mismatchQueue = await json(await fetch(appBase + "/api/approvals", {
+      headers: { authorization: "Bearer " + token }
+    }));
+    assert.ok(mismatchQueue.body.audit.some(event => event.type === "input_mismatch" && event.approvalId === approvalId), "changed input must create an audit event without consuming the valid ticket");
+
     const approvedExecution = await json(await fetch(appBase + "/api/adapters/execute", {
       method: "POST",
       headers: { "content-type": "application/json", authorization: "Bearer " + token },
