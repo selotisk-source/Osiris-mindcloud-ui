@@ -56,12 +56,12 @@ Do not silently convert these items into “working” status without fresh evid
 Establish and verify the real MindCore/MindCloud execution loop across backend and frontend, reusing the existing implementation.
 
 ## Next actions
-1. Inspect repository tree, package scripts, current commits and CI status.
-2. Run the repository’s prescribed verification command (`npm run verify`, after checking scripts and environment).
-3. Identify the highest-impact failing or missing link in task intake → orchestration → adapter execution → evidence/state persistence → frontend display.
-4. Fix the smallest reproducible issue and add/update a regression test.
-5. Verify the result; check deployment separately from local/CI verification.
-6. Update this file with exact evidence and the next remaining blocker.
+1. Add a local regression test for the cached self-test response and overlapping calls; keep deep write/readback tests fresh under `NODE_ENV=test`.
+2. Repeat the three-request self-test scenario in a controlled local test and confirm it does not launch duplicate Cognee/browser work.
+3. Verify one authorized production adapter execution through request ID → evidence-graph node/readback → frontend-visible status, without exposing tokens.
+4. Keep promotion gates intact: the registry has 15 `adapter-ready`, 3 `parked-cost-review`, 2 `registered-only`, 3 `research-registered`, and 1 `parked-integration-review` tools. Do not promote Speech Figure without license clearance or paid APIs without an explicit cost decision.
+5. Recheck HTTP 5xx after the next normal deployment; the earlier self-test 502s were confined to a rollout window, and the subsequent cache-enabled requests returned 200.
+6. Update this file with the exact evidence and remaining blocker after each meaningful change.
 
 ## Reporting format
 - **Changed:** exact files and purpose.
