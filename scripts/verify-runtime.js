@@ -407,10 +407,16 @@ async function waitForHealth(child) {
     assert.equal(unknownApi.body.error,"api_route_not_found");
 
     const sidepanel = fs.readFileSync(path.join(root, "extension", "sidepanel.html"), "utf8");
+    const sidepanelJs = fs.readFileSync(path.join(root, "extension", "sidepanel.js"), "utf8");
+    const evidenceValidationV2 = fs.readFileSync(path.join(root, "extension", "evidence-validation-v2.js"), "utf8");
     const manifest = fs.readFileSync(path.join(root, "extension", "manifest.json"), "utf8");
     assert.match(sidepanel, /Station A · Brave \/ Runtime/);
     assert.match(sidepanel, /Station B · Source \/ Evidence/);
-    assert.match(sidepanel, /\/api\/cctv/);
+    assert.match(sidepanel, /<script src="evidence-validation-v2\\.js"><\\/script>/);
+    assert.match(sidepanel, /<script src="sidepanel\\.js"><\\/script>/);
+    assert.doesNotMatch(sidepanel, /<script(?![^>]*src)[^>]*>[\\s\\S]*?<\\/script>/);
+    assert.match(sidepanelJs, /\\/api\\/cctv/);
+    assert.match(evidenceValidationV2, /validateCctvEvidence/);
     assert.match(manifest, /"side_panel"/);
     assert.match(manifest, /"host_permissions"/);
 
