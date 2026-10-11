@@ -4,7 +4,7 @@ const path = require("node:path");
 const { chromium } = require("playwright");
 
 (async () => {
-  const extensionPath = path.resolve(__dirname, "..", "extension");
+  const extensionPath = path.resolve(__dirname, "..", "..", "extension");
   const manifest = JSON.parse(fs.readFileSync(path.join(extensionPath, "manifest.json"), "utf8"));
 
   assert.equal(manifest.manifest_version, 3);
