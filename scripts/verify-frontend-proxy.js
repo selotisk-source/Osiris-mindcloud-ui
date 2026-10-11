@@ -84,6 +84,14 @@ async function main() {
   try {
     await waitForStartup(child);
 
+    const osiris = await fetch("http://127.0.0.1:" + frontendPort + "/osiris");
+    assert.equal(osiris.status, 200, "frontend should serve the OSIRIS console route");
+    assert.match(osiris.headers.get("content-type") || "", /text\/html/i);
+    assert.match(await osiris.text(), /Standalone Camera Console/);
+
+    const osirisSlash = await fetch("http://127.0.0.1:" + frontendPort + "/osiris/");
+    assert.equal(osirisSlash.status, 200, "frontend should serve the trailing-slash OSIRIS route");
+
     const directProxy = await fetch("http://127.0.0.1:" + frontendPort + "/api/mindcloud/status");
     assert.equal(directProxy.status, 200, "frontend proxy should relay a successful backend response");
     assert.deepEqual(await directProxy.json(), { status: "ok", tasks: [] });
@@ -103,7 +111,7 @@ async function main() {
     assert.equal(notReadyBody.proxy, "failed");
     assert.equal(notReadyBody.upstreamStatus, 503);
 
-    console.log("frontend-proxy-verification: passed direct proxy, healthy readiness, and upstream-failure rejection");
+    console.log("frontend-proxy-verification: passed OSIRIS route, direct proxy, healthy readiness, and upstream-failure rejection");
   } finally {
     child.kill("SIGTERM");
     await Promise.race([

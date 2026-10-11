@@ -12,7 +12,9 @@ const STATIC_FILES = {
   "/": ["index.html", "text/html; charset=utf-8"],
   "/index.html": ["index.html", "text/html; charset=utf-8"],
   "/trading.html": ["trading.html", "text/html; charset=utf-8"],
-  "/newsletter.html": ["newsletter.html", "text/html; charset=utf-8"]
+  "/newsletter.html": ["newsletter.html", "text/html; charset=utf-8"],
+  "/osiris": ["osiris.html", "text/html; charset=utf-8"],
+  "/osiris/": ["osiris.html", "text/html; charset=utf-8"]
 };
 
 function send(res, status, body, type = "application/json; charset=utf-8") {
@@ -88,7 +90,8 @@ function proxy(req, res) {
     res.writeHead(upstreamRes.statusCode || 502, outHeaders);
     upstreamRes.pipe(res);
   });
-  upstream.setTimeout(30000, () => upstream.destroy(new Error("backend_timeout")));
+  const requestTimeout = target.pathname === "/api/mindcloud/selftest" ? 180000 : 30000;
+  upstream.setTimeout(requestTimeout, () => upstream.destroy(new Error("backend_timeout")));
   upstream.on("error", (error) => {
     if (!res.headersSent) send(res, 502, JSON.stringify({ error: "mindcloud_backend_unavailable", detail: error.code || "upstream_error" }));
     else res.destroy(error);
