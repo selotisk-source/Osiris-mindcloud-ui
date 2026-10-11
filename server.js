@@ -325,7 +325,17 @@ async function runMindcloudSelfTest() {
     {id:"event-emitted",ok:events.some(event => event.taskId === taskId && event.type === "complete")},
     {id:"tool-catalog-loaded",ok:Array.isArray(agentTools.tools) && agentTools.tools.length >= 10}
   ];
+  const persistentStorePaths = {
+    taskEvents: mindcloud.storePath,
+    modelVersions: mindcloud.versionHistory.storePath,
+    evidenceGraph: evidenceGraph.storePath
+  };
+  const persistentStoreChecks = Object.fromEntries(Object.entries(persistentStorePaths).map(([name,storePath]) => {
+    const resolved = typeof storePath === "string" && storePath ? path.resolve(storePath) : "";
+    return [name, Boolean(resolved && (resolved === "/data" || resolved.startsWith("/data/")))];
+  }));
   const integrationChecks = [
+    {id:"persistent-store-paths",ok:Object.values(persistentStoreChecks).every(Boolean),stores:persistentStoreChecks},
     {id:"cognee-memory-health",ok:memory.status === "healthy",status:memory.status},
     {id:"cognee-memory-persistence",ok:memoryRoundTrip.status === "healthy" && memoryRoundTrip.persisted === true,status:memoryRoundTrip.status,mode:memoryRoundTrip.mode || null},
     {id:"browser-use-health",ok:browserUse.status === "healthy",status:browserUse.status,browserEngine:browserUse.browserEngine || null},
