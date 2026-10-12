@@ -17,15 +17,28 @@ assert.doesNotMatch(serverSource, /frameStatus:\s*!source\s*\?\s*"unconfigured"\
 const { spawn } = require("node:child_process");
 const http = require("node:http");
 
-const appPort = 39139;
-const sourcePort = 39140;
-const appBase = `http://127.0.0.1:${appPort}`;
-const sourceBase = `http://127.0.0.1:${sourcePort}`;
+let appPort;
+let sourcePort;
+let appBase;
+let sourceBase;
 const token = "mindcloud-cctv-proxy-test-token";
 const playlist = "#EXTM3U\n#EXT-X-VERSION:3\n#EXTINF:5.0,\nsegment.ts\n#EXT-X-ENDLIST\n";
 
+async function freePort() {
+  const probe = http.createServer();
+  await new Promise((resolve, reject) => {
+    probe.once("error", reject);
+    probe.listen(0, "127.0.0.1", resolve);
+  });
+  const port = probe.address().port;
+  await new Promise((resolve, reject) => probe.close(error => error ? reject(error) : resolve()));
+  return port;
+}
 function listen(server, port) {
-  return new Promise(resolve => server.listen(port, "127.0.0.1", resolve));
+  return new Promise((resolve, reject) => {
+    server.once("error", reject);
+    server.listen(port, "127.0.0.1", resolve);
+  });
 }
 async function waitHealthy(child) {
   const deadline = Date.now() + 6000;
@@ -71,6 +84,11 @@ function encoded(url) {
     res.writeHead(404, { "content-type": "text/plain" });
     res.end("not found");
   });
+  sourcePort = await freePort();
+  appPort = await freePort();
+  while (appPort === sourcePort) appPort = await freePort();
+  sourceBase = `http://127.0.0.1:${sourcePort}`;
+  appBase = `http://127.0.0.1:${appPort}`;
   await listen(source, sourcePort);
 
   const child = spawn(process.execPath, ["server.js"], {
