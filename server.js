@@ -3,7 +3,7 @@ const fs = require("node:fs");
 const path = require("node:path");
 const { createRouterNetwork } = require("./mindcore/router-network");
 const { createAgentCluster } = require("./mindcore/agent-cluster");
-const { validateMissionContract, isMissionEligibleForHandoff } = require("./mindcore/mission-contract");
+const { validateMissionContract } = require("./mindcore/mission-contract");
 const { createProviderNetwork } = require("./mindcore/provider-network");
 const providerNetwork = createProviderNetwork();
 const agentCluster = createAgentCluster();
@@ -779,6 +779,7 @@ const server = http.createServer(async (req,res)=>{
       };
       missionRegistry.set(record.missionId,record);
       missionAudit.push({missionId:record.missionId,event:"registered",status:record.status,timestamp:record.createdAt});
+      while (missionAudit.length > 1000) missionAudit.shift();
       sendJson(res,{...plan,mission:{missionId:record.missionId,status:record.status,expiresAt:new Date(record.expiresAt).toISOString()}});
     } catch(error) {
       sendJson(res,{
