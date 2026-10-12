@@ -18,9 +18,9 @@ async function waitHealthy(child) {
   throw new Error("MindCloud server did not become healthy");
 }
 
-async function request(path, body, authorized = true) {
+async function request(path, body, authorized = true, bearer = token) {
   const headers = { "content-type": "application/json" };
-  if (authorized) headers.authorization = "Bearer " + token;
+  if (authorized) headers.authorization = "Bearer " + bearer;
   const response = await fetch(base + path, {
     method: "POST",
     headers,
@@ -93,7 +93,74 @@ async function request(path, body, authorized = true) {
     assert.equal(malformed.body.error, "agent_cluster_mission_contract_invalid");
     assert.ok(Array.isArray(malformed.body.details));
 
-    console.log("agent-cluster mission route: PASS (auth, contract propagation, fail-closed validation, no execution authority)");
+    const executableMission = {
+      ...missionContract,
+      mission_id: "mission-execution-route-test",
+      authority_scope: ["mapillary:health"],
+      execution_plan_id: "plan-execution-route-test",
+      status: "approved",
+      approval_gate: { required: true },
+      evidence_required: ["approval-record", "execution-result"]
+    };
+    const noApproval = await request("/api/mindcloud/agent-cluster/mission-execute", {
+      id: "mapillary",
+      operation: "health",
+      input: {},
+      missionContract: executableMission
+    });
+    assert.equal(noApproval.status, 403);
+    assert.equal(noApproval.body.error, "mission_server_approval_required");
+
+    const approvalRequest = await request("/api/approvals/request", {
+      id: "mapillary",
+      operation: "health",
+      input: {}
+    });
+    assert.equal(approvalRequest.status, 201, JSON.stringify(approvalRequest.body));
+    const approvalId = approvalRequest.body.request.id;
+    const approvalDecision = await request(
+      `/api/approvals/${approvalId}/decision`,
+      { decision: "approved", reason: "Automated mission gate regression test" },
+      true,
+      "mindcloud-mission-approval-test-token"
+    );
+    assert.equal(approvalDecision.status, 200, JSON.stringify(approvalDecision.body));
+    assert.equal(approvalDecision.body.request.status, "approved");
+
+    const scopeMismatch = await request("/api/mindcloud/agent-cluster/mission-execute", {
+      id: "mapillary",
+      operation: "health",
+      input: {},
+      approvalId,
+      missionContract: { ...executableMission, authority_scope: ["mapillary:search"] }
+    });
+    assert.equal(scopeMismatch.status, 403);
+    assert.equal(scopeMismatch.body.error, "mission_scope_mismatch");
+
+    const executedMission = await request("/api/mindcloud/agent-cluster/mission-execute", {
+      id: "mapillary",
+      operation: "health",
+      input: {},
+      approvalId,
+      missionContract: executableMission
+    });
+    assert.equal(executedMission.status, 200, JSON.stringify(executedMission.body));
+    assert.equal(executedMission.body.missionGate.status, "server-approved-for-single-action");
+    assert.equal(executedMission.body.missionGate.missionId, executableMission.mission_id);
+    assert.equal(executedMission.body.missionGate.approvalVerifiedByServer, true);
+    assert.equal(executedMission.body.missionGate.toolExecutionEnabledByMissionGate, true);
+
+    const replay = await request("/api/mindcloud/agent-cluster/mission-execute", {
+      id: "mapillary",
+      operation: "health",
+      input: {},
+      approvalId,
+      missionContract: executableMission
+    });
+    assert.equal(replay.status, 403);
+    assert.equal(replay.body.error, "mission_server_approval_required");
+
+    console.log("agent-cluster mission route: PASS (auth, plan-only handoff, exact scope, single-use server approval, replay denial)");
   } catch (error) {
     console.error(error);
     if (stderr) console.error(stderr);
