@@ -100,6 +100,13 @@ Establish and verify the real MindCore/MindCloud execution loop across backend a
 
 **Current implementation status:** architecture documented on branch `architecture/regenten-formation-control-20261013`; runtime implementation and tests for the new model are **EJ IMPLEMENTERAT / not yet verified**. Do not describe the model as live until code and acceptance tests prove it.
 
+## Agent-cluster result hardening — 2026-10-13
+
+- Changed `mindcore/agent-cluster.js`: result validation now rejects non-integer, negative, or non-safe-integer token counts instead of coercing malformed values to zero; results without evidence references remain `needs_review`, not `completed`.
+- Added regression assertions in `scripts/verify-agent-cluster.js` for malformed token counts and missing evidence.
+- **Verification:** both files were read back from the PR branch. GitHub check-runs/status API currently reports no check runs for the head SHA; the test has **not yet been executed in a local/CI runtime**. Do not call this fix test-passed until a real run is observed.
+- This is a limited hardening change to the existing plan-only agent-cluster validator. It does not implement the full Regenten runtime, authorize tools, or promote evidence.
+
 ## Reporting format
 - **Changed:** exact files and purpose.
 - **Verified:** checks actually run and results.
