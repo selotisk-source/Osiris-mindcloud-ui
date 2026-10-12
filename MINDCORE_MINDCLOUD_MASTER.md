@@ -1,20 +1,37 @@
 # MindCore & MindCloud — Master Handover
-**Version:** 1.1 | **Updated:** 2026-10-11  
-**Purpose:** durable project context for Claude and any collaborator continuing work across chats.
+**Version:** 1.2 | **Updated:** 2026-10-13
+**Purpose:** durable project context for collaborators continuing work across chats.
 
 ## Read this first
-This is a living engineering project, not a brainstorming exercise. Use this document with `MINDCORE_CURRENT_STATE.md`, `MINDCORE_DECISIONS.md` (if present), the repository, and test results. Do not assume another chat is accessible. Persist important discoveries here or in the state/changelog files.
+This is a living engineering project, not a brainstorming exercise. Use this document with `MINDCORE_CURRENT_STATE.md`, the repository, and observed test/deployment results. Do not assume another chat is accessible. Persist important discoveries in state/decision records.
 
 ## The system in one minute
-- **MindCore** is the cognitive and execution core: typed state, task lifecycle, planning, capability routing, policy/approval gates, evidence, verification and controlled decisions.
-- **MindCloud** is the distributed environment/network that connects agents, tools, services, data and clients through shared contracts and state.
-- **Dirigentverket** is the orchestration layer: decomposes goals into a living DAG, routes work, runs independent tasks in parallel, manages dependencies/cancellation/retries and reunites results.
-- **Metanoia Engine** is the mandatory revalidation mechanism: detect contradictions/anomalies, test alternatives, update only affected model subgraphs, version changes and preserve why a change occurred.
-- **Evidence Layer / Evidence Passport** records claims, source/provenance, tests, timestamps, results, uncertainty and verification status.
-- **OSIRIS** is a client and end-to-end testbed on top of MindCore/MindCloud. It is not the core and must not dictate the architecture.
-- **Adapters** expose external capabilities behind typed, supervised contracts. Routing, approval, audit and promotion authority stay in MindCore.
+- **Regenten**: the authorized leader/authority identity that establishes mission intent and the boundaries of its mandate. “Regenten” is role-neutral and can represent a king or queen.
+- **Di Regenten**: the leadership/control function that translates authorized intent into priorities, delegated missions, constraints, approval gates and outcome review. It is a function, not a second competing orchestrator.
+- **MindCore**: shared cognitive/execution core for typed state, task lifecycle, capability routing, policy, evidence, verification and controlled decisions. It supplies the common operational picture; it does not grant itself unlimited authority.
+- **MindCloud**: distributed environment/network connecting agents, tools, services, data and clients through shared contracts and state.
+- **Formation Engine**: organizes agents into roles, groups and subgroups; checks capability/dependency fit; can regroup when mission conditions change. It proposes/maintains formation, but does not independently become the task scheduler.
+- **Dirigentverket**: the single execution orchestrator. It decomposes goals into a living DAG, routes work, runs safe independent tasks in parallel, manages dependencies/cancellation/retries and reunites results.
+- **Hivemind**: a potential bounded planning/DAG capability behind an adapter; it must not become a second authority or competing orchestrator.
+- **Metanoia Engine**: revalidation mechanism for contradictions/anomalies, alternative hypotheses and counterfactuals. It versions localized model changes and preserves why they occurred; consequential promotion still requires policy and approval.
+- **Evidence Layer / Evidence Passport**: records claims, provenance, tests, timestamps, results, uncertainty and verification status.
+- **OSIRIS**: a client and end-to-end testbed on top of MindCore/MindCloud. It is not the core and must not dictate the architecture.
+- **Adapters**: expose external capabilities behind typed, supervised contracts. Routing, approval, audit and promotion authority stay in MindCore.
 
-Intended flow: `Task → MindCore → MindCloud/Dirigentverket → Capability/Adapter → Evidence + Verification → Result → Client`. A diagram or registered adapter does not prove that the runtime or deployment works.
+## Canonical control flow
+`Regenten (intent + mandate) → Di Regenten (priorities + constraints + approvals) → Formation Engine (roles + membership) → Dirigentverket (task DAG + execution) → agents/adapters → evidence + verification → MindCore shared state → Di Regenten/Regenten review`
+
+MindCore provides shared state and policy across the flow; it is not merely a terminal layer. Feedback may trigger re-planning or formation changes, but only within the mandate and policy. Keep formation management distinct from task orchestration and both distinct from evidence/analysis.
+
+## Mandate and mission contract
+Every executable mission should carry, or resolve server-side to, a typed and versioned contract with at least:
+- `mission_id`, `mandate_id`, `regent_id`, `issued_by`, `issued_at`
+- `authority_scope`, `constraints`, `risk_class`, `resource_limits`, `deadline` where relevant
+- `formation_id`, `execution_plan_id`, `parent_task_id` and dependency references
+- `approval_gate`, `evidence_required`, `verification_policy`
+- `status`, `version`, `correlation_id`, and audit/evidence references
+
+These are target contract fields, not a claim that all fields already exist in code. Authorization must be enforced server-side; an agent identity is not a security identity, and client-supplied approval is never trusted. A mission outside scope must be denied or paused, not silently widened.
 
 ## Architecture invariants
 1. Adaptive complexity routing; living per-project DAG; parallelize only independent/safe work.
@@ -24,13 +41,16 @@ Intended flow: `Task → MindCore → MindCloud/Dirigentverket → Capability/Ad
 5. Separate agent identity from security identity. Enforce server-side auth/authorization; never trust client-supplied approval.
 6. No consequential state promotion without Metanoia revalidation and the required human approval gate. Routine decisions may be autonomous only within an explicit mandate and risk policy.
 7. No claim of completion without evidence. Distinguish planned, implemented, tested, deployed and end-to-end verified.
-8. Do not buy subscriptions or prepaid API credits without explicit approval. Prefer open-source, self-hosted and free/public options where practical.
+8. No subscriptions or prepaid API credits without explicit approval. Prefer open-source, self-hosted and free/public options where practical.
 9. Reuse the existing repository and implementation; inspect before replacing or rebuilding.
 10. Do not expose secrets in logs, client bundles, commits or handover documents.
+11. Exactly one execution orchestrator owns task scheduling and lifecycle: Dirigentverket unless an explicit, tested architectural decision replaces it.
+12. Formation changes, replanning, retries and recovery are policy-bound, auditable and must preserve mission scope.
+13. Failed, stale, missing or contradictory evidence must never be silently upgraded to verified.
 
 ## Repo-specific facts already documented
-Repository: https://github.com/selotisk-source/Osiris-mindcloud-ui  
-Default branch: `main`. Public deployment previously referenced: https://osiris-mindcloud.up.railway.app (deployment health must be checked, not assumed).
+Repository: https://github.com/selotisk-source/Osiris-mindcloud-ui
+Default branch: `main`. Public deployment referenced in project history: https://mindcloud-live.up.railway.app; deployment health must be checked, not assumed.
 
 The repository README documents:
 - Arena capability flow `Arena → Evaluate → Verify`; candidate promotion requires a verified winner, explicit approval and revalidation. Arena itself must not deploy code or write to the registry.
@@ -40,8 +60,8 @@ The repository README documents:
 - Passive subdomain discovery only, with server-side authorized-domain allowlist; browser cookie inspection is local, user-initiated and metadata-only.
 These are repository-documented patterns. Verify each capability’s actual runtime status independently.
 
-## Role of Claude
-Act as an engineering collaborator and continuity keeper. Inspect actual files, tests, branches, issues, CI and deployment evidence when tools are available. Make changes, run tests and update persistent project state; do not merely explain what someone should do.
+## Role of collaborators
+Inspect actual files, tests, branches, issues, CI and deployment evidence when tools are available. Make changes, run tests and update persistent project state; do not merely explain what someone should do.
 
 ### Work protocol
 1. Read this handover and current state; inspect relevant code and recent commits before acting.
@@ -49,7 +69,7 @@ Act as an engineering collaborator and continuity keeper. Inspect actual files, 
 3. Find the smallest safe implementation path and reuse existing code.
 4. Make the change using available tools.
 5. Run the narrowest relevant test, then broader verification where feasible.
-6. Report exact files/commit/PR, commands or checks actually run, outcomes, and remaining blockers.
+6. Report exact files/commit/PR, checks actually run, outcomes and remaining blockers.
 7. Update `MINDCORE_CURRENT_STATE.md` and decision/changelog records after meaningful changes.
 8. Continue to the next unblocked task; do not stop at a plan if execution is available.
 
@@ -57,13 +77,13 @@ If blocked, identify the precise missing permission, secret, external action or 
 
 ## Cross-chat memory protocol
 - Keep this master stable; update it only when architecture or durable invariants change.
-- Keep `MINDCORE_CURRENT_STATE.md` short and current: verified baseline, active milestone, completed work, failed checks, blockers, next concrete action.
-- Maintain `MINDCORE_DECISIONS.md` for dated decisions and rationale and `MINDCORE_CHANGELOG.md` for verified changes. Create these files if missing and useful.
-- End each substantial session by writing a handover: exact state, evidence, unresolved questions and next action. Do not rely on chat history alone.
-- At the start of a new chat, reconcile saved state with repository reality. If they conflict, trust fresh reproducible evidence and document the discrepancy.
+- Keep `MINDCORE_CURRENT_STATE.md` current: verified baseline, active milestone, completed work, failed checks, blockers and next concrete action.
+- Maintain dated decision and changelog records if useful; do not create duplicate sources of truth.
+- End substantial sessions by recording exact state, evidence, unresolved questions and next action.
+- At the start of a new chat, reconcile saved state with repository and fresh test evidence. If they conflict, trust fresh reproducible evidence and document the discrepancy.
 
 ## Definition of done
-A feature is not done merely because code or UI exists. Use the feature’s acceptance criteria. For an end-to-end flow, verify request → auth/policy → task creation → routing → real capability execution → result → evidence/status persistence → client display, including error paths as relevant. A health endpoint alone is not proof of functional correctness.
+A feature is not done merely because code or UI exists. For an end-to-end flow, verify request → auth/policy → mission/task creation → formation/routing → real capability execution → result → evidence/status persistence → client display, including error paths as relevant. A health endpoint alone is not proof of functional correctness.
 
-## Immediate instruction
-Read `MINDCORE_CURRENT_STATE.md`, inspect the live repository and test setup, then take the next concrete engineering action toward a functioning MindCore/MindCloud backend↔frontend execution loop. Prioritize adapter contract/connection, persisted state, verification and truthful status reporting. Update the state file with actual evidence before finishing.
+## Immediate engineering priority
+Advance the real MindCore/MindCloud backend↔frontend execution loop and introduce the Regenten/Di Regenten model incrementally. First map existing task, policy, adapter and evidence contracts to this model. Avoid a big-bang rewrite or a second scheduler. Update current state with exact evidence before finishing.
