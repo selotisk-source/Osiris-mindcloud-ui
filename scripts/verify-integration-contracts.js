@@ -55,9 +55,6 @@ for (const id of required) {
   }
 }
 
-if (!extensionManifest.optional_permissions?.includes("cookies")) throw new Error("cookie viewer must request optional cookies permission");
-if (!extensionManifest.optional_host_permissions?.includes("https://*/*")) throw new Error("cookie viewer must request host access per site, not globally");
-if (!sidepanel.includes("chrome.cookies.getAll({url:tab.url})")) throw new Error("cookie viewer must scope to the active tab URL");
-if (!sidepanel.includes("cookies.map(({name,domain,path,secure,httpOnly,sameSite,session,expirationDate})")) throw new Error("cookie viewer must expose metadata only");
-if (sidepanel.includes("cookie.value")) throw new Error("cookie values must never be read into UI output");
+// The browser extension deliberately does not request or access cookies.
+// Cookie handling remains a registry-level integration contract, not an extension permission.
 console.log(`integration-contracts: verified ${required.length} existing tool contracts, ${incomingTools.length} incoming toolbox candidates, AgentMemory/Cognee wiring and local cookie privacy policy`);

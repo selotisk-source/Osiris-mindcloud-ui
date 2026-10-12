@@ -137,19 +137,40 @@ let cctvSnapshotState = {status:"not_checked",verified:false};
 
 function cctvResponse() {
   const source = process.env.CCTV_SOURCE_URL || null;
-  let protocol = null;
-  try { protocol = source ? new URL(source).protocol.replace(":", "").toUpperCase() : null; } catch {}
+  let transportProtocol = null;
+  let sourcePath = "";
+  try {
+    if (source) {
+      const parsed = new URL(source);
+      transportProtocol = parsed.protocol.replace(":", "").toUpperCase();
+      sourcePath = parsed.pathname.toLowerCase();
+    }
+  } catch {}
+  const contentType = String(cctvSnapshotState.contentType || "").split(";")[0].trim().toLowerCase();
+  const mediaProtocol =
+    /(?:vnd\.apple\.mpegurl|mpegurl)/i.test(contentType) || /\.m3u8$/i.test(sourcePath) ? "HLS" :
+    /dash\+xml/i.test(contentType) || /\.mpd$/i.test(sourcePath) ? "DASH" :
+    /^image\/(?:jpeg|png|webp)$/i.test(contentType) || /\.(?:jpe?g|png|webp)$/i.test(sourcePath) ? "SNAPSHOT" :
+    /^video\/mp4$/i.test(contentType) || /\.mp4$/i.test(sourcePath) ? "MP4" : "UNKNOWN";
+  const frameVerified = cctvSnapshotState.frameVerified === true;
   return {
     status: source ? "configured" : "not_configured",
     service: "osiris-mindcloud-ui",
     endpoint: "/api/cctv",
     source: source ? "configured" : null,
-    streamProtocol: protocol,
+    streamProtocol: ["HLS", "DASH"].includes(mediaProtocol) ? mediaProtocol : null,
+    mediaProtocol,
+    transportProtocol,
     streamStatus: source ? "unverified" : "unconfigured",
     proxyStatus: "implemented",
     proxyAuthStatus: (process.env.CCTV_PROXY_TOKEN || process.env.CCTV_PUBLIC_ACCESS === "true") ? "configured" : "credentials-missing",
-    frameStatus: !source ? "unconfigured" : cctvSnapshotState.verified ? "verified" : (/\.(?:jpe?g|png|webp)(?:\?|$)/i.test(source) ? "unverified" : "not_implemented"),
+    frameStatus: !source ? "unconfigured" : frameVerified ? "verified" : mediaProtocol === "SNAPSHOT" ? "unverified" : "not_implemented",
     evidenceStatus: !source ? "unavailable" : cctvSnapshotState.verified ? "snapshot-hash-recorded" : "not_verified",
+    frame: {
+      verified: frameVerified,
+      sha256: frameVerified ? cctvSnapshotState.frameSha256 || null : null,
+      capturedAt: frameVerified ? cctvSnapshotState.frameCapturedAt || null : null
+    },
     snapshotStatus: source ? cctvSnapshotState.status : "not_configured",
     snapshotCheckedAt: cctvSnapshotState.checkedAt || null,
     snapshotContentType: cctvSnapshotState.contentType || null,
@@ -231,7 +252,7 @@ async function cogneeMemoryRoundTrip() {
     const response = await fetch(endpoint + "/api/v1/recall", {
       method:"POST",
       headers:{"content-type":"application/json","accept":"application/json"},
-      body:JSON.stringify({query:marker,session_id:sessionId,scope:["session"],query_type:"CHUNKS_LEXICAL",only_context:true,top_k:5}),
+      body:JSON.stringify({query:marker,session_id:sessionId,scope:"session_first",only_context:true,top_k:5}),
       signal:AbortSignal.timeout(15000)
     });
     return {response,body:await parseResponse(response)};
@@ -244,13 +265,13 @@ async function cogneeMemoryRoundTrip() {
     form.append("datasetName",datasetName);
     form.append("session_id",sessionId);
     form.append("self_improvement","false");
-    form.append("run_in_background","false");
+    form.append("run_in_background","true");
     const writeResponse = await fetch(endpoint + "/api/v1/remember", {
       method:"POST",
       headers:{accept:"application/json"},
       body:form,
-      // Cognee can finish persisting the marker before its full response completes on the 1 GB runtime.
-      signal:AbortSignal.timeout(45000)
+      // Background ingestion returns its acknowledgement without waiting for full graph extraction.
+      signal:AbortSignal.timeout(10000)
     });
     const writeBody = await parseResponse(writeResponse);
     if (!writeResponse.ok) {
@@ -258,11 +279,15 @@ async function cogneeMemoryRoundTrip() {
     }
     let readback = null;
     let readbackAttempts = 0;
-    for (let attempt = 1; attempt <= 3; attempt++) {
+    const maxReadbackAttempts = 8;
+    for (let attempt = 1; attempt <= maxReadbackAttempts; attempt++) {
       readbackAttempts = attempt;
       readback = await recall();
       if (readback.response.ok && containsMarker(readback.body)) break;
-      if (attempt < 3) await new Promise(resolve => setTimeout(resolve, attempt * 500));
+      if (attempt < maxReadbackAttempts) {
+        const delayMs = Math.min(1000 + (attempt - 1) * 500, 3000);
+        await new Promise(resolve => setTimeout(resolve, delayMs));
+      }
     }
     const persisted = Boolean(readback && readback.response.ok && containsMarker(readback.body));
     return {

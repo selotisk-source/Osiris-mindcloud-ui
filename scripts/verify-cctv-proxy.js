@@ -2,11 +2,18 @@
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const dashboardHtml = fs.readFileSync("index.html", "utf8");
+const serverSource = fs.readFileSync("server.js", "utf8");
+const productionVerifier = fs.readFileSync("scripts/verify-production.js", "utf8");
 assert.doesNotMatch(dashboardHtml, /The camera proxy is not implemented yet/, "dashboard must not contradict the implemented server proxy");
 assert.match(dashboardHtml, /proxyAuthStatus/, "dashboard must display proxy credential readiness");
 assert.match(dashboardHtml, /frameStatus/, "dashboard must distinguish frame status");
 assert.match(dashboardHtml, /evidenceStatus/, "dashboard must distinguish evidence verification");
 assert.match(dashboardHtml, /snapshotStatus/, "dashboard must display snapshot probe state");
+assert.match(serverSource, /mediaProtocol/, "CCTV status must identify media format separately from transport");
+assert.doesNotMatch(productionVerifier, /assert\.equal\(cctv\.frameStatus,\s*"verified",\s*"verified snapshot probe must be reflected/, "production verification must not treat a verified snapshot as proof of a decoded live frame");
+assert.match(productionVerifier, /snapshot verification must not imply a decoded live frame/, "production verifier must preserve the snapshot-versus-live-frame distinction");
+assert.doesNotMatch(serverSource, /frameStatus:\s*!source\s*\?\s*"unconfigured"\s*:\s*cctvSnapshotState\.verified\s*\?\s*"verified"/,
+  "a verified JPEG snapshot must not be reported as a decoded live frame");
 const { spawn } = require("node:child_process");
 const http = require("node:http");
 
@@ -96,7 +103,12 @@ function encoded(url) {
     assert.equal(status.proxyAuthStatus, "configured", "test proxy token must be reported as configured");
     assert.equal(status.frameStatus, "not_implemented", "configured HLS source must not imply a verified frame");
     assert.equal(status.evidenceStatus, "not_verified", "configured HLS source must not imply verified snapshot evidence");
+    assert.deepEqual(status.frame, { verified: false, sha256: null, capturedAt: null },
+      "CCTV API must expose an explicit, unverified frame contract until a frame is actually decoded");
     assert.equal(status.snapshotStatus, "not_a_snapshot", "HLS playlist must not be mistaken for an image snapshot");
+    assert.equal(status.mediaProtocol, "HLS", "HLS media must be identified independently of HTTP transport");
+    assert.equal(status.streamProtocol, "HLS", "HLS playback must be selectable by the frontend");
+    assert.equal(status.transportProtocol, "HTTP", "transport scheme must be reported separately");
 
     const manifestResponse = await fetch(appBase + "/api/cctv/stream", {
       headers: { authorization: "Bearer " + token }
