@@ -14,6 +14,7 @@ const root = path.resolve(__dirname, "..");
 
 const cogneeEntrypointPath = path.join(root, "deploy/cognee/railway-entrypoint.sh");
 const cogneeEntrypoint = fs.readFileSync(cogneeEntrypointPath, "utf8");
+const productionVerifier = fs.readFileSync(path.join(root, "scripts/verify-production.js"), "utf8");
 const shellSyntax = spawnSync("sh", ["-n", cogneeEntrypointPath], { encoding: "utf8" });
 assert.equal(shellSyntax.status, 0, "Cognee Railway entrypoint shell syntax must pass: " + shellSyntax.stderr);
 for (const setting of [
@@ -26,6 +27,8 @@ for (const setting of [
 ]) {
   assert.ok(cogneeEntrypoint.includes("set_env " + setting), "Cognee entrypoint must enforce " + setting);
 }
+assert.ok(productionVerifier.includes('["write-readback", "write-timeout-readback"]'), "production verifier must accept only the explicit, proven readback modes");
+assert.ok(productionVerifier.includes('writeAckTimedOut, true'), "timeout-recovery mode must be explicitly labeled");
 assert.ok(cogneeEntrypoint.indexOf("set_env EMBEDDING_BATCH_SIZE 1") < cogneeEntrypoint.indexOf("exec su -p"),
   "Cognee defaults must be patched before the upstream entrypoint starts");
 assert.ok(cogneeEntrypoint.includes('grep -q "^${key}="'), "Cognee env patcher must expand the key variable");
