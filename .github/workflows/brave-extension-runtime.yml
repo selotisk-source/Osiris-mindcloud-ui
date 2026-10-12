@@ -9,6 +9,10 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: brave-extension-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   brave-extension:
     runs-on: ubuntu-latest
