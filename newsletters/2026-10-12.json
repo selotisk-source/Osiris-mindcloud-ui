@@ -1,0 +1,93 @@
+{
+  "date": "2026-10-12",
+  "title": "Briefing · Björnsärken vid den heliga källan",
+  "subtitle": "Skaga, Johanneshuvudet, offergåvor av skinn och bärsärkens omdiskuterade etymologi — en historisk detektivberättelse där dokumenterade uppgifter skiljs från jämförelser och hypoteser.",
+  "status": "NY FORSKNINGSBRIEFING · UTKAST",
+  "sections": [
+    {
+      "category": "KULTURARV",
+      "headline": "Skaga: offerkälla, kyrkplats och gåvor",
+      "text": "Äldre beskrivningar av Skaga nämner kläder och skinn bland offergåvorna. Uppgiften ger en konkret utgångspunkt för att undersöka var gåvorna placerades, hur de användes och hur bruket beskrevs av senare skribenter.",
+      "implication": "Nästa steg är att jämföra de äldsta källorna och hålla isär direkt dokumentation från senare sägner.",
+      "evidence": "Historisk uppgift i äldre litteratur; ritualens ursprung och exakta praktiska utförande är inte fastställda."
+    },
+    {
+      "category": "FÖREMÅL",
+      "headline": "Johanneshuvudet: identitet och omtolkning",
+      "text": "Ett trähuvud har kopplats till Johannes Döparen. Forskning har dock diskuterat möjligheten att ett manshuvud kan ha varit del av en helkroppsskulptur och fått sin senare identitet efter att ha skilts från kroppen.",
+      "implication": "Originalinventarier, auktionshandlingar och museikataloger behövs för att klargöra föremålets proveniens och om ett silverföremål är samma eller ett separat objekt.",
+      "evidence": "Föremålets ursprungliga identitet är inte säkert fastställd."
+    },
+    {
+      "category": "JÄMFÖRELSE",
+      "headline": "Björnfällen i Hedalens stavkyrka",
+      "text": "En norsk kyrkotradition berättar om en björnfäll vid altaret och en björn i en övergiven kyrka. Detta är ett relevant jämförelsefall till Skagas skinntradition, men det visar inte att platserna hade samma ritual eller gemensamt ursprung.",
+      "implication": "Jämför föremålshistoria och äldsta nedteckningar, inte bara liknande berättelsemotiv.",
+      "evidence": "Parallell tradition; direkt historisk koppling till Skaga är inte belagd."
+    },
+    {
+      "category": "SPRÅK",
+      "headline": "Bärsärk och björnskinn",
+      "text": "Fornnordiskans berserkr har ofta tolkats som 'björnskjorta' eller björnpäls, men en alternativ tolkning knyter ordet till 'bar' och en krigare utan rustning. Etymologin är omdiskuterad.",
+      "implication": "Sök efter äldre nordiska belägg för björnhud, björnskinn, bärsärk och djurklädsel i olika kontexter.",
+      "evidence": "Språkhistorisk jämförelse; ingen belagd koppling mellan bärsärkar och Skagas offerbruk."
+    },
+    {
+      "category": "SEJD",
+      "headline": "En prövbar fråga – inte en förutfattad slutsats",
+      "text": "Sejd och völvor är relevanta jämförelsespår när vi undersöker ritual, kropp, djur och heliga platser. Vi har ännu ingen direkt dokumenterad koppling mellan sejd och Skaga.",
+      "implication": "Sök oberoende belägg i Västergötland, Norge och Finland; notera också motstridiga uppgifter.",
+      "evidence": "Forskningshypotes; direkt koppling ej verifierad."
+    },
+    {
+      "category": "HELIGA KÄLLOR",
+      "headline": "Ingemos källa och lund",
+      "text": "Ett vittnesmål från 1681 om Ingemos källa och lund beskriver vatten, gåvor och kläder med anknytning till sjukdom. Det ger en jämförelse på handlingsnivå, inte bevis för att traditionen var förkristen.",
+      "implication": "Jämför ritualsekvensen: hur människor närmade sig platsen, använde vattnet och lämnade gåvor.",
+      "evidence": "Tidigmodern källa; traditionens ålder kräver separat belägg."
+    },
+    {
+      "category": "NÄSTA STEG",
+      "headline": "Följ föremålen och källorna före de stora slutsatserna",
+      "text": "Prioriterade spår är Skagas originalinventarier och auktionshandlingar, trähuvudets museala proveniens, äldre ordbruk kring björnskinn samt fler dokumenterade offerkällor.",
+      "implication": "Varje samband klassas som direkt belägg, historisk parallell, hypotes eller motsägande evidens.",
+      "evidence": "Forskningsplan; inga nya föremålskopplingar fastställs i denna briefing."
+    }
+  ],
+  "editorial": {
+    "framework": [
+      "VAD VI VET",
+      "VAD SOM ÄR TOLKNING",
+      "JÄMFÖRELSE",
+      "HYPOTES",
+      "MOTSÄGELSER",
+      "NÄSTA STEG"
+    ],
+    "symbols": [
+      "GUD",
+      "BLOD",
+      "SOL",
+      "JORD",
+      "ÄRA"
+    ],
+    "visuals": "Illustrationer ska märkas som rekonstruktioner när de inte föreställer verifierade originalföremål."
+  },
+  "sources": [
+    {
+      "label": "Karl Bäckgren, Skaga offerkyrka i Tiveden (1933)",
+      "url": "https://runeberg.org/kyrkohist/1933/0133.html"
+    },
+    {
+      "label": "Mapping Saints — Skaga",
+      "url": "https://saints.dh.gu.se/explore/cults/3543"
+    },
+    {
+      "label": "Terese Zachrisson (2017), Göteborgs universitet",
+      "url": "https://gupea.ub.gu.se/server/api/core/bitstreams/e80593e0-0cd5-4a40-a0b3-6478bc462cb5/content"
+    },
+    {
+      "label": "Skara Stiftshistoriska Sällskap, medlemsblad 2025",
+      "url": "https://skarastiftshistoriska.nu/wp-content/uploads/2025/12/Medlemsblad2504.pdf"
+    }
+  ]
+}
