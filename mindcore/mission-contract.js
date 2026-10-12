@@ -1,9 +1,10 @@
 /**
  * MindCore mission/mandate contract.
  *
- * This is intentionally a pure validation boundary: it does not execute tools,
- * grant authority, or replace Dirigentverket. It makes mission scope explicit
- * and machine-checkable before a mission enters execution.
+ * Pure structural validation only. This module does not authenticate an
+ * approval, verify evidence, grant authority, execute tools, or replace
+ * Dirigentverket. Runtime execution must independently resolve mandate and
+ * approval state from trusted server-side sources.
  */
 
 const REQUIRED = [
@@ -19,15 +20,29 @@ const REQUIRED = [
   "version",
 ];
 
+const ALLOWED_STATUSES = new Set([
+  "proposed",
+  "approved",
+  "executing",
+  "needs_review",
+  "completed",
+  "failed",
+  "cancelled",
+]);
+
 function isNonEmptyString(value) {
   return typeof value === "string" && value.trim().length > 0;
+}
+
+function isStringArray(value) {
+  return Array.isArray(value) && value.every(isNonEmptyString);
 }
 
 function isPlainObject(value) {
   return value !== null && typeof value === "object" && !Array.isArray(value);
 }
 
-export function validateMissionContract(mission) {
+function validateMissionContract(mission) {
   const errors = [];
 
   if (!isPlainObject(mission)) {
@@ -50,20 +65,24 @@ export function validateMissionContract(mission) {
     }
   }
 
-  if ("authority_scope" in mission && !Array.isArray(mission.authority_scope)) {
-    errors.push("authority_scope must be an array");
+  if ("authority_scope" in mission && !isStringArray(mission.authority_scope)) {
+    errors.push("authority_scope must be an array of non-empty strings");
   }
 
-  if ("evidence_required" in mission && !Array.isArray(mission.evidence_required)) {
-    errors.push("evidence_required must be an array");
+  if ("evidence_required" in mission && !isStringArray(mission.evidence_required)) {
+    errors.push("evidence_required must be an array of non-empty strings");
   }
 
   if ("constraints" in mission && !isPlainObject(mission.constraints)) {
     errors.push("constraints must be an object");
   }
 
-  if ("approval_gate" in mission && !isPlainObject(mission.approval_gate)) {
-    errors.push("approval_gate must be an object");
+  if ("approval_gate" in mission) {
+    if (!isPlainObject(mission.approval_gate)) {
+      errors.push("approval_gate must be an object");
+    } else if (typeof mission.approval_gate.required !== "boolean") {
+      errors.push("approval_gate.required must be a boolean");
+    }
   }
 
   if ("version" in mission &&
@@ -71,20 +90,11 @@ export function validateMissionContract(mission) {
     errors.push("version must be a positive safe integer");
   }
 
-  const allowedStatuses = new Set([
-    "proposed",
-    "approved",
-    "executing",
-    "needs_review",
-    "completed",
-    "failed",
-    "cancelled",
-  ]);
-  if ("status" in mission && !allowedStatuses.has(mission.status)) {
+  if ("status" in mission && !ALLOWED_STATUSES.has(mission.status)) {
     errors.push(`unsupported status: ${mission.status}`);
   }
 
-  // A mission cannot claim completion while required evidence is unresolved.
+  // This catches inconsistent state; it does not verify evidence provenance.
   if (
     mission.status === "completed" &&
     Array.isArray(mission.evidence_required) &&
@@ -97,12 +107,17 @@ export function validateMissionContract(mission) {
   return { valid: errors.length === 0, errors };
 }
 
-export function isMissionExecutable(mission) {
+/**
+ * Indicates only that the contract has an allowed handoff status.
+ * Never use this as proof of authority or as a substitute for server-side
+ * policy and approval checks.
+ */
+function isMissionEligibleForHandoff(mission) {
   const result = validateMissionContract(mission);
-  if (!result.valid) return false;
-
-  return (
+  return result.valid && (
     mission.status === "approved" ||
     mission.status === "executing"
   );
 }
+
+module.exports = { validateMissionContract, isMissionEligibleForHandoff };
