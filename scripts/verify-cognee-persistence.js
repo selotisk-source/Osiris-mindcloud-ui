@@ -14,6 +14,7 @@ const root = path.resolve(__dirname, "..");
 
 const cogneeEntrypointPath = path.join(root, "deploy/cognee/railway-entrypoint.sh");
 const cogneeEntrypoint = fs.readFileSync(cogneeEntrypointPath, "utf8");
+const productionVerifier = fs.readFileSync(path.join(root, "scripts/verify-production.js"), "utf8");
 const shellSyntax = spawnSync("sh", ["-n", cogneeEntrypointPath], { encoding: "utf8" });
 assert.equal(shellSyntax.status, 0, "Cognee Railway entrypoint shell syntax must pass: " + shellSyntax.stderr);
 for (const setting of [
@@ -26,6 +27,8 @@ for (const setting of [
 ]) {
   assert.ok(cogneeEntrypoint.includes("set_env " + setting), "Cognee entrypoint must enforce " + setting);
 }
+assert.ok(productionVerifier.includes('["write-readback", "write-timeout-readback"]'), "production verifier must accept only the explicit, proven readback modes");
+assert.ok(productionVerifier.includes('writeAckTimedOut, true'), "timeout-recovery mode must be explicitly labeled");
 assert.ok(cogneeEntrypoint.indexOf("set_env EMBEDDING_BATCH_SIZE 1") < cogneeEntrypoint.indexOf("exec su -p"),
   "Cognee defaults must be patched before the upstream entrypoint starts");
 assert.ok(cogneeEntrypoint.includes('grep -q "^${key}="'), "Cognee env patcher must expand the key variable");
@@ -85,7 +88,10 @@ async function waitHealthy(child) {
         if (!rawValue || !sessionId) { json(res, 400, { error: "missing_raw_data_or_session_id" }); return; }
         backgroundModes.set(sessionId, background && background[1]);
         records.set(sessionId, rawValue);
-        json(res, 200, { status: "stored", session_id: sessionId });
+        // Simulate a lost/slow acknowledgement after the session store has committed the marker.
+        setTimeout(() => {
+          if (!res.destroyed) json(res, 200, { status: "stored", session_id: sessionId });
+        }, 250);
         return;
       }
       json(res, 404, { error: "not_found" });
@@ -100,6 +106,8 @@ async function waitHealthy(child) {
       PORT: String(appPort),
       COGNEE_SERVICE_URL: memoryBase,
       COGNEE_MEMORY_DATASET: "mindcloud-persistence-contract-test",
+      COGNEE_WRITE_ACK_TIMEOUT_MS: "100",
+      COGNEE_READBACK_WINDOW_MS: "10000",
       BROWSER_USE_SERVICE_URL: "",
       BROWSER_USE_API_KEY: "",
       CCTV_SOURCE_URL: "",
@@ -121,7 +129,8 @@ async function waitHealthy(child) {
     assert.equal(result.integrations.memory.status, "healthy");
     assert.equal(result.integrations.memoryRoundTrip.status, "healthy");
     assert.equal(result.integrations.memoryRoundTrip.persisted, true);
-    assert.equal(result.integrations.memoryRoundTrip.mode, "write-readback");
+    assert.equal(result.integrations.memoryRoundTrip.mode, "write-timeout-readback", "readback must recover when the write commits but its acknowledgement times out");
+    assert.equal(result.integrations.memoryRoundTrip.writeAckTimedOut, true);
     assert.ok(recallRequests.length >= 1, "the memory service must receive at least one recall request");
     for (const request of recallRequests) {
       assert.equal(Object.hasOwn(request, "query_type"), false, "Cognee recall must not send unsupported query_type");
@@ -147,7 +156,7 @@ async function waitHealthy(child) {
       assert.ok(records.size >= 2, "uncached startup and explicit self-tests should use distinct probe sessions");
     }
     assert.equal(new Set(records.keys()).size, records.size, "every persistence probe session must be unique");
-    console.log(JSON.stringify({ status: "verified", checks: ["unique-persistence-probe-per-run", "background-write-acknowledgement", "delayed-readback-polling", "bounded-readback-retries", "persisted-marker-found-in-same-session", "cache-reuses-persisted-result-with-fresh-health", "prior-record-cannot-mask-write-failure"], cached: result.cached === true, readbackAttempts: result.integrations.memoryRoundTrip.readbackAttempts, probesWritten: records.size }, null, 2));
+    console.log(JSON.stringify({ status: "verified", checks: ["unique-persistence-probe-per-run", "background-write-acknowledgement", "readback-recovers-from-lost-write-acknowledgement", "delayed-readback-polling", "bounded-readback-retries", "persisted-marker-found-in-same-session", "cache-reuses-persisted-result-with-fresh-health", "prior-record-cannot-mask-write-failure"], cached: result.cached === true, readbackAttempts: result.integrations.memoryRoundTrip.readbackAttempts, probesWritten: records.size }, null, 2));
   } catch (error) { console.error(stderr); console.error(error); process.exitCode = 1; }
   finally {
     child.kill("SIGKILL");

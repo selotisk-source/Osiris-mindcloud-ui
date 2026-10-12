@@ -244,16 +244,18 @@ async function cogneeMemoryRoundTrip() {
   const sessionId = "mindcloud-persistence-probe-" + probeId;
   const marker = "MINDCLOUD_PERSISTENCE_PROBE_V1_" + probeId;
   const datasetName = process.env.COGNEE_MEMORY_DATASET || "mindcloud-selftest";
+  const writeAckTimeoutMs = Math.max(100, Math.min(30000, Number(process.env.COGNEE_WRITE_ACK_TIMEOUT_MS || 10000)));
+  const readbackWindowMs = Math.max(1000, Math.min(30000, Number(process.env.COGNEE_READBACK_WINDOW_MS || 20000)));
   const parseResponse = async response => {
     try { return await response.json(); }
     catch { return {raw:await response.text().catch(()=> "")}; }
   };
-  const recall = async () => {
+  const recall = async timeoutMs => {
     const response = await fetch(endpoint + "/api/v1/recall", {
       method:"POST",
       headers:{"content-type":"application/json","accept":"application/json"},
       body:JSON.stringify({query:marker,session_id:sessionId,scope:"session_first",only_context:true,top_k:5}),
-      signal:AbortSignal.timeout(15000)
+      signal:AbortSignal.timeout(timeoutMs)
     });
     return {response,body:await parseResponse(response)};
   };
@@ -266,26 +268,51 @@ async function cogneeMemoryRoundTrip() {
     form.append("session_id",sessionId);
     form.append("self_improvement","false");
     form.append("run_in_background","true");
-    const writeResponse = await fetch(endpoint + "/api/v1/remember", {
-      method:"POST",
-      headers:{accept:"application/json"},
-      body:form,
-      // Background ingestion returns its acknowledgement without waiting for full graph extraction.
-      signal:AbortSignal.timeout(10000)
-    });
-    const writeBody = await parseResponse(writeResponse);
-    if (!writeResponse.ok) {
-      return {status:"degraded",persisted:false,mode:"write-failed",httpStatus:writeResponse.status,detail:writeBody};
+    let writeResponse = null;
+    let writeBody = null;
+    let writeError = null;
+    try {
+      writeResponse = await fetch(endpoint + "/api/v1/remember", {
+        method:"POST",
+        headers:{accept:"application/json"},
+        body:form,
+        // Background ingestion should acknowledge quickly; if the response is lost,
+        // the unique marker readback decides whether the write actually persisted.
+        signal:AbortSignal.timeout(writeAckTimeoutMs)
+      });
+      writeBody = await parseResponse(writeResponse);
+    } catch (error) {
+      writeError = {
+        name:error instanceof Error ? error.name : "Error",
+        message:error instanceof Error ? error.message : String(error)
+      };
     }
+    const writeAckTimedOut = Boolean(writeError && /timeout|abort/i.test(writeError.name + " " + writeError.message));
+    if (writeResponse && !writeResponse.ok) {
+      return {status:"degraded",persisted:false,mode:"write-failed",writeAckTimedOut:false,writeHttpStatus:writeResponse.status,detail:writeBody};
+    }
+    if (writeError && !writeAckTimedOut) {
+      return {status:"offline",persisted:false,mode:"write-transport-failed",error:writeError.message};
+    }
+
     let readback = null;
     let readbackAttempts = 0;
+    let readbackError = null;
     const maxReadbackAttempts = 8;
-    for (let attempt = 1; attempt <= maxReadbackAttempts; attempt++) {
+    const deadline = Date.now() + readbackWindowMs;
+    for (let attempt = 1; attempt <= maxReadbackAttempts && Date.now() < deadline; attempt++) {
       readbackAttempts = attempt;
-      readback = await recall();
+      const remainingMs = Math.max(1, deadline - Date.now());
+      try {
+        readback = await recall(Math.min(4000, remainingMs));
+        readbackError = null;
+      } catch (error) {
+        readbackError = error instanceof Error ? error.message : String(error);
+        readback = {response:{ok:false,status:0},body:{error:readbackError}};
+      }
       if (readback.response.ok && containsMarker(readback.body)) break;
-      if (attempt < maxReadbackAttempts) {
-        const delayMs = Math.min(1000 + (attempt - 1) * 500, 3000);
+      if (attempt < maxReadbackAttempts && Date.now() < deadline) {
+        const delayMs = Math.min(500 + (attempt - 1) * 250, 1500, Math.max(1, deadline - Date.now()));
         await new Promise(resolve => setTimeout(resolve, delayMs));
       }
     }
@@ -293,19 +320,23 @@ async function cogneeMemoryRoundTrip() {
     return {
       status:persisted ? "healthy" : "degraded",
       persisted,
-      mode:"write-readback",
-      writeHttpStatus:writeResponse.status,
+      mode:writeAckTimedOut ? (persisted ? "write-timeout-readback" : "write-timeout-no-readback") : "write-readback",
+      writeAckTimedOut,
+      writeHttpStatus:writeResponse ? writeResponse.status : null,
       readHttpStatus:readback ? readback.response.status : null,
       readbackAttempts,
       sessionId,
       markerHash:require("node:crypto").createHash("sha256").update(marker).digest("hex"),
-      ...(persisted ? {} : {detail:readback ? readback.body : null})
+      ...(persisted ? {} : {
+        detail:readback ? readback.body : null,
+        ...(writeError ? {writeError} : {}),
+        ...(readbackError ? {readbackError} : {})
+      })
     };
   } catch (error) {
     return {status:"offline",persisted:false,error:error instanceof Error ? error.message : String(error)};
   }
 }
-
 async function runMindcloudSelfTest() {
   const taskId = "selftest-" + Date.now() + "-" + Math.random().toString(36).slice(2, 8);
   let routeResult = null;
