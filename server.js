@@ -829,19 +829,30 @@ const server = http.createServer(async (req,res)=>{
         !require("node:crypto").timingSafeEqual(Buffer.from(suppliedToken), Buffer.from(expectedToken))) {
       sendJson(res,{ok:false,error:"unauthorized"},401); return;
     }
+    let activeMissionRecord = null;
     try {
       const task = await readJson(req);
       if (!task || typeof task.id !== "string" || typeof task.operation !== "string") {
         sendJson(res,{ok:false,error:"invalid_adapter_request"},400); return;
       }
-      const missionContract = missionExecution ? task.missionContract : null;
+      let missionContract = null;
       if (missionExecution) {
+        const missionId = typeof task.missionId === "string" ? task.missionId : "";
+        activeMissionRecord = missionRegistry.get(missionId) || null;
+        if (!activeMissionRecord) {
+          sendJson(res,{ok:false,error:"mission_not_registered"},404); return;
+        }
+        if (Date.now() > activeMissionRecord.expiresAt) {
+          activeMissionRecord.status = "expired";
+          sendJson(res,{ok:false,error:"mission_record_expired"},410); return;
+        }
+        if (activeMissionRecord.status !== "registered") {
+          sendJson(res,{ok:false,error:"mission_not_executable",missionStatus:activeMissionRecord.status},409); return;
+        }
+        missionContract = activeMissionRecord.contract;
         const validation = validateMissionContract(missionContract);
         if (!validation.valid) {
-          sendJson(res,{ok:false,error:"mission_contract_invalid",details:validation.errors},400); return;
-        }
-        if (!isMissionEligibleForHandoff(missionContract)) {
-          sendJson(res,{ok:false,error:"mission_not_approved_for_handoff"},403); return;
+          sendJson(res,{ok:false,error:"registered_mission_contract_invalid",details:validation.errors},500); return;
         }
         if (missionContract.approval_gate.required !== true) {
           sendJson(res,{ok:false,error:"mission_approval_gate_must_be_required"},403); return;
@@ -857,7 +868,7 @@ const server = http.createServer(async (req,res)=>{
           sendJson(res,{ok:false,error:"mission_operation_not_allowlisted"},403); return;
         }
         const exactScope = `${task.id}:${task.operation}`;
-        if (!missionContract.authority_scope.includes(exactScope)) {
+        if (!activeMissionRecord.contract.authority_scope.includes(exactScope)) {
           sendJson(res,{ok:false,error:"mission_scope_mismatch",requiredScope:exactScope},403); return;
         }
         if (!tool.security) {
@@ -871,18 +882,33 @@ const server = http.createServer(async (req,res)=>{
       if (missionExecution && !ticketApproved) {
         sendJson(res,{ok:false,error:"mission_server_approval_required"},403); return;
       }
+      if (missionExecution) {
+        activeMissionRecord.status = "executing";
+        activeMissionRecord.updatedAt = new Date().toISOString();
+        activeMissionRecord.audit.push({event:"server_approval_consumed",status:"executing",timestamp:activeMissionRecord.updatedAt,toolId:task.id,operation:task.operation});
+        missionAudit.push({missionId:activeMissionRecord.missionId,event:"server_approval_consumed",status:"executing",timestamp:activeMissionRecord.updatedAt,toolId:task.id,operation:task.operation});
+      }
       const approved = missionExecution
         ? ticketApproved
         : (!tool.security || passiveScopeApproved || ticketApproved);
       const execution = await adapters.execute({...task,approved});
       if (missionExecution) {
+        // Without an independent evidence verifier, successful execution remains reviewable,
+        // never automatically promoted to a completed mission.
+        activeMissionRecord.status = "needs_review";
+        activeMissionRecord.updatedAt = new Date().toISOString();
+        activeMissionRecord.audit.push({event:"action_result_received",status:"needs_review",timestamp:activeMissionRecord.updatedAt,toolId:task.id,operation:task.operation,ok:execution.ok===true});
+        missionAudit.push({missionId:activeMissionRecord.missionId,event:"action_result_received",status:"needs_review",timestamp:activeMissionRecord.updatedAt,toolId:task.id,operation:task.operation,ok:execution.ok===true});
+        while (missionAudit.length > 1000) missionAudit.shift();
         execution.missionGate = {
           status: "server-approved-for-single-action",
-          missionId: missionContract.mission_id,
-          executionPlanId: missionContract.execution_plan_id,
+          missionId: activeMissionRecord.missionId,
+          executionPlanId: activeMissionRecord.planId,
+          missionStatus: activeMissionRecord.status,
           scope: `${task.id}:${task.operation}`,
           approvalVerifiedByServer: true,
-          toolExecutionEnabledByMissionGate: true
+          toolExecutionEnabledByMissionGate: true,
+          completionPromotionAllowed: false
         };
       }
       if (execution.ok && execution.evidence && typeof execution.evidence === "object") {
@@ -925,6 +951,13 @@ const server = http.createServer(async (req,res)=>{
       }
       sendJson(res,execution);
     } catch(error) {
+      if (missionExecution && activeMissionRecord && activeMissionRecord.status === "executing") {
+        activeMissionRecord.status = "needs_review";
+        activeMissionRecord.updatedAt = new Date().toISOString();
+        activeMissionRecord.audit.push({event:"execution_exception",status:"needs_review",timestamp:activeMissionRecord.updatedAt});
+        missionAudit.push({missionId:activeMissionRecord.missionId,event:"execution_exception",status:"needs_review",timestamp:activeMissionRecord.updatedAt});
+        while (missionAudit.length > 1000) missionAudit.shift();
+      }
       sendJson(res,{ok:false,error:error instanceof Error?error.message:String(error)},400);
     }
     return;
