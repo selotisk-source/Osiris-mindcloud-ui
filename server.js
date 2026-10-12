@@ -166,6 +166,11 @@ function cctvResponse() {
     proxyAuthStatus: (process.env.CCTV_PROXY_TOKEN || process.env.CCTV_PUBLIC_ACCESS === "true") ? "configured" : "credentials-missing",
     frameStatus: !source ? "unconfigured" : frameVerified ? "verified" : mediaProtocol === "SNAPSHOT" ? "unverified" : "not_implemented",
     evidenceStatus: !source ? "unavailable" : cctvSnapshotState.verified ? "snapshot-hash-recorded" : "not_verified",
+    frame: {
+      verified: frameVerified,
+      sha256: frameVerified ? cctvSnapshotState.frameSha256 || null : null,
+      capturedAt: frameVerified ? cctvSnapshotState.frameCapturedAt || null : null
+    },
     snapshotStatus: source ? cctvSnapshotState.status : "not_configured",
     snapshotCheckedAt: cctvSnapshotState.checkedAt || null,
     snapshotContentType: cctvSnapshotState.contentType || null,
