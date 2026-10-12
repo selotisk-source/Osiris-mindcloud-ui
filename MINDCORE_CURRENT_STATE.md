@@ -121,3 +121,14 @@ Establish and verify the real MindCore/MindCloud execution loop across backend a
 - **Not verified:** relevant gaps.
 - **Blocker:** only a concrete obstacle.
 - **Next action:** one executable step.
+
+
+## Mission handoff / execution gate — 2026-10-13
+
+- Added `mindcore/mission-contract.js` as a CommonJS structural validator compatible with the repository's Node 20+ runtime. It checks required fields, exact string-array shapes, approval-gate shape, version and status consistency.
+- `agentCluster.planMission()` validates the contract and propagates mission ID, Regent ID, scope, constraints, evidence requirements, plan ID and explicit server-policy/approval recheck requirements. The generated plan remains non-executing.
+- Authenticated `POST /api/mindcloud/agent-cluster/mission-plan` exposes that plan-only handoff.
+- Authenticated `POST /api/mindcloud/agent-cluster/mission-execute` is a separate guarded adapter path. It requires an eligible mission contract, a non-empty evidence requirement, exact `tool:operation` scope, an allowlisted operation, an approval-capable adapter, and a server-side single-use approval ticket bound to the exact input. Ticket replay is denied.
+- Regression coverage was added to `scripts/verify-mission-contract.js`, `scripts/verify-agent-cluster.js`, and `scripts/verify-agent-cluster-route.js`, and the route test is part of `npm run verify`.
+- Security boundary: the request contract's `regent_id` and status are still request-provided claims; this gate does not authenticate the Regent identity or provide a persistent server-owned mission registry. The single-use server approval ticket authorizes only the exact tool/operation/input. Do not treat the contract alone as trusted authority.
+- The latest mission-execution changes are committed on PR #127. CI for the latest commit must pass before merge; no production deployment or full autonomous Dirigentverket runtime has been verified.
