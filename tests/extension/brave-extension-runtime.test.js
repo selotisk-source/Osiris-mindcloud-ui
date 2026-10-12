@@ -81,6 +81,21 @@ const { chromium } = require("playwright");
     await openedPage.waitForLoadState("domcontentloaded");
     assert.equal(openedPage.url(), "https://mindcloud-live.up.railway.app/");
 
+    // Keep a normal HTTP tab active, then exercise the metadata handler without
+    // bringing the extension page to the foreground. This mirrors a real side panel.
+    const targetPage = await context.newPage();
+    await targetPage.goto("https://mindcloud-live.up.railway.app/mock-active-tab");
+    await targetPage.bringToFront();
+    await panel.evaluate(() => document.getElementById("inspectTab").click());
+    await panel.waitForFunction(() => document.getElementById("tabMetadata").textContent.includes('"cookiesRead": false'));
+    const tabMetadata = JSON.parse(await panel.locator("#tabMetadata").innerText());
+    assert.equal(tabMetadata.title, "Mock MindCloud");
+    assert.equal(tabMetadata.url, "https://mindcloud-live.up.railway.app/mock-active-tab");
+    assert.equal(tabMetadata.origin, "https://mindcloud-live.up.railway.app");
+    assert.equal(tabMetadata.cookiesRead, false);
+    assert.equal(tabMetadata.pageContentRead, false);
+    assert.equal(tabMetadata.networkTransfer, false);
+
     assert.deepEqual(pageErrors, []);
     console.log(`brave-extension: PASS — extension ${extensionId}; two stations rendered; CCTV probe remains blocked on snapshot-only evidence; Open MindCloud action verified; no inline scripts or page errors`);
   } finally {
