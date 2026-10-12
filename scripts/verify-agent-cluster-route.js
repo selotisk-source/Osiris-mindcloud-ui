@@ -18,9 +18,10 @@ async function waitHealthy(child) {
   throw new Error("MindCloud server did not become healthy");
 }
 
-async function request(path, body, authorized = true, bearer = token) {
+async function request(path, body, authorized = true, bearer = token, regentToken = "mindcloud-regent-test-token") {
   const headers = { "content-type": "application/json" };
   if (authorized) headers.authorization = "Bearer " + bearer;
+  if (regentToken) headers["x-mindcloud-regent-token"] = regentToken;
   const response = await fetch(base + path, {
     method: "POST",
     headers,
@@ -39,6 +40,8 @@ async function request(path, body, authorized = true, bearer = token) {
       CCTV_SOURCE_URL: "",
       COGNEE_SERVICE_URL: "",
       MINDCLOUD_TOOL_EXECUTION_TOKEN: token,
+      MINDCLOUD_REGENT_ID: "regent-test",
+      MINDCLOUD_REGENT_TOKEN: "mindcloud-regent-test-token",
       MINDCLOUD_APPROVAL_TOKEN: "mindcloud-mission-approval-test-token",
       MINDCLOUD_EVIDENCE_READ_TOKEN: "mindcloud-mission-evidence-read-token",
       MINDCLOUD_EVIDENCE_WRITE_TOKEN: "mindcloud-mission-evidence-write-token",
@@ -67,6 +70,13 @@ async function request(path, body, authorized = true, bearer = token) {
       status: "proposed",
       version: 1
     };
+    const wrongRegent = await request("/api/mindcloud/agent-cluster/mission-plan", {
+      missionContract,
+      goal: "Wrong Regent identity must fail closed"
+    }, true, token, "wrong-regent-token");
+    assert.equal(wrongRegent.status, 401);
+    assert.equal(wrongRegent.body.error, "regent_identity_not_authorized");
+
     const planned = await request("/api/mindcloud/agent-cluster/mission-plan", {
       missionContract,
       goal: "Validate mission contract propagation",
@@ -181,7 +191,7 @@ async function request(path, body, authorized = true, bearer = token) {
     assert.equal(replay.body.error, "mission_not_executable");
     assert.equal(replay.body.missionStatus, "needs_review");
 
-    console.log("agent-cluster mission route: PASS (server registry, auth, exact scope, single-use approval, replay denial, evidence review gate)");
+    console.log("agent-cluster mission route: PASS (Regent identity binding, server registry, exact scope, single-use approval, replay denial, evidence review gate)");
   } catch (error) {
     console.error(error);
     if (stderr) console.error(stderr);
