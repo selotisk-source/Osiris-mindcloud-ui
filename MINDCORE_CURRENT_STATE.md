@@ -107,6 +107,14 @@ Establish and verify the real MindCore/MindCloud execution loop across backend a
 - **Verification:** both files were read back from the PR branch. GitHub check-runs/status API currently reports no check runs for the head SHA; the test has **not yet been executed in a local/CI runtime**. Do not call this fix test-passed until a real run is observed.
 - This is a limited hardening change to the existing plan-only agent-cluster validator. It does not implement the full Regenten runtime, authorize tools, or promote evidence.
 
+## Sensor Fabric map entry-point fix — 2026-10-13
+
+- Root cause confirmed in `index.html`: selecting **Sensors / CCTV** routed to a status-only CCTV connector panel. The panel contained no map container or map initialization. The map code was in the separate Heritage Map view, so the requested browseable map never appeared from Sensor Fabric.
+- Changed the Sensor Fabric module to render an interactive Leaflet/OpenStreetMap map directly, with pan/zoom and one-click Varna, Sofia and world views. It still displays actual `/api/cctv` connector status.
+- No sensor pins are fabricated: markers are explicitly withheld until verified geographic coordinates are available. A map loading successfully does not claim camera media is live.
+- Added a frontend regression assertion requiring the Sensor Fabric entry point, map container, navigation control and attributed OSM tile source.
+- **Status:** changes are on PR #127 branch. Runtime CI for head `9495edbee6779457006844e08d5c5c853e12a974` was started; latest check must be consulted before marking tests passed. Not merged/deployed yet.
+
 ## Reporting format
 - **Changed:** exact files and purpose.
 - **Verified:** checks actually run and results.
