@@ -137,18 +137,34 @@ let cctvSnapshotState = {status:"not_checked",verified:false};
 
 function cctvResponse() {
   const source = process.env.CCTV_SOURCE_URL || null;
-  let protocol = null;
-  try { protocol = source ? new URL(source).protocol.replace(":", "").toUpperCase() : null; } catch {}
+  let transportProtocol = null;
+  let sourcePath = "";
+  try {
+    if (source) {
+      const parsed = new URL(source);
+      transportProtocol = parsed.protocol.replace(":", "").toUpperCase();
+      sourcePath = parsed.pathname.toLowerCase();
+    }
+  } catch {}
+  const contentType = String(cctvSnapshotState.contentType || "").split(";")[0].trim().toLowerCase();
+  const mediaProtocol =
+    /(?:vnd\.apple\.mpegurl|mpegurl)/i.test(contentType) || /\.m3u8$/i.test(sourcePath) ? "HLS" :
+    /dash\+xml/i.test(contentType) || /\.mpd$/i.test(sourcePath) ? "DASH" :
+    /^image\/(?:jpeg|png|webp)$/i.test(contentType) || /\.(?:jpe?g|png|webp)$/i.test(sourcePath) ? "SNAPSHOT" :
+    /^video\/mp4$/i.test(contentType) || /\.mp4$/i.test(sourcePath) ? "MP4" : "UNKNOWN";
+  const frameVerified = cctvSnapshotState.frameVerified === true;
   return {
     status: source ? "configured" : "not_configured",
     service: "osiris-mindcloud-ui",
     endpoint: "/api/cctv",
     source: source ? "configured" : null,
-    streamProtocol: protocol,
+    streamProtocol: ["HLS", "DASH"].includes(mediaProtocol) ? mediaProtocol : null,
+    mediaProtocol,
+    transportProtocol,
     streamStatus: source ? "unverified" : "unconfigured",
     proxyStatus: "implemented",
     proxyAuthStatus: (process.env.CCTV_PROXY_TOKEN || process.env.CCTV_PUBLIC_ACCESS === "true") ? "configured" : "credentials-missing",
-    frameStatus: !source ? "unconfigured" : cctvSnapshotState.verified ? "verified" : (/\.(?:jpe?g|png|webp)(?:\?|$)/i.test(source) ? "unverified" : "not_implemented"),
+    frameStatus: !source ? "unconfigured" : frameVerified ? "verified" : mediaProtocol === "SNAPSHOT" ? "unverified" : "not_implemented",
     evidenceStatus: !source ? "unavailable" : cctvSnapshotState.verified ? "snapshot-hash-recorded" : "not_verified",
     snapshotStatus: source ? cctvSnapshotState.status : "not_configured",
     snapshotCheckedAt: cctvSnapshotState.checkedAt || null,
