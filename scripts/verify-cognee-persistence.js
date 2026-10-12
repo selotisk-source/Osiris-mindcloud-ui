@@ -6,10 +6,10 @@ const fs = require("node:fs");
 const path = require("node:path");
 const os = require("node:os");
 
-const appPort = 39130;
-const memoryPort = 39131;
-const appBase = "http://127.0.0.1:" + appPort;
-const memoryBase = "http://127.0.0.1:" + memoryPort;
+let appPort;
+let memoryPort;
+let appBase;
+let memoryBase;
 const root = path.resolve(__dirname, "..");
 
 const cogneeEntrypointPath = path.join(root, "deploy/cognee/railway-entrypoint.sh");
@@ -51,8 +51,21 @@ function collect(req) {
     req.on("error", reject);
   });
 }
+async function freePort() {
+  const probe = http.createServer();
+  await new Promise((resolve, reject) => {
+    probe.once("error", reject);
+    probe.listen(0, "127.0.0.1", resolve);
+  });
+  const port = probe.address().port;
+  await new Promise((resolve, reject) => probe.close(error => error ? reject(error) : resolve()));
+  return port;
+}
 function listen(server, port) {
-  return new Promise(resolve => server.listen(port, "127.0.0.1", resolve));
+  return new Promise((resolve, reject) => {
+    server.once("error", reject);
+    server.listen(port, "127.0.0.1", resolve);
+  });
 }
 async function waitHealthy(child) {
   const deadline = Date.now() + 7000;
@@ -97,6 +110,11 @@ async function waitHealthy(child) {
       json(res, 404, { error: "not_found" });
     } catch (error) { json(res, 500, { error: String(error.message || error) }); }
   });
+  memoryPort = await freePort();
+  appPort = await freePort();
+  while (appPort === memoryPort) appPort = await freePort();
+  memoryBase = "http://127.0.0.1:" + memoryPort;
+  appBase = "http://127.0.0.1:" + appPort;
   await listen(memory, memoryPort);
   const child = spawn(process.execPath, ["server.js"], {
     cwd: root,
