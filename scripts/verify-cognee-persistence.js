@@ -33,6 +33,8 @@ assert.ok(cogneeEntrypoint.includes('sed -i "s|^${key}=.*|${key}=${value}|" "$EN
 const storeDir = fs.mkdtempSync(path.join(os.tmpdir(), "mindcloud-cognee-probe-"));
 const records = new Map();
 const recallRequests = [];
+const recallCounts = new Map();
+const backgroundModes = new Map();
 
 function json(res, status, body) {
   res.writeHead(status, { "content-type": "application/json; charset=utf-8" });
@@ -65,8 +67,11 @@ async function waitHealthy(child) {
       if (req.method === "POST" && req.url === "/api/v1/recall") {
         const input = JSON.parse(await collect(req));
         recallRequests.push(input);
+        const count = (recallCounts.get(input.session_id) || 0) + 1;
+        recallCounts.set(input.session_id, count);
         const saved = records.get(input.session_id);
-        const results = saved && saved.includes(input.query) ? [{ content: saved }] : [];
+        // Simulate asynchronous graph ingestion: the marker is not recallable on the first two polls.
+        const results = saved && saved.includes(input.query) && count >= 3 ? [{ content: saved }] : [];
         json(res, 200, { results });
         return;
       }
@@ -74,9 +79,11 @@ async function waitHealthy(child) {
         const body = await collect(req);
         const rawData = body.match(/name="raw_data"\r\n\r\n([^\r\n]+)/);
         const session = body.match(/name="session_id"\r\n\r\n([^\r\n]+)/);
+        const background = body.match(/name="run_in_background"\r\n\r\n([^\r\n]+)/);
         const rawValue = rawData && rawData[1];
         const sessionId = session && session[1];
         if (!rawValue || !sessionId) { json(res, 400, { error: "missing_raw_data_or_session_id" }); return; }
+        backgroundModes.set(sessionId, background && background[1]);
         records.set(sessionId, rawValue);
         json(res, 200, { status: "stored", session_id: sessionId });
         return;
@@ -124,7 +131,8 @@ async function waitHealthy(child) {
       assert.match(request.query || "", /^MINDCLOUD_PERSISTENCE_PROBE_V1_/);
     }
     assert.equal(result.integrations.memoryRoundTrip.persisted, true, "readback must confirm the exact marker");
-    assert.ok(result.integrations.memoryRoundTrip.readbackAttempts >= 1);
+    assert.ok(result.integrations.memoryRoundTrip.readbackAttempts >= 3, "delayed session ingestion must be polled until the exact marker is readable");
+    assert.equal(backgroundModes.get(result.integrations.memoryRoundTrip.sessionId), "true", "persistence probe must request background ingestion");
     assert.match(result.integrations.memoryRoundTrip.sessionId, /^mindcloud-persistence-probe-/);
     assert.match(result.integrations.memoryRoundTrip.markerHash, /^[a-f0-9]{64}$/);
     assert.ok(records.has(result.integrations.memoryRoundTrip.sessionId), "the result's probe marker must exist in the memory service");
@@ -139,7 +147,7 @@ async function waitHealthy(child) {
       assert.ok(records.size >= 2, "uncached startup and explicit self-tests should use distinct probe sessions");
     }
     assert.equal(new Set(records.keys()).size, records.size, "every persistence probe session must be unique");
-    console.log(JSON.stringify({ status: "verified", checks: ["unique-persistence-probe-per-run", "fresh-write-before-readback", "bounded-readback-retries", "persisted-marker-found-in-same-session", "cache-reuses-persisted-result-with-fresh-health", "prior-record-cannot-mask-write-failure"], cached: result.cached === true, readbackAttempts: result.integrations.memoryRoundTrip.readbackAttempts, probesWritten: records.size }, null, 2));
+    console.log(JSON.stringify({ status: "verified", checks: ["unique-persistence-probe-per-run", "background-write-acknowledgement", "delayed-readback-polling", "bounded-readback-retries", "persisted-marker-found-in-same-session", "cache-reuses-persisted-result-with-fresh-health", "prior-record-cannot-mask-write-failure"], cached: result.cached === true, readbackAttempts: result.integrations.memoryRoundTrip.readbackAttempts, probesWritten: records.size }, null, 2));
   } catch (error) { console.error(stderr); console.error(error); process.exitCode = 1; }
   finally {
     child.kill("SIGKILL");
