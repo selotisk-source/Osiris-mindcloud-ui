@@ -632,8 +632,15 @@ const server = http.createServer(async (req,res)=>{
     return;
   }
   if(pathname==="/api/mindcloud/selftest" && req.method==="POST"){
-    try { sendJson(res,await getMindcloudSelfTest()); }
-    catch (error) { sendJson(res,{type:"mindcloud_e2e_selftest",status:"failed",error:error instanceof Error ? error.message : String(error)},500); }
+    try {
+      // In test mode, wait for the startup probe to finish before starting a distinct explicit probe.
+      if (process.env.NODE_ENV === "test" && selftestInFlight) {
+        await selftestInFlight;
+      }
+      sendJson(res, await getMindcloudSelfTest());
+    } catch (error) {
+      sendJson(res, { type:"mindcloud_e2e_selftest", status:"failed", error:error instanceof Error ? error.message : String(error) }, 500);
+    }
     return;
   }
   if(pathname==="/api/mindcloud/capabilities"){sendJson(res,{type:"mindcloud_capability_graph",layers:mindcloud.snapshot().capabilityLayers,recipes:mindcloud.snapshot().recipes});return;}
