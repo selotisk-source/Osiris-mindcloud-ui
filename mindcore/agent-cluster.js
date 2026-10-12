@@ -109,18 +109,26 @@ function createAgentCluster(config = {}) {
         rejected.push({ taskId: result?.taskId ?? null, reason: "unknown_or_duplicate_task" });
         continue;
       }
-      seen.add(result.taskId);
-      const outputTokens = boundedInteger(result.outputTokens, 0, 0, planResult.budget.maxTokens + 1);
       const task = planResult.tasks.find(item => item.id === result.taskId);
+      if (!Number.isSafeInteger(result.outputTokens) || result.outputTokens < 0) {
+        rejected.push({ taskId: result.taskId, reason: "invalid_output_token_count" });
+        continue;
+      }
+      const outputTokens = result.outputTokens;
       if (outputTokens > task.budget.maxTokens) {
+        seen.add(result.taskId);
         rejected.push({ taskId: result.taskId, reason: "agent_token_budget_exceeded" });
         continue;
       }
+      seen.add(result.taskId);
+      const evidenceRefs = Array.isArray(result.evidenceRefs)
+        ? result.evidenceRefs.slice(0, 20).map(ref => cleanText(ref, 300)).filter(Boolean)
+        : [];
       accepted.push({
         taskId: result.taskId,
-        status: result.status === "completed" ? "completed" : "needs_review",
+        status: result.status === "completed" && evidenceRefs.length > 0 ? "completed" : "needs_review",
         outputTokens,
-        evidenceRefs: Array.isArray(result.evidenceRefs) ? result.evidenceRefs.slice(0, 20).map(ref => cleanText(ref, 300)).filter(Boolean) : [],
+        evidenceRefs,
         summary: cleanText(result.summary, 2000)
       });
     }
