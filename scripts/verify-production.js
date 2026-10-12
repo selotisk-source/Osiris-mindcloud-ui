@@ -173,7 +173,12 @@ async function getJson(path) {
       "Cognee write/readback round-trip must pass in production: " + JSON.stringify(selftest.integrations?.memoryRoundTrip));
     assert.equal(selftest.integrations.memoryRoundTrip.persisted, true,
       "production Cognee readback must return the unique marker");
-    assert.equal(selftest.integrations.memoryRoundTrip.mode, "write-readback");
+    assert.ok(["write-readback", "write-timeout-readback"].includes(selftest.integrations.memoryRoundTrip.mode),
+      "production persistence must report a recognized write/readback mode");
+    if (selftest.integrations.memoryRoundTrip.mode === "write-timeout-readback") {
+      assert.equal(selftest.integrations.memoryRoundTrip.writeAckTimedOut, true,
+        "timeout recovery is valid only when the write acknowledgement timeout is explicitly reported");
+    }
     assert.match(selftest.integrations.memoryRoundTrip.markerHash || "", /^[a-f0-9]{64}$/);
   }
 
