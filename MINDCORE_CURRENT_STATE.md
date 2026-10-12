@@ -1,5 +1,5 @@
 # MindCore / MindCloud — Current State
-**Last reconciled:** 2026-10-11  
+**Last reconciled:** 2026-10-13  
 **Source of truth:** repository files and newly observed test/deployment results. This file must be updated after meaningful work.
 
 ## Verified from repository metadata in this session
@@ -73,6 +73,47 @@ Establish and verify the real MindCore/MindCloud execution loop across backend a
 4. Keep promotion gates intact: the registry has 15 `adapter-ready`, 3 `parked-cost-review`, 2 `registered-only`, 3 `research-registered`, and 1 `parked-integration-review` tools. Do not promote Speech Figure without license clearance or paid APIs without an explicit cost decision.
 5. Recheck HTTP 5xx after the next normal deployment; the earlier self-test 502s were confined to a rollout window, and the subsequent cache-enabled requests returned 200.
 6. Update this file with the exact evidence and remaining blocker after each meaningful change.
+
+## Architecture decision — Regenten / Di Regenten / Formation — 2026-10-13
+
+**Decision accepted by user:** streamline and harden MindCloud around one explicit authority/control model. This is an architecture/documentation decision in this commit; it does not yet claim a new runtime implementation.
+
+- **Regenten:** authorized leader identity; establishes intent and mandate.
+- **Di Regenten:** leadership/control function; translates intent into priorities, delegated missions, constraints, approvals and outcome review. It is not a second orchestrator.
+- **Formation Engine:** owns agent roles, membership, groups/subgroups and policy-bound regrouping; it does not independently schedule task execution.
+- **Dirigentverket:** remains the single execution orchestrator for the living task DAG, dependencies, retries, cancellation and task lifecycle.
+- **MindCore:** shared typed state, policy, evidence, verification and operational picture; it does not grant itself unlimited authority.
+- **Hivemind:** may be evaluated as a bounded planning/DAG adapter; it must not become a competing scheduler.
+- **Metanoia:** contradiction/anomaly detection and revalidation; consequential changes still require policy and approval.
+
+**Control flow:** Regenten intent/mandate → Di Regenten control → Formation assignment → Dirigentverket execution → agents/adapters → evidence/verification → MindCore shared state → leadership review and feedback.
+
+**Hardening invariants:** server-side authorization; agent identity separated from security identity; mission scope and resource limits travel with work; client-supplied approval is never trusted; failures and missing/stale evidence cannot be promoted to verified; regrouping/retries are audited; consequential state changes retain Metanoia and human approval gates.
+
+**Target mission contract fields:** mission/mandate/regent IDs, issuer/time, authority scope, constraints/risk/resource limits, formation and execution plan IDs, dependency/correlation IDs, approval gate, evidence/verification requirements, status/version and audit references. These are target fields to map against existing contracts—not a claim that they all exist in runtime code.
+
+**Implementation sequence:**
+1. Inventory existing task, mandate/policy, formation/agent-cluster, adapter and evidence contracts; map current coverage without duplicating components.
+2. Add regression tests for scope denial, forged client approval, duplicate execution authority, retry/regroup auditability and missing evidence.
+3. Implement the smallest compatible contract changes and adapter seams; preserve current 2×2 main workspace and separate two-station Brave variant.
+4. Run targeted tests, then `npm run verify`; verify production separately before claiming deployment/E2E success.
+
+**Current implementation status:** architecture documented on branch `architecture/regenten-formation-control-20261013`; runtime implementation and tests for the new model are **EJ IMPLEMENTERAT / not yet verified**. Do not describe the model as live until code and acceptance tests prove it.
+
+## Agent-cluster result hardening — 2026-10-13
+
+- Changed `mindcore/agent-cluster.js`: result validation now rejects non-integer, negative, or non-safe-integer token counts instead of coercing malformed values to zero; results without evidence references remain `needs_review`, not `completed`.
+- Added regression assertions in `scripts/verify-agent-cluster.js` for malformed token counts and missing evidence.
+- **Verification:** both files were read back from the PR branch. GitHub check-runs/status API currently reports no check runs for the head SHA; the test has **not yet been executed in a local/CI runtime**. Do not call this fix test-passed until a real run is observed.
+- This is a limited hardening change to the existing plan-only agent-cluster validator. It does not implement the full Regenten runtime, authorize tools, or promote evidence.
+
+## Sensor Fabric map entry-point fix — 2026-10-13
+
+- Root cause confirmed in `index.html`: selecting **Sensors / CCTV** routed to a status-only CCTV connector panel. The panel contained no map container or map initialization. The map code was in the separate Heritage Map view, so the requested browseable map never appeared from Sensor Fabric.
+- Changed the Sensor Fabric module to render an interactive Leaflet/OpenStreetMap map directly, with pan/zoom and one-click Varna, Sofia and world views. It still displays actual `/api/cctv` connector status.
+- No sensor pins are fabricated: markers are explicitly withheld until verified geographic coordinates are available. A map loading successfully does not claim camera media is live.
+- Added a frontend regression assertion requiring the Sensor Fabric entry point, map container, navigation control and attributed OSM tile source.
+- **Status:** changes are on PR #127 branch. Runtime CI for head `9495edbee6779457006844e08d5c5c853e12a974` was started; latest check must be consulted before marking tests passed. Not merged/deployed yet.
 
 ## Reporting format
 - **Changed:** exact files and purpose.

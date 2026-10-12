@@ -732,6 +732,28 @@ const server = http.createServer(async (req,res)=>{
     }
     return;
   }
+  if(pathname==="/api/mindcloud/agent-cluster/mission-plan" && req.method==="POST") {
+    if (!isExecutionAuthorized(req)) { sendJson(res,{error:"unauthorized"},401); return; }
+    try {
+      const request = await readJson(req);
+      const plan = agentCluster.planMission({
+        missionContract: request?.missionContract,
+        goal: request?.goal,
+        depth: request?.depth,
+        requestedAgents: request?.requestedAgents,
+        tokenBudget: request?.tokenBudget,
+        constraints: request?.planningConstraints
+      });
+      sendJson(res,plan);
+    } catch(error) {
+      sendJson(res,{
+        error:error?.code || "agent_cluster_mission_plan_failed",
+        message:error instanceof Error ? error.message : String(error),
+        details:Array.isArray(error?.details) ? error.details : undefined
+      },400);
+    }
+    return;
+  }
   if(pathname==="/api/agent-tools"){sendJson(res,agentTools);return;}
   if(pathname==="/api/adapters"){sendJson(res,adapters.snapshot());return;}
   if(pathname.startsWith("/api/adapters/") && pathname.endsWith("/discover")){const id=pathname.split("/")[3];sendJson(res,adapters.discover(id));return;}

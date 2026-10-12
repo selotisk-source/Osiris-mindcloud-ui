@@ -84,6 +84,18 @@ async function main() {
   try {
     await waitForStartup(child);
 
+    const planetary = await fetch("http://127.0.0.1:" + frontendPort + "/");
+    assert.equal(planetary.status, 200, "frontend root should serve the planetary view");
+    assert.match(await planetary.text(), /MindCloud · Planetary View/, "frontend root should remain the planetary view");
+
+    const workspace = await fetch("http://127.0.0.1:" + frontendPort + "/workspace");
+    assert.equal(workspace.status, 200, "frontend should serve the two-station workspace route");
+    const workspaceHtml = await workspace.text();
+    assert.match(workspaceHtml, /data-module="Sensor Fabric"/, "workspace must expose the Sensor Fabric entry point");
+    assert.match(workspaceHtml, /id="sensorFabricMap"/, "Sensor Fabric must include an interactive map container");
+    assert.match(workspaceHtml, /sensorMapVarna/, "Sensor Fabric map must expose a usable map navigation control");
+    assert.match(workspaceHtml, /openstreetmap\.org/, "interactive map must use an attributed public tile source");
+
     const osiris = await fetch("http://127.0.0.1:" + frontendPort + "/osiris");
     assert.equal(osiris.status, 200, "frontend should serve the OSIRIS console route");
     assert.match(osiris.headers.get("content-type") || "", /text\/html/i);
