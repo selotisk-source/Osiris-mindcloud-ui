@@ -6,6 +6,70 @@ const fs = require("node:fs");
 const path = require("node:path");
 
 const PORT = Number(process.env.PORT || 8080);
+// Security baseline: process-local throttling. For multi-replica production, use a
+// shared store (e.g. Redis) and trusted proxy IP configuration before scaling out.
+const crypto = require("node:crypto");
+const RATE_WINDOW_MS = Math.max(1000, Number(process.env.RATE_LIMIT_WINDOW_MS || 60000));
+const RATE_IP_MAX = Math.max(1, Number(process.env.RATE_LIMIT_IP_MAX || 120));
+const RATE_USER_MAX = Math.max(1, Number(process.env.RATE_LIMIT_USER_MAX || 90));
+const RATE_BUCKET_MAX = Math.max(1000, Number(process.env.RATE_LIMIT_BUCKET_MAX || 20000));
+const rateBuckets = new Map();
+
+function requestIdentity(req) {
+  const ip = String(req.socket && req.socket.remoteAddress || "unknown").slice(0, 128);
+  const auth = String(req.headers.authorization || "");
+  // Hash the credential; never store or log the raw bearer token.
+  const user = /^Bearer\\s+\\S+$/i.test(auth)
+    ? crypto.createHash("sha256").update(auth).digest("hex").slice(0, 24)
+    : null;
+  return { ip, user };
+}
+
+function rateLimit(req, res, scope) {
+  const now = Date.now();
+  for (const [key, bucket] of rateBuckets) {
+    if (now - bucket.start >= RATE_WINDOW_MS) rateBuckets.delete(key);
+  }
+  // Bound memory under high-cardinality traffic.
+  while (rateBuckets.size > RATE_BUCKET_MAX) {
+    const oldestKey = rateBuckets.keys().next().value;
+    if (oldestKey === undefined) break;
+    rateBuckets.delete(oldestKey);
+  }
+  const { ip, user } = requestIdentity(req);
+  const limits = [{ key: scope + ":ip:" + ip, max: RATE_IP_MAX }];
+  if (user) limits.push({ key: scope + ":user:" + user, max: RATE_USER_MAX });
+  for (const limit of limits) {
+    let bucket = rateBuckets.get(limit.key);
+    if (!bucket || now - bucket.start >= RATE_WINDOW_MS) {
+      bucket = { start: now, count: 0 };
+      rateBuckets.set(limit.key, bucket);
+    }
+    if (bucket.count >= limit.max) {
+      const retryAfter = Math.max(1, Math.ceil((RATE_WINDOW_MS - (now - bucket.start)) / 1000));
+      res.writeHead(429, {
+        "content-type": "application/json; charset=utf-8",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff",
+        "retry-after": String(retryAfter),
+        "x-ratelimit-limit": String(limit.max),
+        "x-ratelimit-remaining": "0"
+      });
+      res.end(JSON.stringify({ error: "rate_limit_exceeded", retryAfterSeconds: retryAfter }));
+      return false;
+    }
+    bucket.count += 1;
+  }
+  return true;
+}
+
+function setSecurityHeaders(res) {
+  res.setHeader("x-content-type-options", "nosniff");
+  res.setHeader("referrer-policy", "strict-origin-when-cross-origin");
+  res.setHeader("permissions-policy", "camera=(), microphone=(), geolocation=()");
+  res.setHeader("x-frame-options", "DENY");
+}
+
 const BACKEND_URL = process.env.MINDCLOUD_BACKEND_URL || "";
 const ROOT = __dirname;
 const STATIC_FILES = {
