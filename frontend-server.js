@@ -222,6 +222,9 @@ const server = http.createServer((req, res) => {
     return;
   }
   if (url.pathname.startsWith("/api/")) {
+    if (!rateLimit(req, res, "api")) return;
+    const urlLength = Buffer.byteLength(req.url || "", "utf8");
+    if (urlLength > 4096) { send(res, 414, JSON.stringify({ error: "request_target_too_long" })); return; }
     proxy(req, res);
     return;
   }
