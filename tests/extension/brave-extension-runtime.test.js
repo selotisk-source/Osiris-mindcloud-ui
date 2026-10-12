@@ -25,6 +25,27 @@ const { chromium } = require("playwright");
       "--no-default-browser-check"
     ]
   });
+  await context.route("https://mindcloud-live.up.railway.app/**", async route => {
+    const url = new URL(route.request().url());
+    if (url.pathname === "/api/cctv") {
+      return route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({
+          status: "configured",
+          snapshotStatus: "verified",
+          snapshotContentType: "image/jpeg",
+          snapshotByteLength: 64,
+          snapshotSha256: "a".repeat(64),
+          snapshotCheckedAt: "2026-10-12T04:00:00.000Z",
+          streamStatus: "unverified",
+          proxyStatus: "implemented",
+          frame: { verified: false, sha256: null, capturedAt: null }
+        })
+      });
+    }
+    return route.fulfill({ status: 200, contentType: "text/html", body: "<!doctype html><title>Mock MindCloud</title>" });
+  });
 
   try {
     let serviceWorker = context.serviceWorkers()[0];
@@ -44,8 +65,24 @@ const { chromium } = require("playwright");
     assert.equal(await panel.locator("#inspectTab").innerText(), "Inspect active-tab metadata");
     assert.equal(await panel.locator("#promotionGate").innerText(), "BLOCKED — no validated response or stream proof.");
     assert.equal(await panel.locator("script:not([src])").evaluateAll(nodes => nodes.filter(node => node.textContent.trim()).length), 0);
+
+    // Exercise the real button handlers with a controlled, snapshot-only API response.
+    await panel.locator("#probe").click();
+    await panel.getByText("Snapshot record validated.").waitFor();
+    assert.match(await panel.locator("#promotionGate").innerText(), /^BLOCKED — live-stream\/proxy\/frame proof is incomplete/);
+    const validation = JSON.parse(await panel.locator("#verification").innerText());
+    assert.equal(validation.validation.snapshotRecordValid, true);
+    assert.equal(validation.validation.promotionReady, false);
+    assert.equal(validation.evidence.streamProof, null);
+
+    const openedPagePromise = context.waitForEvent("page");
+    await panel.locator("#open").click();
+    const openedPage = await openedPagePromise;
+    await openedPage.waitForLoadState("domcontentloaded");
+    assert.equal(openedPage.url(), "https://mindcloud-live.up.railway.app/");
+
     assert.deepEqual(pageErrors, []);
-    console.log(`brave-extension: PASS — extension ${extensionId}; service worker active; two stations rendered; no inline scripts or page errors`);
+    console.log(`brave-extension: PASS — extension ${extensionId}; two stations rendered; CCTV probe remains blocked on snapshot-only evidence; Open MindCloud action verified; no inline scripts or page errors`);
   } finally {
     await context.close();
   }
