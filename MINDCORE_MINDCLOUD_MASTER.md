@@ -87,3 +87,16 @@ A feature is not done merely because code or UI exists. For an end-to-end flow, 
 
 ## Immediate engineering priority
 Advance the real MindCore/MindCloud backend↔frontend execution loop and introduce the Regenten/Di Regenten model incrementally. First map existing task, policy, adapter and evidence contracts to this model. Avoid a big-bang rewrite or a second scheduler. Update current state with exact evidence before finishing.
+
+
+## 2026-10-13 — Mission contract handoff and guarded execution
+
+The mission contract now crosses a concrete code boundary rather than remaining documentation only:
+
+1. `mindcore/mission-contract.js` validates the shape and consistency of a mission contract.
+2. `agentCluster.planMission()` creates a plan-only formation handoff carrying mission identity, authority scope, constraints, evidence requirements and the execution-plan ID. It does not enable tool execution.
+3. `POST /api/mindcloud/agent-cluster/mission-plan` is the authenticated planning endpoint.
+4. `POST /api/mindcloud/agent-cluster/mission-execute` requires exact `tool:operation` scope, an allowlisted operation, non-empty evidence requirements and a server-side single-use approval ticket bound to the exact action input. Approval replay is denied.
+5. The existing adapter runtime and evidence capture are reused; no parallel scheduler is introduced.
+
+**Important limits:** this is not yet a complete autonomous Dirigentverket runtime. The request-provided `regent_id` and mission status are not independently authenticated, and no persistent server-owned mission registry exists yet. The approval ticket authorizes only the exact action it was created for. Continue by introducing a server-owned mission record/identity binding and explicit transition audit, then prove the full flow in CI and staging before deployment.
