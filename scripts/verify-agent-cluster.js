@@ -29,6 +29,20 @@ const overBudget = cluster.validateResult(plan, [
 ]);
 assert.equal(overBudget.accepted.length, 0);
 assert.equal(overBudget.rejected[0].reason, "agent_token_budget_exceeded");
+const malformedTokens = cluster.validateResult(plan, [
+  { taskId: plan.tasks[0].id, status: "completed", outputTokens: "not-a-number", evidenceRefs: ["test://malformed"], summary: "Malformed token count must not pass" }
+]);
+assert.equal(malformedTokens.accepted.length, 0);
+assert.equal(malformedTokens.rejected[0].reason, "invalid_output_token_count");
+
+const missingEvidence = cluster.validateResult(plan, [
+  { taskId: plan.tasks[0].id, status: "completed", outputTokens: 12, evidenceRefs: [], summary: "No evidence attached" }
+]);
+assert.equal(missingEvidence.accepted.length, 1);
+assert.equal(missingEvidence.accepted[0].status, "needs_review");
+assert.equal(missingEvidence.complete, false);
+assert.equal(missingEvidence.promotionAllowed, false);
+
 const incomplete = cluster.validateResult(plan, []);
 assert.equal(incomplete.complete, false);
 console.log("agent-cluster: verified bounded planning, token allocation, recursion guards, evidence-gated results, duplicate rejection, and no execution authority");
