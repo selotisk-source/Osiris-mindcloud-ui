@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="sv">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MindCloud · Planetary View</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
+<style>
+:root{color-scheme:dark;--bg:#050a11;--panel:#0b1420ee;--line:#26384b;--text:#eaf1fa;--muted:#9aacbf;--blue:#80c6ff;--green:#70e0b0;--amber:#f3c979}
+*{box-sizing:border-box}html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font:14px/1.4 Inter,system-ui,sans-serif}#map{position:absolute;inset:0;background:radial-gradient(ellipse at center,#122b43,#050a11 70%)}.top{position:absolute;z-index:1000;left:14px;right:14px;top:14px;display:flex;align-items:center;gap:14px;padding:12px 15px;border:1px solid var(--line);border-radius:12px;background:var(--panel);backdrop-filter:blur(14px);box-shadow:0 12px 35px #0006}.brand{font-weight:900;letter-spacing:.13em}.brand span{color:var(--blue)}.subtitle{color:var(--muted);font-size:12px}.grow{flex:1}.pill{font-size:11px;border:1px solid var(--line);border-radius:99px;padding:6px 9px;color:var(--muted)}.pill.good{color:var(--green)}.pill.warn{color:var(--amber)}a,button{font:inherit;color:var(--text);text-decoration:none;border:1px solid #3a526c;background:#132337;border-radius:7px;padding:8px 10px;cursor:pointer}.left,.right{position:absolute;z-index:1000;top:92px;width:290px;max-width:calc(100vw - 28px);background:var(--panel);backdrop-filter:blur(12px);border:1px solid var(--line);border-radius:12px;padding:13px;box-shadow:0 12px 35px #0006}.left{left:14px}.right{right:14px}.left h2,.right h2{font-size:12px;letter-spacing:.12em;text-transform:uppercase;margin:0 0 10px}.layer{display:flex;gap:8px;align-items:center;padding:9px 0;border-bottom:1px solid #203044}.layer:last-child{border:0}.layer small{display:block;color:var(--muted)}.layer input{accent-color:#80c6ff}.statusrow{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid #203044}.statusrow:last-child{border:0}.value{color:var(--green);text-align:right}.value.warn{color:var(--amber)}.bottom{position:absolute;z-index:1000;bottom:14px;left:14px;right:14px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}.bottom .message{flex:1;min-width:220px;background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:10px 12px;color:var(--muted)}.leaflet-container{background:#081321}.leaflet-control-attribution{background:#07101bcc!important;color:#9aacbf!important}.leaflet-control-attribution a{color:#80c6ff!important}.leaflet-popup-content-wrapper,.leaflet-popup-tip{background:#0b1420;color:#eaf1fa}.leaflet-popup-content a{color:#80c6ff}@media(max-width:760px){.top{flex-wrap:wrap;gap:8px}.subtitle{display:none}.left{top:115px;width:210px}.right{top:auto;bottom:82px;width:210px}.bottom{bottom:10px}.pill{display:none}} 
+</style></head>
+<body><div id="map" role="application" aria-label="Planetär MindCloud-karta"></div>
+<header class="top"><div><div class="brand">MIND<span>CLOUD</span></div><div class="subtitle">PLANETARY VIEW · GEO + EVIDENCE + SENSOR NETWORK</div></div><span class="pill" id="mapState">Kartmotor startar…</span><span class="pill" id="serviceState">Kontrollerar tjänster…</span><div class="grow"></div><a href="/workspace">Workspace / 2×2</a><a href="/osiris">OSIRIS Console</a></header>
+<aside class="left"><h2>Planetary layers</h2>
+<label class="layer"><input type="checkbox" id="baseLayer" checked><span>Global bas-karta<small>Panorera och zooma från världen till platsnivå</small></span></label>
+<label class="layer"><input type="checkbox" id="heritageLayer" checked><span>Heritage / GEO<small>Verifierade platser och forskningsspår</small></span></label>
+<label class="layer"><input type="checkbox" id="sensorLayer" checked><span>Sensor Fabric<small>Sensorstatus — inte falska live-markörer</small></span></label>
+<label class="layer"><input type="checkbox" id="evidenceLayer" checked><span>Evidence nodes<small>Källor och status ska hållas åtskilda från hypoteser</small></span></label>
+<div style="display:flex;gap:7px;margin-top:12px"><button id="reset">Global vy</button><button id="varna">Varna</button><button id="sweden">Sverige</button></div></aside>
+<aside class="right"><h2>System status</h2><div class="statusrow"><span>Planetary view</span><span class="value" id="viewStatus">Laddar</span></div><div class="statusrow"><span>MindCore API</span><span class="value warn" id="coreStatus">Kontrollerar…</span></div><div class="statusrow"><span>OSIRIS / CCTV</span><span class="value warn" id="osirisStatus">Kontrollerar…</span></div><div class="statusrow"><span>Sensor frame</span><span class="value warn" id="frameStatus">Ej verifierad</span></div><p style="color:var(--muted);font-size:12px;margin:12px 0 0" id="statusMessage" aria-live="polite">Startar planetär vy. Om en anslutning saknas visas orsaken här.</p></aside>
+<footer class="bottom"><div class="message" id="message">Planetary View startar. Kart- och tjänstestatus laddas separat; inga saknade sensorer visas som live.</div><a href="/trading">Trading</a><a href="/newsletter">Briefing</a></footer>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+<script>
+const $=id=>document.getElementById(id);let map=null,heritage=null,sensors=null,evidence=null;
+const places=[
+ {name:'Varna · Bulgaria',lat:43.2141,lng:27.9147,kind:'Heritage hub',status:'Research region'},
+ {name:'Seven Saints Church · Sofia',lat:42.6867,lng:23.3248,kind:'Historic site',status:'Research location'},
+ {name:'Uppsala · Sweden',lat:59.8586,lng:17.6389,kind:'Heritage hub',status:'Research region'},
+ {name:'Gamla Uppsala',lat:59.8983,lng:17.6331,kind:'Archaeological landscape',status:'Research lead'},
+ {name:'Nea Paphos · Cyprus',lat:34.755,lng:32.405,kind:'Archaeological site',status:'Research region'}
+];
+function row(id,ok,good,bad){$(id).textContent=good;$(id).classList.toggle('warn',!ok);if(!ok)$(id).textContent=bad}
+function initMap(){if(!window.L){$('mapState').textContent='Kartmotor saknas';$('mapState').className='pill warn';$('message').textContent='Leaflet kunde inte laddas. Kontrollera nätåtkomst till unpkg.com. Planetary statuspanelen är fortfarande tillgänglig.';return}
+ map=L.map('map',{worldCopyJump:true,zoomControl:true}).setView([25,15],2);
+ const base=L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'&copy; OpenStreetMap contributors'}).addTo(map);
+ heritage=L.layerGroup().addTo(map);sensors=L.layerGroup().addTo(map);evidence=L.layerGroup().addTo(map);
+ places.forEach((p,i)=>{L.circleMarker([p.lat,p.lng],{radius:6,color:'#80c6ff',weight:2,fillColor:'#1d73a8',fillOpacity:.9}).bindPopup('<b>'+p.name+'</b><br>'+p.kind+'<br><small>'+p.status+' · not a live sensor</small>').addTo(heritage);
+ L.circleMarker([p.lat,p.lng],{radius:3,color:'#f3c979',weight:1,fillColor:'#f3c979',fillOpacity:.7}).bindPopup('Evidence / research node: '+p.name).addTo(evidence);});
+ $('mapState').textContent='Karta aktiv';$('mapState').className='pill good';$('viewStatus').textContent='Aktiv';$('viewStatus').classList.remove('warn');$('message').textContent='Planetary View aktiv. Platspunkter är orienterings-/forskningsnoder, inte verifierade livehändelser.';
+ $('baseLayer').onchange=e=>e.target.checked?base.addTo(map):map.removeLayer(base);
+ $('heritageLayer').onchange=e=>e.target.checked?map.addLayer(heritage):map.removeLayer(heritage);
+ $('sensorLayer').onchange=e=>{if(e.target.checked){map.addLayer(sensors);refreshSensors()}else map.removeLayer(sensors)};
+ $('evidenceLayer').onchange=e=>e.target.checked?map.addLayer(evidence):map.removeLayer(evidence);
+ $('reset').onclick=()=>map.setView([25,15],2);$('varna').onclick=()=>map.setView([43.2141,27.9147],9);$('sweden').onclick=()=>map.setView([60,16],5);
+}
+async function refreshStatus(){try{const r=await fetch('/api/mindcloud/status',{cache:'no-store'});const j=await r.json();row('coreStatus',r.ok&&!!j,'Responding','API unavailable');}catch(e){row('coreStatus',false,'Responding','API unavailable')}
+ try{const r=await fetch('/api/cctv',{cache:'no-store'});const j=await r.json();const ok=r.ok&&j.status==='configured'&&j.proxyAuthStatus==='configured';row('osirisStatus',ok,'Configured','Not ready');row('frameStatus',j.frameStatus==='verified','Verified','Not verified');$('statusMessage').textContent=ok?(j.frameStatus==='verified'?'OSIRIS configured; frame verification reported by service.':'OSIRIS configured, but a verified live frame is not confirmed.'):'OSIRIS/CCTV is not ready: '+(j.status||'status unavailable')+' · proxy auth '+(j.proxyAuthStatus||'unknown')+' · stream '+(j.streamStatus||'unknown')+'.';if(!ok)$('message').textContent='Planetary View is active; Sensor Fabric is not live yet. '+$('statusMessage').textContent;}catch(e){row('osirisStatus',false,'Configured','API unavailable');row('frameStatus',false,'Verified','Not verified');$('statusMessage').textContent='Could not contact OSIRIS CCTV status API. Check backend connectivity.'}
+ try{const r=await fetch('/api/runtime/status',{cache:'no-store'});if(r.ok){$('serviceState').textContent='API reachable';$('serviceState').className='pill good'}else throw Error('HTTP '+r.status)}catch(e){$('serviceState').textContent='Backend disconnected';$('serviceState').className='pill warn'}
+}
+async function refreshSensors(){try{const r=await fetch('/api/cctv',{cache:'no-store'});const j=await r.json();sensors.clearLayers();if(j.frameStatus==='verified'){L.circleMarker([43.2141,27.9147],{radius:8,color:'#70e0b0',fillColor:'#70e0b0',fillOpacity:.8}).bindPopup('OSIRIS reports a verified frame. Camera location is not inferred by this demo.').addTo(sensors)} }catch(e){/* empty is honest: no sensor marker without evidence */}}
+initMap();refreshStatus();setInterval(refreshStatus,30000);
+</script></body></html>
