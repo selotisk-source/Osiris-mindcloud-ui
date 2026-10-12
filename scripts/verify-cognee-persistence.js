@@ -32,6 +32,7 @@ assert.ok(cogneeEntrypoint.includes('grep -q "^${key}="'), "Cognee env patcher m
 assert.ok(cogneeEntrypoint.includes('sed -i "s|^${key}=.*|${key}=${value}|" "$ENV_FILE"'), "Cognee env patcher must replace blank values in place");
 const storeDir = fs.mkdtempSync(path.join(os.tmpdir(), "mindcloud-cognee-probe-"));
 const records = new Map();
+const recallRequests = [];
 
 function json(res, status, body) {
   res.writeHead(status, { "content-type": "application/json; charset=utf-8" });
@@ -63,6 +64,7 @@ async function waitHealthy(child) {
       if (req.method === "GET" && req.url === "/health") { json(res, 200, { status: "healthy" }); return; }
       if (req.method === "POST" && req.url === "/api/v1/recall") {
         const input = JSON.parse(await collect(req));
+        recallRequests.push(input);
         const saved = records.get(input.session_id);
         const results = saved && saved.includes(input.query) ? [{ content: saved }] : [];
         json(res, 200, { results });
@@ -113,6 +115,14 @@ async function waitHealthy(child) {
     assert.equal(result.integrations.memoryRoundTrip.status, "healthy");
     assert.equal(result.integrations.memoryRoundTrip.persisted, true);
     assert.equal(result.integrations.memoryRoundTrip.mode, "write-readback");
+    assert.ok(recallRequests.length >= 1, "the memory service must receive at least one recall request");
+    for (const request of recallRequests) {
+      assert.equal(Object.hasOwn(request, "query_type"), false, "Cognee recall must not send unsupported query_type");
+      assert.equal(Object.hasOwn(request, "search_type"), false, "session-first recall must leave search_type unset so Cognee can short-circuit on a session hit");
+      assert.equal(request.scope, "session_first", "recall must explicitly use Cognee session-first scope");
+      assert.match(request.session_id || "", /^mindcloud-persistence-probe-/);
+      assert.match(request.query || "", /^MINDCLOUD_PERSISTENCE_PROBE_V1_/);
+    }
     assert.equal(result.integrations.memoryRoundTrip.persisted, true, "readback must confirm the exact marker");
     assert.ok(result.integrations.memoryRoundTrip.readbackAttempts >= 1);
     assert.match(result.integrations.memoryRoundTrip.sessionId, /^mindcloud-persistence-probe-/);
