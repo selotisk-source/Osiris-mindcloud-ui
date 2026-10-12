@@ -28,6 +28,9 @@ const newsletterHtml = fs.readFileSync(path.join(__dirname, "newsletter.html"), 
 const agentTools = JSON.parse(fs.readFileSync(path.join(__dirname, "integrations", "agent-tools.json"), "utf8"));
 const approvalRequests = new Map();
 const approvalAudit = [];
+const missionRegistry = new Map();
+const missionAudit = [];
+const MISSION_TTL_MS = 30 * 60 * 1000;
 const metanoiaReports = new Map();
 const METANOIA_REPORT_TTL_MS = 10 * 60 * 1000;
 function rememberMetanoiaReport(report) {
@@ -737,15 +740,46 @@ const server = http.createServer(async (req,res)=>{
     if (!isExecutionAuthorized(req)) { sendJson(res,{error:"unauthorized"},401); return; }
     try {
       const request = await readJson(req);
+      const missionContract = request?.missionContract;
+      const validation = validateMissionContract(missionContract);
+      if (!validation.valid) {
+        sendJson(res,{error:"agent_cluster_mission_contract_invalid",details:validation.errors},400); return;
+      }
+      if (missionContract.status !== "proposed") {
+        sendJson(res,{error:"mission_must_start_as_proposed"},400); return;
+      }
+      const now = Date.now();
+      for (const [id, record] of missionRegistry) {
+        if (now > record.expiresAt) missionRegistry.delete(id);
+      }
+      if (missionRegistry.has(missionContract.mission_id)) {
+        sendJson(res,{error:"mission_id_already_registered"},409); return;
+      }
+      while (missionRegistry.size >= 500) {
+        const oldestId = missionRegistry.keys().next().value;
+        missionRegistry.delete(oldestId);
+      }
       const plan = agentCluster.planMission({
-        missionContract: request?.missionContract,
+        missionContract,
         goal: request?.goal,
         depth: request?.depth,
         requestedAgents: request?.requestedAgents,
         tokenBudget: request?.tokenBudget,
         constraints: request?.planningConstraints
       });
-      sendJson(res,plan);
+      const record = {
+        missionId: missionContract.mission_id,
+        contract: structuredClone(missionContract),
+        contractHash: approvalInputHash(missionContract),
+        planId: plan.executionPlanId,
+        status: "registered",
+        createdAt: new Date(now).toISOString(),
+        expiresAt: now + MISSION_TTL_MS,
+        audit: [{event:"registered",status:"registered",timestamp:new Date(now).toISOString()}]
+      };
+      missionRegistry.set(record.missionId,record);
+      missionAudit.push({missionId:record.missionId,event:"registered",status:record.status,timestamp:record.createdAt});
+      sendJson(res,{...plan,mission:{missionId:record.missionId,status:record.status,expiresAt:new Date(record.expiresAt).toISOString()}});
     } catch(error) {
       sendJson(res,{
         error:error?.code || "agent_cluster_mission_plan_failed",
