@@ -138,7 +138,21 @@ const server = http.createServer((req, res) => {
     });
     return;
   }
-  if (url.pathname.startsWith("/api/") || url.pathname.startsWith("/newsletters/")) {
+  if (url.pathname.startsWith("/newsletters/")) {
+    const relative = url.pathname.slice("/newsletters/".length);
+    const resolved = path.resolve(ROOT, "newsletters", relative);
+    const archiveRoot = path.resolve(ROOT, "newsletters") + path.sep;
+    if (!resolved.startsWith(archiveRoot) || relative.includes("..") || !/^[a-zA-Z0-9._/-]+$/.test(relative)) {
+      send(res, 400, JSON.stringify({ error: "invalid_archive_path" })); return;
+    }
+    try {
+      const body = fs.readFileSync(resolved);
+      res.writeHead(200, { "content-type": "application/json; charset=utf-8", "cache-control": "no-store", "x-content-type-options": "nosniff" });
+      res.end(req.method === "HEAD" ? undefined : body);
+    } catch { send(res, 404, JSON.stringify({ error: "briefing_archive_file_not_found", path: relative })); }
+    return;
+  }
+  if (url.pathname.startsWith("/api/")) {
     proxy(req, res);
     return;
   }
