@@ -58,6 +58,17 @@ function isExecutionAuthorized(req) {
 function isApprovalAuthorized(req) {
   return tokenMatches(bearerToken(req), process.env.MINDCLOUD_APPROVAL_TOKEN || "");
 }
+function isRegentAuthorized(req, regentId) {
+  const expectedId = process.env.MINDCLOUD_REGENT_ID || "";
+  const expectedToken = process.env.MINDCLOUD_REGENT_TOKEN || "";
+  const suppliedToken = req.headers["x-mindcloud-regent-token"] || "";
+  return Boolean(
+    expectedId &&
+    expectedToken &&
+    regentId === expectedId &&
+    tokenMatches(String(suppliedToken), expectedToken)
+  );
+}
 function canonicalApprovalInput(value) {
   if (Array.isArray(value)) return value.map(canonicalApprovalInput);
   if (value && typeof value === "object") {
@@ -745,6 +756,9 @@ const server = http.createServer(async (req,res)=>{
       if (!validation.valid) {
         sendJson(res,{error:"agent_cluster_mission_contract_invalid",details:validation.errors},400); return;
       }
+      if (!isRegentAuthorized(req, missionContract.regent_id)) {
+        sendJson(res,{error:"regent_identity_not_authorized"},401); return;
+      }
       if (missionContract.status !== "proposed") {
         sendJson(res,{error:"mission_must_start_as_proposed"},400); return;
       }
@@ -849,6 +863,9 @@ const server = http.createServer(async (req,res)=>{
         }
         if (activeMissionRecord.status !== "registered") {
           sendJson(res,{ok:false,error:"mission_not_executable",missionStatus:activeMissionRecord.status},409); return;
+        }
+        if (!isRegentAuthorized(req, activeMissionRecord.contract.regent_id)) {
+          sendJson(res,{ok:false,error:"regent_identity_not_authorized"},401); return;
         }
         missionContract = activeMissionRecord.contract;
         const validation = validateMissionContract(missionContract);
