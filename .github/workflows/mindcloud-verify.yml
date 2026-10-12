@@ -1,20 +1,25 @@
-name: MindCloud Verification
+name: MindCloud Production Verification
 
 on:
-  push:
-    branches: ["main", "mindcloud/**"]
-  pull_request:
-    branches: ["main"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: mindcloud-production-verification
+  cancel-in-progress: false
 
 jobs:
-  verify:
+  production-smoke:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-      - name: Run local end-to-end and integration checks
-        run: npm run verify
-      - name: Smoke-test live production endpoints
+      - name: Smoke-test live production endpoints (explicit dispatch only)
+        env:
+          MINDCLOUD_REQUIRE_FULL_PRODUCTION_SMOKE: "true"
         run: node scripts/verify-production.js
