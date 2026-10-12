@@ -607,7 +607,9 @@ const server = http.createServer(async (req,res)=>{
     return;
   }
   if(pathname==="/api/mindcloud/selftest" && req.method==="POST"){
-    try { sendJson(res,await getMindcloudSelfTest()); }
+    try {
+      // Test-mode startup runs a real persistence probe as part of server boot.\n      // Never let an explicit probe coalesce with that startup probe: await the\n      // startup run, then begin a distinct run so write/readback isolation is testable.\n      if (process.env.NODE_ENV === "test" && selftestInFlight) {\n        await selftestInFlight;\n        if (!selftestInFlight) { /* startup promise already cleared itself */ }\n        else selftestInFlight = null;\n      }\n      sendJson(res,await getMindcloudSelfTest());
+    }
     catch (error) { sendJson(res,{type:"mindcloud_e2e_selftest",status:"failed",error:error instanceof Error ? error.message : String(error)},500); }
     return;
   }
