@@ -3,12 +3,15 @@ const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const dashboardHtml = fs.readFileSync("index.html", "utf8");
 const serverSource = fs.readFileSync("server.js", "utf8");
+const productionVerifier = fs.readFileSync("scripts/verify-production.js", "utf8");
 assert.doesNotMatch(dashboardHtml, /The camera proxy is not implemented yet/, "dashboard must not contradict the implemented server proxy");
 assert.match(dashboardHtml, /proxyAuthStatus/, "dashboard must display proxy credential readiness");
 assert.match(dashboardHtml, /frameStatus/, "dashboard must distinguish frame status");
 assert.match(dashboardHtml, /evidenceStatus/, "dashboard must distinguish evidence verification");
 assert.match(dashboardHtml, /snapshotStatus/, "dashboard must display snapshot probe state");
 assert.match(serverSource, /mediaProtocol/, "CCTV status must identify media format separately from transport");
+assert.doesNotMatch(productionVerifier, /assert\.equal\(cctv\.frameStatus,\s*"verified",\s*"verified snapshot probe must be reflected/, "production verification must not treat a verified snapshot as proof of a decoded live frame");
+assert.match(productionVerifier, /snapshot verification must not imply a decoded live frame/, "production verifier must preserve the snapshot-versus-live-frame distinction");
 assert.doesNotMatch(serverSource, /frameStatus:\s*!source\s*\?\s*"unconfigured"\s*:\s*cctvSnapshotState\.verified\s*\?\s*"verified"/,
   "a verified JPEG snapshot must not be reported as a decoded live frame");
 const { spawn } = require("node:child_process");
