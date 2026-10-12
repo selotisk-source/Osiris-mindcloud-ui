@@ -103,6 +103,8 @@ function encoded(url) {
     assert.equal(status.proxyAuthStatus, "configured", "test proxy token must be reported as configured");
     assert.equal(status.frameStatus, "not_implemented", "configured HLS source must not imply a verified frame");
     assert.equal(status.evidenceStatus, "not_verified", "configured HLS source must not imply verified snapshot evidence");
+    assert.deepEqual(status.frame, { verified: false, sha256: null, capturedAt: null },
+      "CCTV API must expose an explicit, unverified frame contract until a frame is actually decoded");
     assert.equal(status.snapshotStatus, "not_a_snapshot", "HLS playlist must not be mistaken for an image snapshot");
     assert.equal(status.mediaProtocol, "HLS", "HLS media must be identified independently of HTTP transport");
     assert.equal(status.streamProtocol, "HLS", "HLS playback must be selectable by the frontend");
