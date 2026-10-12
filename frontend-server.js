@@ -21,7 +21,6 @@ const STATIC_FILES = {
   "/trading/tillvaxthuset": ["tillvaxthuset.html", "text/html; charset=utf-8"],
   "/trading/tillvaxthuset/": ["tillvaxthuset.html", "text/html; charset=utf-8"],
   "/tillvaxthuset": ["tillvaxthuset.html", "text/html; charset=utf-8"],
-  "/bankkarta": ["bankkarta.html", "text/html; charset=utf-8"],
   "/newsletter": ["newsletter.html", "text/html; charset=utf-8"],
   "/newsletter/": ["newsletter.html", "text/html; charset=utf-8"],
   "/newsletter.html": ["newsletter.html", "text/html; charset=utf-8"],
