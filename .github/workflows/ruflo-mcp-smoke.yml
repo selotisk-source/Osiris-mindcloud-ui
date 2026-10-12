@@ -16,6 +16,10 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: ruflo-mcp-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   ruflo-mcp-smoke:
     runs-on: ubuntu-latest
