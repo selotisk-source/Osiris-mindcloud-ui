@@ -3,6 +3,7 @@ const fs = require("node:fs");
 const path = require("node:path");
 const { createRouterNetwork } = require("./mindcore/router-network");
 const { createAgentCluster } = require("./mindcore/agent-cluster");
+const { validateMissionContract, isMissionEligibleForHandoff } = require("./mindcore/mission-contract");
 const { createProviderNetwork } = require("./mindcore/provider-network");
 const providerNetwork = createProviderNetwork();
 const agentCluster = createAgentCluster();
@@ -786,7 +787,8 @@ const server = http.createServer(async (req,res)=>{
     return;
   }
   // Both public entry points share the same authenticated adapter runtime, approval gate, audit, and evidence capture.
-  if((pathname==="/api/adapters/execute" || pathname==="/api/mindcloud/dispatch") && req.method==="POST"){
+  if((pathname==="/api/adapters/execute" || pathname==="/api/mindcloud/dispatch" || pathname==="/api/mindcloud/agent-cluster/mission-execute") && req.method==="POST"){
+    const missionExecution = pathname==="/api/mindcloud/agent-cluster/mission-execute";
     const expectedToken = process.env.MINDCLOUD_TOOL_EXECUTION_TOKEN || "";
     const suppliedToken = (req.headers.authorization || "").replace(/^Bearer\s+/i, "");
     if (!expectedToken || !suppliedToken || suppliedToken.length !== expectedToken.length ||
@@ -798,14 +800,57 @@ const server = http.createServer(async (req,res)=>{
       if (!task || typeof task.id !== "string" || typeof task.operation !== "string") {
         sendJson(res,{ok:false,error:"invalid_adapter_request"},400); return;
       }
+      const missionContract = missionExecution ? task.missionContract : null;
+      if (missionExecution) {
+        const validation = validateMissionContract(missionContract);
+        if (!validation.valid) {
+          sendJson(res,{ok:false,error:"mission_contract_invalid",details:validation.errors},400); return;
+        }
+        if (!isMissionEligibleForHandoff(missionContract)) {
+          sendJson(res,{ok:false,error:"mission_not_approved_for_handoff"},403); return;
+        }
+        if (missionContract.approval_gate.required !== true) {
+          sendJson(res,{ok:false,error:"mission_approval_gate_must_be_required"},403); return;
+        }
+        if (!Array.isArray(missionContract.evidence_required) || missionContract.evidence_required.length === 0) {
+          sendJson(res,{ok:false,error:"mission_evidence_requirements_missing"},403); return;
+        }
+      }
       const tool = agentTools.tools.find(item => item.id === task.id);
       if (!tool) { sendJson(res,{ok:false,error:"adapter_not_found"},404); return; }
+      if (missionExecution) {
+        if (!tool.operations?.includes(task.operation)) {
+          sendJson(res,{ok:false,error:"mission_operation_not_allowlisted"},403); return;
+        }
+        const exactScope = `${task.id}:${task.operation}`;
+        if (!missionContract.authority_scope.includes(exactScope)) {
+          sendJson(res,{ok:false,error:"mission_scope_mismatch",requiredScope:exactScope},403); return;
+        }
+        if (!tool.security) {
+          sendJson(res,{ok:false,error:"mission_execution_requires_server_approval_capable_tool"},403); return;
+        }
+      }
       // Client-provided approval is never trusted. Passive subdomain lookups are allowed
       // only when the requested root is covered by the server-owned domain allowlist.
-      const passiveScopeApproved = tool.id === "subdomain-finder" && isAuthorizedSubdomainScope(task.input?.domain);
+      const passiveScopeApproved = !missionExecution && tool.id === "subdomain-finder" && isAuthorizedSubdomainScope(task.input?.domain);
       const ticketApproved = Boolean(tool.security && consumeApproval(task.approvalId,tool.id,task.operation,task.input));
-      const approved = !tool.security || passiveScopeApproved || ticketApproved;
+      if (missionExecution && !ticketApproved) {
+        sendJson(res,{ok:false,error:"mission_server_approval_required"},403); return;
+      }
+      const approved = missionExecution
+        ? ticketApproved
+        : (!tool.security || passiveScopeApproved || ticketApproved);
       const execution = await adapters.execute({...task,approved});
+      if (missionExecution) {
+        execution.missionGate = {
+          status: "server-approved-for-single-action",
+          missionId: missionContract.mission_id,
+          executionPlanId: missionContract.execution_plan_id,
+          scope: `${task.id}:${task.operation}`,
+          approvalVerifiedByServer: true,
+          toolExecutionEnabledByMissionGate: true
+        };
+      }
       if (execution.ok && execution.evidence && typeof execution.evidence === "object") {
         const capturedAt = new Date().toISOString();
         const source = typeof execution.evidence.source === "string" && execution.evidence.source.trim()
