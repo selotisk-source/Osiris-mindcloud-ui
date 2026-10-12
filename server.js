@@ -260,13 +260,13 @@ async function cogneeMemoryRoundTrip() {
     form.append("datasetName",datasetName);
     form.append("session_id",sessionId);
     form.append("self_improvement","false");
-    form.append("run_in_background","false");
+    form.append("run_in_background","true");
     const writeResponse = await fetch(endpoint + "/api/v1/remember", {
       method:"POST",
       headers:{accept:"application/json"},
       body:form,
-      // Cognee can finish persisting the marker before its full response completes on the 1 GB runtime.
-      signal:AbortSignal.timeout(45000)
+      // Background ingestion returns its acknowledgement without waiting for full graph extraction.
+      signal:AbortSignal.timeout(10000)
     });
     const writeBody = await parseResponse(writeResponse);
     if (!writeResponse.ok) {
@@ -274,11 +274,15 @@ async function cogneeMemoryRoundTrip() {
     }
     let readback = null;
     let readbackAttempts = 0;
-    for (let attempt = 1; attempt <= 3; attempt++) {
+    const maxReadbackAttempts = 8;
+    for (let attempt = 1; attempt <= maxReadbackAttempts; attempt++) {
       readbackAttempts = attempt;
       readback = await recall();
       if (readback.response.ok && containsMarker(readback.body)) break;
-      if (attempt < 3) await new Promise(resolve => setTimeout(resolve, attempt * 500));
+      if (attempt < maxReadbackAttempts) {
+        const delayMs = Math.min(1000 + (attempt - 1) * 500, 3000);
+        await new Promise(resolve => setTimeout(resolve, delayMs));
+      }
     }
     const persisted = Boolean(readback && readback.response.ok && containsMarker(readback.body));
     return {
