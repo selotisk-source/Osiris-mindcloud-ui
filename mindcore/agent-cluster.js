@@ -1,5 +1,7 @@
 "use strict";
 
+const { validateMissionContract } = require("./mission-contract");
+
 const DEFAULT_LIMITS = Object.freeze({
   maxDepth: 3,
   maxAgents: 12,
@@ -96,6 +98,42 @@ function createAgentCluster(config = {}) {
     };
   }
 
+  function planMission({ missionContract, ...planOptions } = {}) {
+    const validation = validateMissionContract(missionContract);
+    if (!validation.valid) {
+      const error = new Error("agent_cluster_mission_contract_invalid");
+      error.code = "agent_cluster_mission_contract_invalid";
+      error.details = validation.errors;
+      throw error;
+    }
+
+    const executionPlan = plan(planOptions);
+    return {
+      ...executionPlan,
+      executionPlanId: missionContract.execution_plan_id,
+      missionHandoff: {
+        missionId: missionContract.mission_id,
+        regentId: missionContract.regent_id,
+        formationId: missionContract.formation_id,
+        authorityScope: [...missionContract.authority_scope],
+        constraints: { ...missionContract.constraints },
+        evidenceRequired: [...missionContract.evidence_required],
+        approvalRequired: missionContract.approval_gate.required,
+        contractVersion: missionContract.version,
+        contractStatus: missionContract.status,
+        policyRecheckRequired: true,
+        approvalVerificationRequired: missionContract.approval_gate.required,
+        executionAuthorized: false
+      },
+      gates: {
+        ...executionPlan.gates,
+        missionContractValidated: true,
+        executionAuthorized: false,
+        serverPolicyRecheckRequired: true
+      }
+    };
+  }
+
   function validateResult(planResult, results = []) {
     if (!planResult || planResult.type !== "mindcloud_agent_cluster_plan") {
       throw new Error("agent_cluster_plan_required");
@@ -147,7 +185,7 @@ function createAgentCluster(config = {}) {
     };
   }
 
-  return { plan, validateResult, limits };
+  return { plan, planMission, validateResult, limits };
 }
 
 module.exports = { createAgentCluster, DEFAULT_LIMITS };
