@@ -253,7 +253,17 @@ const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&g
 function closeAll(){panel.hidden=true;mesh.hidden=true;toolbox.hidden=true;journal.hidden=true;quipro.hidden=true;drawer.classList.remove('open');ws.style.display='';document.getElementById('neuralMeshBtn').classList.remove('active');}
 document.querySelectorAll('[data-view]').forEach(b=>b.addEventListener('click',()=>{const v=b.dataset.view;closeAll();if(v==='neuralmesh')document.getElementById('neuralMeshBtn').click();else if(v==='tools')document.getElementById('toolboxBtn').click();else if(v==='journal')document.getElementById('journalBtn').click();else if(v==='quipro')document.getElementById('quiproBtn').click();else window.scrollTo({top:0,behavior:'smooth'});}));
 document.getElementById('moduleClose').onclick=()=>panel.hidden=true;
-document.querySelectorAll('[data-module]').forEach(b=>b.addEventListener('click',()=>openModule(b.dataset.module)));
+document.querySelectorAll('[data-module]').forEach(b=>b.addEventListener('click',()=>{
+ const name=b.dataset.module;
+ if(name==='Sensor Fabric'){
+   closeAll();
+   const station=document.querySelector('[data-station="3"]');
+   if(station){station.scrollIntoView({behavior:'smooth',block:'center'});station.style.outline='2px solid var(--accent)';setTimeout(()=>station.style.outline='',1800);}
+   connectMedia('OSIRIS');
+   return;
+ }
+ openModule(name);
+}));
 async function openModule(name){
 if(name==='Heritage Map'){
   closeAll();
