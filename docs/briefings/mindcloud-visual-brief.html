@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MindCloud — Unified Intelligence Brief</title>
+<style>
+:root{color-scheme:dark;--bg:#0b1020;--panel:#111a2c;--line:#293750;--ink:#edf3ff;--muted:#9baec9;--cyan:#71e0e0;--gold:#e4c17a;--violet:#a8a0ff}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 80% 0%,#1a3150 0,transparent 45%),var(--bg);color:var(--ink);font:16px/1.6 Inter,ui-sans-serif,system-ui,-apple-system,sans-serif}
+main{max-width:1040px;margin:auto;padding:36px 22px 64px}.eyebrow{text-transform:uppercase;letter-spacing:.22em;color:var(--cyan);font-size:.75rem;font-weight:750}
+header{min-height:360px;display:flex;flex-direction:column;justify-content:space-between;padding:34px;border:1px solid var(--line);border-radius:24px;background:linear-gradient(120deg,rgba(17,26,44,.96),rgba(17,26,44,.65)),radial-gradient(circle at 80% 30%,#31516a,transparent 40%);position:relative;overflow:hidden}
+header:after{content:"";position:absolute;width:360px;height:360px;border:1px solid #71e0e044;border-radius:50%;right:-80px;top:20px;box-shadow:0 0 0 28px #71e0e00c,0 0 0 58px #71e0e00a,0 0 70px #71e0e022}
+h1{font-size:clamp(3rem,8vw,6.5rem);line-height:.92;letter-spacing:-.065em;max-width:760px;margin:26px 0;position:relative;z-index:1}h1 span{color:var(--cyan)}.dek{font-size:1.18rem;max-width:650px;color:#d4dfef;position:relative;z-index:1}.meta{display:flex;flex-wrap:wrap;gap:10px;margin-top:28px;position:relative;z-index:1}.pill{border:1px solid #4b607c;border-radius:99px;padding:6px 12px;color:#dce8f8;font-size:.82rem}
+section{margin-top:30px}.section-head{display:flex;gap:14px;align-items:baseline;border-bottom:1px solid var(--line);padding-bottom:10px;margin-bottom:16px}h2{font-size:1.35rem;margin:0;letter-spacing:-.025em}.section-head p{margin:0;color:var(--muted);font-size:.9rem}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.card{padding:22px;border:1px solid var(--line);border-radius:16px;background:linear-gradient(145deg,#121d30,#0e1728)}.num{color:var(--cyan);font-size:.78rem;letter-spacing:.16em;font-weight:800}.card h3{margin:8px 0;font-size:1.1rem}.card p,.card li{color:#b7c6db}.card ul{padding-left:20px;margin-bottom:0}
+.flow{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.node{padding:16px 12px;border:1px solid #3a526b;border-radius:12px;text-align:center;background:#101c2e}.node strong{display:block;color:var(--cyan)}.node small{color:var(--muted)}.arrow{color:var(--gold);font-size:.8rem}
+.callout{border-left:3px solid var(--gold);padding:16px 20px;background:#e4c17a0c;color:#dce5f2;border-radius:0 12px 12px 0}.status{display:inline-flex;align-items:center;gap:8px;color:var(--gold);font-weight:750;font-size:.85rem}.dot{width:8px;height:8px;background:var(--gold);border-radius:50%}
+footer{border-top:1px solid var(--line);margin-top:34px;padding-top:18px;color:var(--muted);font-size:.85rem}
+@media(max-width:680px){main{padding:14px 12px 36px}header{padding:24px;min-height:390px}.grid{grid-template-columns:1fr}.flow{grid-template-columns:1fr 1fr}.dek{font-size:1rem}.section-head{display:block}.section-head p{margin-top:4px}}
+@media print{body{background:#0b1020;-webkit-print-color-adjust:exact;print-color-adjust:exact}main{max-width:none;padding:12px}header{min-height:290px}.card,.node{break-inside:avoid}}
+</style>
+</head>
+<body><main>
+<header>
+  <div class="eyebrow">MindCore × MindCloud · Project Brief</div>
+  <div>
+    <h1>One system.<br><span>Many capabilities.</span></h1>
+    <p class="dek">A supervised intelligence platform that routes work to specialized tools while keeping policy, evidence, audit, and verification under MindCore.</p>
+    <div class="meta"><span class="pill">Adaptive orchestration</span><span class="pill">Evidence-first</span><span class="pill">Human-gated promotion</span><span class="pill">OSIRIS as client/testbed</span></div>
+  </div>
+</header>
+
+<section>
+  <div class="section-head"><h2>01 / The architecture</h2><p>Clear boundaries; auditable execution.</p></div>
+  <div class="flow">
+    <div class="node"><strong>MindCore</strong><small>Policy · state · verification</small></div>
+    <div class="node"><strong>MindCloud</strong><small>Routing · task graph · lifecycle</small></div>
+    <div class="node"><strong>Capabilities</strong><small>Typed adapters · tools · agents</small></div>
+    <div class="node"><strong>Clients</strong><small>OSIRIS · briefing · workspaces</small></div>
+  </div>
+</section>
+
+<section>
+  <div class="section-head"><h2>02 / Operating principles</h2><p>Built to change without losing control.</p></div>
+  <div class="grid">
+    <article class="card"><div class="num">01 — ROUTE</div><h3>Adaptive complexity</h3><p>Match each task to the smallest suitable capability. Parallelize only when dependencies and risks allow it.</p></article>
+    <article class="card"><div class="num">02 — VERIFY</div><h3>Evidence over assertion</h3><p>Record inputs, outputs, provenance, checks, and failure states. A registered tool is not automatically a working tool.</p></article>
+    <article class="card"><div class="num">03 — CONTAIN</div><h3>Typed, supervised adapters</h3><p>Keep external credentials, browser sessions, processes, and provider calls behind explicit contracts and execution boundaries.</p></article>
+    <article class="card"><div class="num">04 — REVALIDATE</div><h3>Metanoia and human gates</h3><p>Challenge contradictions, revalidate affected subgraphs, preserve prior versions, and require approval for consequential promotion.</p></article>
+  </div>
+</section>
+
+<section>
+  <div class="section-head"><h2>03 / Creative briefing workflow</h2><p>ArtCraft is a candidate visual-production tool.</p></div>
+  <div class="grid">
+    <article class="card"><div class="num">A — PREPARE</div><h3>MindCore defines the brief</h3><p>Produce a concise narrative, source links, claims to verify, and a visual specification.</p></article>
+    <article class="card"><div class="num">B — CREATE</div><h3>ArtCraft supports the visuals</h3><p>Potentially create scene compositions, explanatory images, or 3D/video assets through a supported workflow.</p></article>
+    <article class="card"><div class="num">C — TRACE</div><h3>Attach provenance</h3><p>Record artifact references, provider/model details where available, parameters, and rights notes.</p></article>
+    <article class="card"><div class="num">D — REVIEW</div><h3>Verify before publication</h3><p>Check factual accuracy, clarity, rights, and consistency. Label generated illustrations so they cannot be mistaken for documentary evidence.</p></article>
+  </div>
+  <p class="callout"><span class="status"><span class="dot"></span>Integration status: research stage</span><br>ArtCraft has been identified as a candidate. Its README has been reviewed, but no local build, supported automation interface, or live integration has yet been verified.</p>
+</section>
+
+<section>
+  <div class="section-head"><h2>04 / What “done” means</h2><p>Observable results, not optimistic status labels.</p></div>
+  <div class="card"><ul>
+    <li>Every capability has an explicit contract, owner, permissions, and failure behavior.</li>
+    <li>Verification reports distinguish source review, automated tests, and production observations.</li>
+    <li>External calls are bounded, auditable, and do not silently incur cost or expose sensitive data.</li>
+    <li>Generated assets carry provenance and are reviewed before entering an official brief.</li>
+    <li>Changes are versioned; consequential promotion requires approval and revalidation.</li>
+  </ul></div>
+</section>
+
+<footer>MINdCLOUD PROJECT BRIEF · Draft for review · Architecture and integration status must be reconciled against current repository and deployment evidence before external publication.<br>Reference: <a style="color:var(--cyan)" href="https://github.com/selotisk-source/Osiris-mindcloud-ui">MindCloud / OSIRIS repository</a> · <a style="color:var(--cyan)" href="https://github.com/storytold/artcraft">ArtCraft upstream</a></footer>
+</main></body></html>
