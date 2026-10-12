@@ -12,7 +12,7 @@ permissions:
 jobs:
   brave-extension:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -20,7 +20,26 @@ jobs:
           node-version: 20
       - name: Install Playwright
         run: npm install --no-save playwright
-      - name: Install Chromium and system dependencies
-        run: npx playwright install --with-deps chromium
-      - name: Run Brave-compatible extension runtime test
+      - name: Install Brave from the official APT repository
+        shell: bash
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes curl
+          sudo curl --fail --silent --show-error --location \
+            https://brave-browser-apt-release.s3.brave.com/brave-browser-archive-keyring.gpg \
+            --output /usr/share/keyrings/brave-browser-archive-keyring.gpg
+          sudo curl --fail --silent --show-error --location \
+            https://brave-browser-apt-release.s3.brave.com/brave-browser.sources \
+            --output /etc/apt/sources.list.d/brave-browser-release.sources
+          sudo apt-get update
+          sudo apt-get install --yes brave-browser
+      - name: Install browser system dependencies
+        run: npx playwright install-deps chromium
+      - name: Confirm actual Brave executable
+        run: |
+          test -x /usr/bin/brave-browser
+          /usr/bin/brave-browser --version
+      - name: Run extension runtime test in Brave
+        env:
+          BRAVE_EXECUTABLE_PATH: /usr/bin/brave-browser
         run: xvfb-run -a node tests/extension/brave-extension-runtime.test.js
