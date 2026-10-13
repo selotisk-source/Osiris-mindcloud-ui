@@ -19,6 +19,7 @@ const { createRunManifest, validateCheckpoint, writeCheckpoint, writeEvidencePas
     const saved = await writeCheckpoint(root, checkpoint);
     assert.match(saved.sha256, /^[a-f0-9]{64}$/);
     assert.deepEqual(JSON.parse(await fs.readFile(saved.path, "utf8")).manifest, manifest);
+    await assert.rejects(() => writeCheckpoint(root, checkpoint), /checkpoint_already_exists/);
     assert.throws(() => validateCheckpoint({ ...checkpoint, sequence:0 }), /invalid_checkpoint_sequence/);
     assert.throws(() => validateCheckpoint({ ...checkpoint, manifest:{...manifest,promotion:{allowed:true}} }), /unsafe_checkpoint_policy/);
     const artifactContent = "hello MindCloud";
