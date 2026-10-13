@@ -92,7 +92,7 @@ async function writeCheckpoint(rootDir, checkpoint) {
   await fs.mkdir(dir, { recursive: true });
   const temp = destination + "." + crypto.randomUUID() + ".tmp";
   try {
-    await fs.writeFile(temp, JSON.stringify(checkpoint, null, 2) + "\n, { encoding: "utf8", flag: "wx", mode: 0o600 });
+    await fs.writeFile(temp, JSON.stringify(checkpoint, null, 2) + "\n", { encoding: "utf8", flag: "wx", mode: 0o600 });
     // Hard-link publication is atomic and fails rather than replacing an existing checkpoint.
     await fs.link(temp, destination);
   } catch (error) {
