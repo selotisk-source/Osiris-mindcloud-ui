@@ -62,7 +62,7 @@ const { chromium } = require("playwright");
     });
     await successPage.goto(baseUrl, { waitUntil: "domcontentloaded" });
     await successPage.waitForFunction(() => !!window.L, null, { timeout: 20000 });
-    await successPage.locator('[data-module="Sensor Fabric"]').click();
+    await successPage.locator('[data-module="Sensor Fabric"]').first().click();
     await successPage.locator("#sensorFabricMap").waitFor({ state: "visible" });
     await successPage.waitForFunction(
       () => document.getElementById("sensorMapStatus")?.textContent.includes("waiting for map tiles"),
@@ -86,7 +86,7 @@ const { chromium } = require("playwright");
     await failurePage.route(tileUrl, route => route.abort());
     await failurePage.goto(baseUrl, { waitUntil: "domcontentloaded" });
     await failurePage.waitForFunction(() => !!window.L, null, { timeout: 20000 });
-    await failurePage.locator('[data-module="Sensor Fabric"]').click();
+    await failurePage.locator('[data-module="Sensor Fabric"]').first().click();
     await failurePage.locator("#sensorFabricMap").waitFor({ state: "visible" });
     await failurePage.waitForFunction(
       () => document.getElementById("sensorMapStatus")?.textContent.includes("map tiles could not be fetched"),
