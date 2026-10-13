@@ -88,7 +88,19 @@ async function writeCheckpoint(rootDir, checkpoint) {
   const base = path.resolve(rootDir);
   const destination = path.resolve(base, checkpoint.runId, "checkpoint-" + String(checkpoint.sequence).padStart(6, "0") + ".json");
   if (!destination.startsWith(base + path.sep)) throw new Error("checkpoint_path_escape");
-  await writeJsonAtomic(destination, checkpoint);
+  const dir = path.dirname(destination);
+  await fs.mkdir(dir, { recursive: true });
+  const temp = destination + "." + crypto.randomUUID() + ".tmp";
+  try {
+    await fs.writeFile(temp, JSON.stringify(checkpoint, null, 2) + "\\n", { encoding: "utf8", flag: "wx", mode: 0o600 });
+    // Hard-link publication is atomic and fails rather than replacing an existing checkpoint.
+    await fs.link(temp, destination);
+  } catch (error) {
+    if (error && error.code === "EEXIST") throw new Error("checkpoint_already_exists");
+    throw error;
+  } finally {
+    await fs.rm(temp, { force: true }).catch(() => {});
+  }
   return { path: destination, sha256: crypto.createHash("sha256").update(JSON.stringify(checkpoint)).digest("hex") };
 }
 
