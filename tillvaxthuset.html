@@ -37,6 +37,29 @@
 @media(max-width:600px){.mc-loader-world{width:145vw;height:65vh;top:39%;left:52%}.mc-loader-coord{font-size:8px;right:10px}.mc-loader-seals{left:10px;gap:4px}.mc-loader-seal{width:25px;height:25px;font-size:12px}.mc-loader-sub{margin-bottom:16px}}
 @media(prefers-reduced-motion:reduce){#mc-loading-screen *,#mc-loading-screen:before{animation:none!important;transition:none!important}#mc-loader-bar{width:100%!important}}
 
+
+/* Living greenhouse ambience: light, dew, and slow botanical motion */
+.greenhouse-life{position:absolute;inset:0;z-index:0;overflow:hidden;pointer-events:none;contain:paint}
+.greenhouse-life .sunbeam{position:absolute;top:-24%;left:var(--beam-x);width:var(--beam-w);height:90%;transform:rotate(var(--beam-r));transform-origin:top center;background:linear-gradient(180deg,#ffe8b04a 0%,#d6f5d51b 38%,transparent 100%);filter:blur(19px);opacity:.48;animation:gh-beam 17s ease-in-out var(--beam-delay) infinite alternate}
+.gh-dew{position:absolute;left:var(--x);top:var(--y);width:var(--size);height:var(--size);border-radius:50%;background:radial-gradient(circle at 32% 28%,#fff 0,#baf7ff 20%,#65d9ff55 58%,transparent 74%);box-shadow:0 0 12px #9feeff55;opacity:0;animation:gh-dew-float var(--duration) ease-in-out var(--delay) infinite}
+.gh-leaf{position:absolute;bottom:-25px;left:var(--leaf-x);width:var(--leaf-w);height:var(--leaf-h);transform-origin:50% 100%;opacity:.24;filter:drop-shadow(0 0 14px #55d49c22);animation:gh-leaf-sway var(--leaf-duration) ease-in-out var(--leaf-delay) infinite alternate}
+.gh-leaf:before{content:"";position:absolute;inset:0;border-radius:100% 0 100% 0;background:linear-gradient(135deg,#a8e6a0 0%,#3eaa7b 48%,#155c52 100%);border:1px solid #c9ffcc42}
+.gh-leaf:after{content:"";position:absolute;width:1px;height:85%;left:50%;top:8%;background:#d5ffd079;transform:rotate(22deg)}
+.treeworld .orb{animation:gh-orb-breathe 8s ease-in-out infinite}
+.treeworld .orbit{animation:gh-orbit 32s linear infinite}
+.treeworld .orbit.o2{animation-direction:reverse;animation-duration:41s}
+.treeglyph{animation:gh-tree-breathe 6s ease-in-out infinite;transform-origin:50% 85%}
+.center:after{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse at 50% 45%,#b8f7c80b,transparent 58%);animation:gh-green-pulse 9s ease-in-out infinite}
+@keyframes gh-beam{from{opacity:.22;transform:translateX(-16px) rotate(var(--beam-r))}to{opacity:.62;transform:translateX(22px) rotate(calc(var(--beam-r) + 2deg))}}
+@keyframes gh-dew-float{0%,100%{transform:translate3d(0,18px,0) scale(.7);opacity:0}18%{opacity:.65}70%{opacity:.42}90%{opacity:.1} }
+@keyframes gh-leaf-sway{from{transform:rotate(calc(var(--sway) * -1)) translateY(0)}to{transform:rotate(var(--sway)) translateY(-8px)}}
+@keyframes gh-orb-breathe{0%,100%{box-shadow:0 0 40px #8af0c71b,inset 0 0 36px #8af0c70b;opacity:.82}50%{box-shadow:0 0 75px #8af0c744,inset 0 0 52px #8af0c722;opacity:1}}
+@keyframes gh-orbit{to{transform:scaleY(.28) rotate(348deg)}}
+@keyframes gh-tree-breathe{0%,100%{filter:drop-shadow(0 0 15px #6de7a733);transform:translateY(0) scale(1)}50%{filter:drop-shadow(0 0 30px #6de7a788);transform:translateY(-5px) scale(1.025)}}
+@keyframes gh-green-pulse{0%,100%{opacity:.35}50%{opacity:1}}
+@media(prefers-reduced-motion:reduce){.greenhouse-life *, .treeworld .orb,.treeworld .orbit,.treeglyph,.center:after{animation:none!important}}
+@media(max-width:760px){.greenhouse-life .sunbeam{filter:blur(26px);opacity:.28}.gh-leaf{opacity:.16}}
+
 </style></head>
 <body>
 <div id="mc-loading-screen" role="status" aria-live="polite" aria-label="MindCloud startar">
@@ -79,7 +102,13 @@
   </div>
 </div>
 
-<div class="scene" id="scene"><div class="arch"></div><div class="arch a2"></div>
+<div class="scene" id="scene">
+
+<div class="greenhouse-life" id="greenhouse-life" aria-hidden="true">
+ <div class="sunbeam" style="--beam-x:8%;--beam-w:19%;--beam-r:-18deg;--beam-delay:-5s"></div>
+ <div class="sunbeam" style="--beam-x:38%;--beam-w:15%;--beam-r:8deg;--beam-delay:-11s"></div>
+ <div class="sunbeam" style="--beam-x:77%;--beam-w:20%;--beam-r:21deg;--beam-delay:-2s"></div>
+</div><div class="arch"></div><div class="arch a2"></div>
 <header class="top"><a class="brand" href="/planetary">◈ MINDCLOUD <i>· TILLVÄXTHUSET</i></a><nav class="nav"><a href="/planetary">Planetary View</a><a href="/sensor-fabric">Sensor Fabric</a><a href="/trading">Trading</a><a class="active" href="/trading/tillvaxthuset">Tillväxthuset</a><a href="/bankkarta">Bankkarta</a><a href="/newsletter">Briefing</a></nav><div class="tools"><button class="glassbtn" id="visor">⌁ Visirvy</button><button class="glassbtn" id="profileButton">◉ Profil</button></div></header>
 <main class="wrap"><div class="kicker">MindCloud immersive learning environment · v0.2</div>
 <section class="hero">
@@ -165,4 +194,32 @@ document.querySelectorAll('[data-lesson]').forEach(button=>button.addEventListen
 })();
 </script>
 
+
+<script>
+(()=> {
+ const root=document.getElementById('greenhouse-life');
+ if(!root)return;
+ const reduced=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+ if(reduced)return;
+ for(let i=0;i<30;i++){
+  const dew=document.createElement('i');dew.className='gh-dew';
+  dew.style.setProperty('--x',(Math.random()*100)+'%');
+  dew.style.setProperty('--y',(8+Math.random()*82)+'%');
+  dew.style.setProperty('--size',(2+Math.random()*5)+'px');
+  dew.style.setProperty('--duration',(9+Math.random()*16)+'s');
+  dew.style.setProperty('--delay',(-Math.random()*22)+'s');
+  root.appendChild(dew);
+ }
+ for(let i=0;i<11;i++){
+  const leaf=document.createElement('i');leaf.className='gh-leaf';
+  leaf.style.setProperty('--leaf-x',(Math.random()*100)+'%');
+  leaf.style.setProperty('--leaf-w',(24+Math.random()*70)+'px');
+  leaf.style.setProperty('--leaf-h',(85+Math.random()*190)+'px');
+  leaf.style.setProperty('--leaf-duration',(7+Math.random()*9)+'s');
+  leaf.style.setProperty('--leaf-delay',(-Math.random()*12)+'s');
+  leaf.style.setProperty('--sway',(3+Math.random()*9)+'deg');
+  root.appendChild(leaf);
+ }
+})();
+</script>
 </body></html>
