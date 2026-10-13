@@ -2,8 +2,84 @@
 <html lang="sv"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#07110f"><title>Tillväxthuset · MindCloud</title>
 <style>
 :root{--bg:#07110f;--glass:#0c1c1bdc;--line:#83cfc855;--cyan:#7ce7e6;--gold:#e4c47b;--muted:#a8c1bd;--white:#effaf5}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--white);font:14px/1.5 Inter,system-ui,sans-serif;overflow-x:hidden}button,a{font:inherit}a{color:inherit;text-decoration:none}.scene{min-height:100vh;position:relative;isolation:isolate;overflow:hidden;background:radial-gradient(ellipse at 50% 22%,#356b56 0,#17382f 25%,#091b1a 57%,#050d11 100%)}.scene:before{content:"";position:absolute;inset:0;z-index:-2;background:linear-gradient(180deg,#0815223b,#05110fe8),repeating-linear-gradient(90deg,transparent 0 11.8%,#9debd50c 12% 12.15%),repeating-linear-gradient(0deg,transparent 0 90px,#b9ffed0a 91px 92px)}.scene:after{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;background:radial-gradient(ellipse at 50% 50%,transparent 35%,#020807b8 100%)}.arch{position:absolute;inset:-20% -8% 12%;border:2px solid #8cd9c42b;border-radius:48% 48% 0 0;box-shadow:inset 0 0 60px #76e5bd12,0 0 55px #7ce7e61a;pointer-events:none}.arch.a2{inset:-12% 8% 12%;border-color:#e4c47b22}.top{position:relative;z-index:3;display:flex;align-items:center;gap:18px;flex-wrap:wrap;padding:14px 22px;background:#06100ed9;border-bottom:1px solid #75cfc62b;backdrop-filter:blur(14px)}.brand{font-weight:850;letter-spacing:.13em}.brand i{font-style:normal;color:var(--gold)}.nav{display:flex;gap:15px;flex-wrap:wrap;margin-left:auto;font-size:12px;color:#d0e3dc}.nav a:hover,.nav a.active{color:var(--cyan)}.tools{display:flex;gap:7px}.glassbtn{border:1px solid #7ce7e64d;background:#0b2525b8;color:var(--white);padding:8px 11px;border-radius:8px;cursor:pointer}.wrap{max-width:1450px;margin:auto;padding:20px 22px 26px;position:relative;z-index:1}.kicker{font-size:10px;letter-spacing:.23em;color:var(--gold);text-transform:uppercase}.hero{display:grid;grid-template-columns:minmax(245px,.85fr) minmax(390px,1.4fr) minmax(220px,.8fr);gap:16px;align-items:stretch}.glass{background:linear-gradient(145deg,#102b2adf,#081716dc);border:1px solid var(--line);border-radius:14px;box-shadow:0 18px 55px #0004,inset 0 1px #ffffff0a;backdrop-filter:blur(12px)}.assistant{padding:16px;display:flex;flex-direction:column;gap:13px}.portrait{height:185px;border-radius:10px;overflow:hidden;position:relative;background:radial-gradient(ellipse at 50% 28%,#6dbca6,#244e48 37%,#0a1b1b 75%)}.portrait:before{content:"";position:absolute;width:100px;height:100px;left:calc(50% - 50px);top:24px;border-radius:50%;background:linear-gradient(135deg,#f4d5b3,#9c6e57 60%,#273e40);box-shadow:0 0 0 12px #d4e9ce0b,0 0 35px #8ee6c444}.portrait:after{content:"";position:absolute;width:190px;height:130px;left:calc(50% - 95px);bottom:-46px;border-radius:90px 90px 0 0;background:linear-gradient(110deg,#d9e9df,#6eaaa0 45%,#183b3a);border:1px solid #d5fff044}.portrait span{position:absolute;bottom:9px;left:10px;font-size:10px;letter-spacing:.12em;color:#e9fff6}.assistant h2{margin:0;font-size:23px}.assistant p{margin:0;color:#bdd3cd}.voice{border-left:2px solid var(--gold);padding-left:12px;color:#f3e6c5}.actions{display:grid;gap:7px}.action{display:flex;align-items:center;gap:10px;text-align:left;padding:10px 11px;background:#0b1d1d;border:1px solid #426a626b;border-radius:8px;color:var(--white);cursor:pointer}.action:hover{border-color:var(--cyan);background:#12302c}.ico{font-size:18px;width:24px;text-align:center;color:var(--cyan)}.center{position:relative;min-height:545px;display:flex;flex-direction:column;align-items:center;padding:17px 15px 18px;overflow:hidden}.center:before{content:"";position:absolute;left:10%;right:10%;top:12%;height:300px;border-radius:50%;background:radial-gradient(ellipse,#a0f2be1b,transparent 70%)}.titlecenter{text-align:center;z-index:1}.titlecenter h1{font-size:clamp(28px,3.3vw,48px);letter-spacing:.08em;line-height:1.05;margin:7px 0;color:#f4f8e9;text-shadow:0 0 28px #7ce7e644}.titlecenter p{color:#b4d4c8;margin:0}.treeworld{position:relative;width:min(100%,510px);height:280px;margin-top:5px;display:grid;place-items:center}.orb{position:absolute;width:220px;height:220px;border-radius:50%;border:1px solid #7ce7e63b;box-shadow:0 0 50px #8af0c72b,inset 0 0 45px #8af0c714}.orb:before,.orb:after{content:"";position:absolute;inset:18px;border:1px solid #e4c47b55;border-radius:50%;transform:rotateX(65deg)}.orb:after{transform:rotateY(65deg)}.treeglyph{font-size:112px;filter:drop-shadow(0 0 24px #6de7a766);z-index:1}.orbit{position:absolute;inset:0;border:1px solid #7ce7e633;border-radius:50%;transform:scaleY(.28) rotate(-12deg)}.orbit.o2{transform:scaleY(.28) rotate(35deg);border-color:#e4c47b44}.portalrow{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;width:100%;z-index:1;margin-top:auto}.portal{border:1px solid #7ce7e644;border-radius:9px;background:#071918d9;text-align:center;padding:10px 5px;cursor:pointer;transition:.18s}.portal:hover{transform:translateY(-3px);border-color:var(--gold);background:#17322c}.portal b{display:block;font-size:11px}.portal span{display:block;font-size:21px;margin-bottom:4px}.portal small{font-size:9px;color:var(--muted)}.sofa{position:relative;z-index:2;margin-top:10px;width:min(100%,430px);padding:12px;border:1px solid #8be6e8a3;border-radius:11px;background:linear-gradient(120deg,#0a2829f5,#143d3adf);box-shadow:0 0 26px #4ed7d633;display:flex;align-items:center;gap:13px;text-align:left;cursor:pointer;color:white}.sofa:hover{box-shadow:0 0 38px #4ed7d666;border-color:var(--gold)}.sofa .couch{font-size:37px}.sofa b{display:block;letter-spacing:.08em;font-size:12px}.sofa small{display:block;color:#b9d8d1}.sofa .enter{margin-left:auto;color:var(--gold);font-size:21px}.right{display:flex;flex-direction:column;gap:12px}.right .glass{padding:14px}.right h3{margin:0 0 10px;font-size:13px;letter-spacing:.06em}.metric{display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:1px solid #8ad9cb20;font-size:11px}.metric:last-child{border:0}.metric span{color:var(--muted)}.metric b{color:var(--cyan);font-weight:600}.mini-map{height:145px;border-radius:8px;position:relative;overflow:hidden;background:radial-gradient(ellipse,#224b4b,#091919)}.mini-map:before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(30deg,transparent 0 22px,#7ce7e622 23px 24px),repeating-linear-gradient(120deg,transparent 0 32px,#e4c47b18 33px 34px)}.mapnode{position:absolute;width:8px;height:8px;border-radius:50%;background:var(--gold);box-shadow:0 0 14px var(--gold)}.mapline{position:absolute;height:1px;background:var(--cyan);transform-origin:left;opacity:.8}.lower{display:grid;grid-template-columns:1.2fr .8fr;gap:12px;margin-top:14px}.lower .glass{padding:14px}.lower h2{font-size:14px;margin:0 0 10px}.bottomnav{display:flex;justify-content:space-around;gap:6px;flex-wrap:wrap;padding:11px;margin-top:14px}.bottomnav button{background:transparent;border:0;color:#c7dcd5;cursor:pointer;padding:5px 8px;font-size:11px}.bottomnav button:hover{color:var(--gold)}.status{display:inline-flex;align-items:center;gap:6px;font-size:10px;color:var(--green)}.status:before{content:"";width:6px;height:6px;background:var(--green);border-radius:50%;box-shadow:0 0 9px var(--green)}.modal{position:fixed;inset:0;z-index:10;display:none;place-items:center;background:#020807c9;backdrop-filter:blur(14px);padding:18px}.modal.open{display:grid}.dialog{width:min(100%,470px);padding:23px;background:linear-gradient(145deg,#16332d,#081514);border:1px solid #7ce7e677;border-radius:15px;box-shadow:0 0 65px #0009}.dialog h2{margin:5px 0 6px;font-size:25px}.dialog p{color:var(--muted);font-size:13px}.field{display:grid;gap:5px;margin:12px 0}.field label{font-size:11px;color:#b9d8d1}.field input{width:100%;padding:11px;background:#06110f;color:white;border:1px solid #3d6960;border-radius:8px;font:inherit}.dialogactions{display:flex;gap:8px;flex-wrap:wrap;margin-top:15px}.primary{background:var(--gold);color:#101713;border-color:var(--gold);font-weight:700}.notice{font-size:10px!important}.toast{position:fixed;right:18px;bottom:18px;z-index:15;max-width:350px;padding:12px 15px;border:1px solid #7ce7e677;border-radius:9px;background:#0a2220;box-shadow:0 10px 35px #0008;display:none}.toast.show{display:block}.visor .top{background:#06100edc}.visor .wrap{max-width:1600px}.visor .glass{box-shadow:0 0 0 1px #7ce7e61a,0 18px 55px #0007}.visor .scene{filter:saturate(1.12)}@media(max-width:1100px){.hero{grid-template-columns:260px minmax(360px,1fr)}.right{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr}.center{grid-row:span 2}}@media(max-width:760px){.top{padding:12px}.nav{order:3;width:100%;margin:0;overflow:auto;white-space:nowrap}.wrap{padding:14px 10px}.hero{grid-template-columns:1fr}.center{min-height:570px;grid-row:auto;order:1}.assistant{order:2}.right{order:3;grid-column:auto;grid-template-columns:1fr 1fr}.lower{grid-template-columns:1fr}.portalrow{grid-template-columns:repeat(2,1fr)}.treeworld{height:250px}.titlecenter h1{font-size:31px}}@media(max-width:420px){.right{grid-template-columns:1fr}.tools{margin-left:auto}.assistant h2{font-size:21px}}
+
+/* MindCloud living greenhouse loading screen */
+#mc-loading-screen{position:fixed;inset:0;z-index:1000;display:grid;place-items:center;overflow:hidden;background:radial-gradient(ellipse at 23% 15%,#f6bd6c3b,transparent 30%),radial-gradient(ellipse at 72% 30%,#4ebce63d,transparent 38%),linear-gradient(180deg,#08111f 0%,#0b1e27 48%,#06120f 100%);color:#f8f1df;opacity:1;visibility:visible;transition:opacity .9s ease,visibility .9s ease}
+#mc-loading-screen.mc-fade{opacity:0;visibility:hidden;pointer-events:none}
+#mc-loading-screen:before{content:"";position:absolute;inset:-20%;background:repeating-conic-gradient(from 210deg at 22% 14%,transparent 0deg,rgba(255,222,159,.07) 1deg,transparent 2.6deg,transparent 7deg);mask-image:radial-gradient(ellipse at 22% 14%,#000,transparent 54%);animation:mc-rays 38s linear infinite}
+.mc-loader-stars{position:absolute;inset:0;overflow:hidden;pointer-events:none}
+.mc-loader-star{position:absolute;left:var(--x);top:var(--y);width:var(--s);height:var(--s);border-radius:50%;background:#c9f1ff;box-shadow:0 0 10px 2px #80dfff;opacity:0;animation:mc-firefly var(--dur) ease-in-out var(--delay) infinite}
+.mc-loader-world{position:absolute;width:min(1000px,112vw);height:min(680px,83vh);left:50%;top:43%;transform:translate(-50%,-50%);animation:mc-world 18s ease-in-out infinite alternate;filter:drop-shadow(0 0 35px #69caff23)}
+.mc-loader-world svg{width:100%;height:100%;overflow:visible}
+.mc-dome{fill:url(#mcGlass);stroke:#b8eaffb8;stroke-width:1.6;filter:drop-shadow(0 0 8px #78d9ff55)}
+.mc-dome-line{fill:none;stroke:#a6e6ff7e;stroke-width:1.15}
+.mc-waterfall{stroke:url(#mcWater);stroke-width:2.6;stroke-linecap:round;stroke-dasharray:8 17;animation:mc-water 2.8s linear infinite;filter:drop-shadow(0 0 5px #7ee7ff)}
+.mc-cloud{fill:#d4eaff;opacity:.13;filter:blur(9px);animation:mc-cloud 11s ease-in-out infinite alternate}
+.mc-loader-copy{position:absolute;inset:auto 18px max(25px,env(safe-area-inset-bottom));display:flex;align-items:center;flex-direction:column;text-align:center;z-index:2}
+.mc-loader-kicker{font:600 10px/1.5 system-ui,sans-serif;letter-spacing:.32em;text-transform:uppercase;color:#d3e5f1;margin-bottom:9px}
+.mc-loader-title{font:400 clamp(30px,6vw,64px)/1 Georgia,serif;letter-spacing:.12em;text-shadow:0 0 30px #8bdcff77,0 2px 18px #02080e;margin:0}
+.mc-loader-sub{font:500 10px/1.5 system-ui,sans-serif;letter-spacing:.18em;text-transform:uppercase;color:#e4d6b6;margin:12px 0 22px}
+.mc-loader-panel{width:min(380px,86vw);padding:14px 17px 12px;border:1px solid #d6e9e966;border-radius:13px;background:linear-gradient(135deg,#0b1a2bcc,#0d252bb8);backdrop-filter:blur(18px);box-shadow:0 15px 55px #0006,inset 0 1px #ffffff20}
+.mc-loader-status{display:flex;justify-content:space-between;gap:10px;font:500 10px/1.4 system-ui,sans-serif;letter-spacing:.12em;text-transform:uppercase;color:#f5e8c9}
+.mc-loader-track{height:3px;background:#ffffff29;border-radius:20px;margin:10px 0 9px;overflow:hidden}
+#mc-loader-bar{height:100%;width:0;background:linear-gradient(90deg,#dba956,#fff0c5,#76dcff);box-shadow:0 0 13px #7cdeff;transition:width .12s linear}
+.mc-loader-hint{font:11px/1.5 system-ui,sans-serif;color:#c8dbe2}
+#mc-loader-skip{margin-top:12px;border:1px solid #d7e9e966;border-radius:99px;background:#07121b75;color:#f6f0e4;padding:7px 15px;font:11px system-ui,sans-serif;cursor:pointer;backdrop-filter:blur(8px)}
+#mc-loader-skip:hover{background:#163642}
+.mc-loader-seals{position:absolute;top:max(15px,env(safe-area-inset-top));left:16px;display:flex;gap:7px;z-index:2}
+.mc-loader-seal{width:29px;height:29px;border:1px solid #e4c47b80;border-radius:50%;display:grid;place-items:center;color:#f5d58f;background:#06121b88;backdrop-filter:blur(8px);font-size:14px}
+.mc-loader-coord{position:absolute;top:max(20px,env(safe-area-inset-top));right:17px;color:#d5e8ef;font:9px/1.5 system-ui,sans-serif;letter-spacing:.16em;text-align:right}
+@keyframes mc-rays{to{transform:rotate(12deg)}}
+@keyframes mc-firefly{0%,100%{transform:translate3d(0,0,0) scale(.5);opacity:0}18%{opacity:.8}72%{opacity:.7}90%{opacity:.2} }
+@keyframes mc-world{from{transform:translate(-51%,-49%) scale(.97)}to{transform:translate(-49%,-51%) scale(1.035)}}
+@keyframes mc-water{to{stroke-dashoffset:-50}}
+@keyframes mc-cloud{from{transform:translateX(-24px) translateY(4px);opacity:.08}to{transform:translateX(26px) translateY(-8px);opacity:.22}}
+@media(max-width:600px){.mc-loader-world{width:145vw;height:65vh;top:39%;left:52%}.mc-loader-coord{font-size:8px;right:10px}.mc-loader-seals{left:10px;gap:4px}.mc-loader-seal{width:25px;height:25px;font-size:12px}.mc-loader-sub{margin-bottom:16px}}
+@media(prefers-reduced-motion:reduce){#mc-loading-screen *,#mc-loading-screen:before{animation:none!important;transition:none!important}#mc-loader-bar{width:100%!important}}
+
 </style></head>
-<body><div class="scene" id="scene"><div class="arch"></div><div class="arch a2"></div>
+<body>
+<div id="mc-loading-screen" role="status" aria-live="polite" aria-label="MindCloud startar">
+  <div class="mc-loader-stars" id="mc-loader-stars"></div>
+  <div class="mc-loader-seals" aria-label="Sol, Gud, Blod, Jord och Ära"><span class="mc-loader-seal">☼</span><span class="mc-loader-seal">✝</span><span class="mc-loader-seal">♦</span><span class="mc-loader-seal">❧</span><span class="mc-loader-seal">♛</span></div>
+  <div class="mc-loader-coord">MINDCLOUD<br>THE LIVING KNOWLEDGE GARDEN</div>
+  <div class="mc-loader-world" aria-hidden="true">
+    <svg viewBox="0 0 1000 680" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="mcGlass" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff5ce" stop-opacity=".22"/><stop offset=".48" stop-color="#9be8ff" stop-opacity=".08"/><stop offset="1" stop-color="#74d6ff" stop-opacity=".2"/></linearGradient>
+        <linearGradient id="mcWater" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#d8f7ff" stop-opacity=".05"/><stop offset=".45" stop-color="#9beaff"/><stop offset="1" stop-color="#77baff" stop-opacity=".08"/></linearGradient>
+        <radialGradient id="mcCore"><stop stop-color="#fff7c8"/><stop offset=".25" stop-color="#9eeaff"/><stop offset="1" stop-color="#54bfff" stop-opacity="0"/></radialGradient>
+      </defs>
+      <ellipse class="mc-cloud" cx="490" cy="260" rx="390" ry="150"/><ellipse class="mc-cloud" cx="700" cy="285" rx="245" ry="115"/>
+      <path class="mc-dome" d="M112 420 A388 330 0 0 1 888 420 Z"/>
+      <path class="mc-dome" d="M225 420 A275 245 0 0 1 775 420 Z" opacity=".75"/>
+      <path class="mc-dome" d="M350 420 A150 165 0 0 1 650 420 Z" opacity=".6"/>
+      <g class="mc-dome-line"><path d="M112 420L500 90L888 420M210 420L500 90L790 420M315 420L500 90L685 420M112 420H888M152 315H848M225 225H775"/><path d="M500 90V420M350 155L650 420M650 155L350 420M250 218L750 420M750 218L250 420"/></g>
+      <g fill="#8de8b7" opacity=".85"><circle cx="300" cy="350" r="7"/><circle cx="337" cy="315" r="5"/><circle cx="700" cy="340" r="7"/><circle cx="650" cy="292" r="5"/><circle cx="430" cy="300" r="6"/><circle cx="570" cy="345" r="6"/></g>
+      <g stroke="#a0f2bd" stroke-width="2" fill="none" opacity=".65"><path d="M300 420Q280 365 300 332Q325 360 300 420M337 420Q360 365 337 320Q310 365 337 420M700 420Q675 360 700 325Q728 360 700 420M650 420Q630 355 650 292Q680 360 650 420"/><path d="M300 390L283 365M337 385L354 357M700 390L718 360M650 385L630 352"/></g>
+      <circle cx="500" cy="250" r="100" fill="url(#mcCore)"/>
+      <circle cx="500" cy="250" r="34" fill="none" stroke="#d6f7ff" stroke-width="1.5" opacity=".8"/><circle cx="500" cy="250" r="54" fill="none" stroke="#a5eaff" stroke-dasharray="4 8" opacity=".7"/>
+      <g stroke="#c5f1ff" stroke-width="1.2" opacity=".8"><path d="M500 190V310M440 250H560M458 208L542 292M542 208L458 292"/></g>
+      <g class="mc-waterfall"><path d="M290 420V570M340 420V540M660 420V575M710 420V550M500 420V600"/></g>
+      <path d="M80 570Q240 515 390 570T700 570T920 560" fill="none" stroke="#82d9ff" stroke-width="2" opacity=".55"/>
+      <path d="M60 590Q220 550 380 590T690 590T940 580" fill="none" stroke="#f6d38d" stroke-width="1" opacity=".5"/>
+      <g fill="#e5c27a"><circle cx="150" cy="555" r="3"/><circle cx="190" cy="544" r="2"/><circle cx="815" cy="540" r="3"/><circle cx="850" cy="548" r="2"/></g>
+    </svg>
+  </div>
+  <div class="mc-loader-copy">
+    <div class="mc-loader-kicker">Ett levande kunskapslandskap</div>
+    <h1 class="mc-loader-title">THE MINDCLOUD</h1>
+    <div class="mc-loader-sub">Knowledge · Connection · Growth</div>
+    <div class="mc-loader-panel">
+      <div class="mc-loader-status"><span id="mc-loader-label">Väcker växthuset</span><span id="mc-loader-percent">0%</span></div>
+      <div class="mc-loader-track"><div id="mc-loader-bar"></div></div>
+      <div class="mc-loader-hint" id="mc-loader-hint">Samlar ljus. Förbinder kunskap. Låter idéer växa.</div>
+    </div>
+    <button id="mc-loader-skip" type="button">Gå in i växthuset →</button>
+  </div>
+</div>
+
+<div class="scene" id="scene"><div class="arch"></div><div class="arch a2"></div>
 <header class="top"><a class="brand" href="/planetary">◈ MINDCLOUD <i>· TILLVÄXTHUSET</i></a><nav class="nav"><a href="/planetary">Planetary View</a><a href="/sensor-fabric">Sensor Fabric</a><a href="/trading">Trading</a><a class="active" href="/trading/tillvaxthuset">Tillväxthuset</a><a href="/bankkarta">Bankkarta</a><a href="/newsletter">Briefing</a></nav><div class="tools"><button class="glassbtn" id="visor">⌁ Visirvy</button><button class="glassbtn" id="profileButton">◉ Profil</button></div></header>
 <main class="wrap"><div class="kicker">MindCloud immersive learning environment · v0.2</div>
 <section class="hero">
@@ -46,4 +122,47 @@ function saveSession(){if(!session)return;try{localStorage.setItem(KEY,JSON.stri
 function renderLesson(index){const lesson=lessons[index];if(!lesson)return;const panel=$('lessonPanel');panel.style.display='block';panel.replaceChildren();const heading=document.createElement('h3');heading.textContent=lesson.title;heading.style.margin='0 0 8px';const body=document.createElement('p');body.textContent=lesson.body;body.style.color='var(--muted)';const q=document.createElement('p');q.textContent=lesson.question;q.style.fontWeight='700';panel.append(heading,body,q);lesson.answers.forEach((answer,i)=>{const button=document.createElement('button');button.className='action';button.style.width='100%';button.style.marginTop='7px';button.textContent=String.fromCharCode(65+i)+'. '+answer;button.addEventListener('click',()=>{if(session&&session.completed.includes(index)){toast('Den lektionen är redan avklarad.');return}const result=document.createElement('p');result.style.marginTop='12px';result.style.color=i===lesson.correct?'var(--cyan)':'#f0bd91';result.textContent=(i===lesson.correct?'Rätt svar. ':'Inte riktigt. ')+lesson.why;panel.querySelectorAll('button').forEach(b=>b.disabled=true);panel.append(result);if(i===lesson.correct){if(!session)session={name:'Besökare',goal:'Min lärplan',xp:0,completed:[]};if(!session.completed.includes(index)){session.completed.push(index);session.xp=(session.xp||0)+25;saveSession();paint()}const next=document.createElement('button');next.className='glassbtn primary';next.style.marginTop='10px';next.textContent=index===lessons.length-1?'Öppna bankkartan':'Nästa lektion →';next.addEventListener('click',()=>{if(index===lessons.length-1){location.href='/bankkarta'}else renderLesson(index+1)});panel.append(next)}else{const retry=document.createElement('button');retry.className='glassbtn';retry.style.marginTop='10px';retry.textContent='Försök igen';retry.addEventListener('click',()=>renderLesson(index));panel.append(retry)}});panel.append(button)});panel.scrollIntoView({behavior:'smooth',block:'nearest'})}
 document.querySelectorAll('[data-lesson]').forEach(button=>button.addEventListener('click',()=>renderLesson(Number(button.dataset.lesson))));
 
-</script></body></html>
+</script>
+<script>
+(()=> {
+ const screen=document.getElementById('mc-loading-screen');
+ if(!screen)return;
+ const reduced=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+ const stars=document.getElementById('mc-loader-stars');
+ const palette=['#ffe5a3','#a8eaff','#c7b7ff','#ffffff','#a6f4c5'];
+ for(let i=0;i<38;i++){
+   const p=document.createElement('i');p.className='mc-loader-star';
+   p.style.setProperty('--x',(Math.random()*100)+'%');
+   p.style.setProperty('--y',(Math.random()*95)+'%');
+   p.style.setProperty('--s',(1+Math.random()*3)+'px');
+   p.style.setProperty('--dur',(5+Math.random()*11)+'s');
+   p.style.setProperty('--delay',(-Math.random()*12)+'s');
+   p.style.background=palette[i%palette.length];
+   stars.appendChild(p);
+ }
+ const stages=[
+  ['Väcker växthuset','Samlar ljus. Förbinder kunskap. Låter idéer växa.'],
+  ['Förbinder noderna','Varje idé får en plats i helheten.'],
+  ['Öppnar kunskapsstigarna','Från nyfikenhet till förståelse.'],
+  ['Vårdar nästa insikt','Ett levande system, i ständig tillväxt.']
+ ];
+ let done=false, start=performance.now();
+ function close(){if(done)return;done=true;screen.classList.add('mc-fade');window.setTimeout(()=>screen.remove(),950)}
+ document.getElementById('mc-loader-skip').addEventListener('click',close);
+ if(reduced){document.getElementById('mc-loader-bar').style.width='100%';document.getElementById('mc-loader-percent').textContent='100%';window.setTimeout(close,450);return}
+ function frame(now){
+  if(done)return;
+  const elapsed=now-start, progress=Math.min(100,Math.round(elapsed/3200*100));
+  document.getElementById('mc-loader-bar').style.width=progress+'%';
+  document.getElementById('mc-loader-percent').textContent=progress+'%';
+  const index=Math.min(3,Math.floor(elapsed/800));
+  document.getElementById('mc-loader-label').textContent=stages[index][0];
+  document.getElementById('mc-loader-hint').textContent=stages[index][1];
+  if(elapsed>=3200){close();return}
+  requestAnimationFrame(frame);
+ }
+ requestAnimationFrame(frame);
+})();
+</script>
+
+</body></html>
