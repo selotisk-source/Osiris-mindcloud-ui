@@ -4,6 +4,8 @@ on:
   pull_request:
     types: [opened, synchronize, reopened]
     branches: ["main"]
+  push:
+    branches: ["main"]
   workflow_dispatch:
 
 permissions:
@@ -47,3 +49,29 @@ jobs:
         env:
           BRAVE_EXECUTABLE_PATH: /usr/bin/brave-browser
         run: xvfb-run -a node tests/extension/brave-extension-runtime.test.js
+      - name: Verify extension static contract
+        run: node scripts/verify-brave-extension.js
+      - name: Package two-station extension
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f extension/manifest.json
+          test -f extension/background.js
+          test -f extension/sidepanel.html
+          test -f extension/sidepanel.js
+          test -f extension/evidence-validation-v2.js
+          mkdir -p dist
+          zip -X -j dist/mindcloud-brave-two-station.zip \
+            extension/manifest.json \
+            extension/background.js \
+            extension/sidepanel.html \
+            extension/sidepanel.js \
+            extension/evidence-validation-v2.js
+          unzip -t dist/mindcloud-brave-two-station.zip
+      - name: Publish installable extension artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: mindcloud-brave-two-station
+          path: dist/mindcloud-brave-two-station.zip
+          if-no-files-found: error
+          retention-days: 14
