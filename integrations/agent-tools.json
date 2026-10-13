@@ -275,11 +275,13 @@
         "inspect",
         "health"
       ],
-      "status": "adapter-ready",
+      "status": "registered-only",
       "security": "user-initiated, active tab only, metadata only, no value collection or network transfer",
       "transport": "extension-local",
       "cost_model": "local-no-service-fee",
-      "authentication": "browser permission per site"
+      "authentication": "browser permission per site",
+      "evidence_status": "Registry entry only: the extension reads active-tab metadata; no cookie permission, cookie API call, or native adapter is implemented. Do not advertise as executable.",
+      "promotion_gate": "adapter-implementation-and-contract-tests"
     },
     {
       "id": "watermelon-ui",
