@@ -2,8 +2,20 @@
 const assert = require("node:assert/strict");
 const { spawn } = require("node:child_process");
 
-const port = 39147;
-const base = `http://127.0.0.1:${port}`;
+let port;
+let base;
+
+async function freePort() {
+  const net = require("node:net");
+  const probe = net.createServer();
+  await new Promise((resolve, reject) => {
+    probe.once("error", reject);
+    probe.listen(0, "127.0.0.1", resolve);
+  });
+  const assigned = probe.address().port;
+  await new Promise((resolve, reject) => probe.close(error => error ? reject(error) : resolve()));
+  return assigned;
+}
 const token = "mindcloud-mission-plan-test-token";
 
 async function waitHealthy(child) {
@@ -31,6 +43,8 @@ async function request(path, body, authorized = true, bearer = token, regentToke
 }
 
 (async () => {
+  port = await freePort();
+  base = `http://127.0.0.1:${port}`;
   const child = spawn(process.execPath, ["server.js"], {
     cwd: process.cwd(),
     env: {
