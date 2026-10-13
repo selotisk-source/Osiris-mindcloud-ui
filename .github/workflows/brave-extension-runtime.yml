@@ -43,7 +43,9 @@ jobs:
         run: |
           test -x /usr/bin/brave-browser
           /usr/bin/brave-browser --version
-      - name: Run extension runtime test in Brave
+      - name: Run Brave extension and Sensor Fabric browser tests
         env:
           BRAVE_EXECUTABLE_PATH: /usr/bin/brave-browser
-        run: xvfb-run -a node tests/extension/brave-extension-runtime.test.js
+        run: |
+          xvfb-run -a node tests/extension/brave-extension-runtime.test.js
+          xvfb-run -a node tests/extension/sensor-fabric-map-browser.test.js
