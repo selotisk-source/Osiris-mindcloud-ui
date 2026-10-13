@@ -1,6 +1,6 @@
 # MindCloud R&D: Recursive Capability Engine
 
-**Status:** proposal / architecture specification; not yet implemented as runtime code  
+**Status:** architecture plus first runtime implementation slice on branch `research/recursive-capability-engine-20261013`; CI and full runtime integration remain to be verified  
 **Owner:** MindCore  
 **Orchestration:** Dirigentverket  
 **Promotion:** supervised; no autonomous production writes
@@ -8,6 +8,18 @@
 ## Goal
 
 Turn research discoveries into reusable, tested MindCloud capabilities through a bounded, recursive loop. The loop may improve its plans, adapters, tests, and capability metadata, but it must not grant itself new permissions or deploy its own changes.
+
+## Implemented first slice (branch)
+
+The first bounded R&D persistence slice now exists as code on the implementation branch:
+
+- `mindcloud/rd-run-store.js`: bounded run manifest, checkpoint validation, append-only checkpoint persistence, and Evidence Passport writing with SHA-256 artifact fingerprints.
+- `scripts/verify-capability-registry.js`: registry shape/status checks plus a regression guard against falsely advertising `cookies-viewer` as executable.
+- `tests/rd/rd-run-store.test.js`: tests for budgets, checkpoint immutability, unsafe promotion rejection, artifact hashing, claim status, and limiting environment capture to key names.
+- `npm run verify` now includes the registry validator and R&D persistence tests.
+- `integrations/agent-tools.json`: `cookies-viewer` is `registered-only`, because the extension currently inspects tab metadata and does not request or use the browser cookies API.
+
+This slice deliberately does **not** execute discovered tools, launch an untrusted-code sandbox, grant permissions, or promote/deploy capabilities. Those are subsequent milestones. The repository's CI result and runtime behavior must be checked before this is described as fully verified.
 
 ## Core loop
 
