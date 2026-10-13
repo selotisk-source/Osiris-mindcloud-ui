@@ -11,7 +11,7 @@ assert.match(html, /tile\.openstreetmap\.org/, "map must load attributed OpenStr
 assert.match(html, /sensorMapVarna[\s\S]*sensorMapSofia[\s\S]*sensorMapWorld/, "Varna, Sofia and world navigation controls must exist");
 assert.match(html, /fetch\('\/api\/cctv',\{cache:'no-store'\}\)/, "map panel must read current CCTV connector status");
 assert.match(html, /Camera markers are intentionally omitted until trusted coordinates are supplied/, "unverified sensor coordinates must not be fabricated");
-const sensorPanel = html.split("else if(name==='Sensor Fabric'){")[1]?.split("\\nelse if(name==='Heritage Map')")[0] || "";
+const sensorPanel = html.split("else if(name==='Sensor Fabric'){")[1]?.split("\nelse if(name==='Heritage Map')")[0] || "";
 assert.ok(sensorPanel, "Sensor Fabric panel implementation must be discoverable");
-assert.doesNotMatch(sensorPanel, /L\\.(?:marker|circleMarker)\\(/, "Sensor Fabric must not plot unverified sensor markers");
+assert.doesNotMatch(sensorPanel, /L\.(?:marker|circleMarker)\(/, "Sensor Fabric must not plot unverified sensor markers");
 console.log("sensor-fabric-map: PASS — reachable navigation, visible Leaflet map, OSM tiles, Varna/Sofia/world controls, live CCTV status, no fabricated markers");
