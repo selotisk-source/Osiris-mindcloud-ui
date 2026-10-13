@@ -282,11 +282,22 @@ else if(name==='Sensor Fabric'){
  if(!window.L){mapStatus.textContent='Map library did not load. Check the browser connection to unpkg.com and reload.';}
  else{
   const map=window.L.map('sensorFabricMap',{worldCopyJump:true}).setView([43.2141,27.9147],12);
-  window.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'&copy; OpenStreetMap contributors'}).addTo(map);
+  const tiles=window.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'&copy; OpenStreetMap contributors'});
+  let loadedTiles=0,failedTiles=0;
+  const updateTileStatus=()=>{
+   if(loadedTiles>0&&failedTiles===0)mapStatus.textContent='Map tiles loaded ('+loadedTiles+') · drag to pan, use +/− or pinch to zoom. No sensor coordinates have been verified for display.';
+   else if(loadedTiles>0)mapStatus.textContent='Map partially available · '+loadedTiles+' tile(s) loaded, '+failedTiles+' failed. No sensor coordinates have been verified for display.';
+   else if(failedTiles>0)mapStatus.textContent='Map initialized, but map tiles could not be fetched ('+failedTiles+' failed). Check access to tile.openstreetmap.org.';
+   else mapStatus.textContent='Map initialized · waiting for map tiles…';
+  };
+  tiles.on('tileload',()=>{loadedTiles++;updateTileStatus();});
+  tiles.on('tileerror',()=>{failedTiles++;updateTileStatus();});
+  tiles.on('load',updateTileStatus);
+  mapStatus.textContent='Map initialized · waiting for map tiles…';
+  tiles.addTo(map);
   document.getElementById('sensorMapVarna').onclick=()=>map.setView([43.2141,27.9147],12);
   document.getElementById('sensorMapSofia').onclick=()=>map.setView([42.6977,23.3219],12);
   document.getElementById('sensorMapWorld').onclick=()=>map.setView([25,15],2);
-  mapStatus.textContent='Map ready · drag to pan, use +/− or pinch to zoom. No sensor coordinates have been verified for display.';
   setTimeout(()=>map.invalidateSize(),80);
  }
 }

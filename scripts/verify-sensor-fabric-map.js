@@ -14,4 +14,10 @@ assert.match(html, /Camera markers are intentionally omitted until trusted coord
 const sensorPanel = html.split("else if(name==='Sensor Fabric'){")[1]?.split("\nelse if(name==='Heritage Map')")[0] || "";
 assert.ok(sensorPanel, "Sensor Fabric panel implementation must be discoverable");
 assert.doesNotMatch(sensorPanel, /L\.(?:marker|circleMarker)\(/, "Sensor Fabric must not plot unverified sensor markers");
-console.log("sensor-fabric-map: PASS — reachable navigation, visible Leaflet map, OSM tiles, Varna/Sofia/world controls, live CCTV status, no fabricated markers");
+assert.match(sensorPanel, /tiles\.on\('tileload'/, "successful tile loads must be observed");
+assert.match(sensorPanel, /tiles\.on\('tileerror'/, "tile failures must be observed");
+assert.match(sensorPanel, /Map initialized · waiting for map tiles/, "initial state must distinguish initialization from loaded tiles");
+assert.match(sensorPanel, /Map tiles loaded/, "success status must require a loaded tile");
+assert.match(sensorPanel, /map tiles could not be fetched/, "all-failed tile state must be explicit");
+assert.doesNotMatch(sensorPanel, /Map ready ·/, "module must not report ready before any tile loads");
+console.log("sensor-fabric-map: PASS — reachable navigation, Leaflet/OSM, region controls, verified-coordinate policy, tile success/failure status");
