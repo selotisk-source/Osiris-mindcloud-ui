@@ -90,6 +90,11 @@ const STATIC_FILES = {
   "/newsletter": ["newsletter.html", "text/html; charset=utf-8"],
   "/newsletter/": ["newsletter.html", "text/html; charset=utf-8"],
   "/newsletter.html": ["newsletter.html", "text/html; charset=utf-8"],
+  "/paraskevi": ["paraskevi.html", "text/html; charset=utf-8"],
+  "/paraskevi/": ["paraskevi.html", "text/html; charset=utf-8"],
+  "/paraskevi.html": ["paraskevi.html", "text/html; charset=utf-8"],
+  "/articles/the-shrine-of-saint-paraskevi": ["paraskevi.html", "text/html; charset=utf-8"],
+  "/assets/paraskevi-shrine.svg": ["assets/paraskevi-shrine.svg", "image/svg+xml; charset=utf-8"],
   "/osiris": ["osiris.html", "text/html; charset=utf-8"],
   "/osiris/": ["osiris.html", "text/html; charset=utf-8"]
 };
