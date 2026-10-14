@@ -45,13 +45,13 @@ body{overflow:hidden}.app{height:100%;display:flex;flex-direction:column}
 <div class="app">
 <header class="topbar">
   <div class="brand">MIND<span>CLOUD</span></div>
-  <div class="status" id="workspaceStatus"><i class="dot"></i> four-station workspace</div>
+  <div class="status" id="workspaceStatus"><i class="dot"></i> two-station workspace</div>
   <div class="actions">
-    <button class="btn active" data-layout="4">4</button>
-    <button class="btn" data-layout="2">2</button>
+    <button class="btn" data-layout="4">4</button>
+    <button class="btn active" data-layout="2">2</button>
     <button class="btn" data-layout="3">3</button>
     <button class="btn" id="neuralMeshBtn">BACKSIDE / NEURAL MESH</button><button class="btn" id="drawerBtn">TOOLS</button><button class="btn" id="toolboxBtn">TOOLBOX</button><button class="btn" id="commandConsoleBtn" aria-controls="commandConsole" aria-expanded="false">OSIRIS COMMAND</button>
-    <button class="btn" id="godBtn">GOD'S EYE VIEW</button><button class="btn" id="quiproBtn">QUIPRO</button><button class="btn" id="journalBtn">JOURNAL</button>
+    <button class="btn" id="godBtn">OSIRIS PANEL</button><button class="btn" id="quiproBtn">QUIPRO</button><button class="btn" id="journalBtn">JOURNAL</button>
   </div>
 </header>
 
@@ -242,8 +242,8 @@ function setWorkspaceLayout(n){
   setTimeout(()=>{window.dispatchEvent(new Event('resize'));document.getElementById('heritageMap')&&window.dispatchEvent(new Event('heritage-layout-change'));},120);
 }
 document.querySelectorAll('[data-layout]').forEach(b=>b.onclick=()=>setWorkspaceLayout(Number(b.dataset.layout)));
-// Default to the full four-station 2×2 workspace.
-setWorkspaceLayout(4);
+// Default to MindCore + OSIRIS; the 4-button still opens the full 2×2 workspace.
+setWorkspaceLayout(2);
 document.getElementById('godBtn').onclick=()=>document.querySelector('[data-station="4"]').scrollIntoView({behavior:'smooth'});
  const osirisFrame=document.getElementById("osirisFrame");
  const osirisStatus=document.getElementById("osirisEmbedStatus");

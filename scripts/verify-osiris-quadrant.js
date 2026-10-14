@@ -14,7 +14,9 @@ assert.match(html, /data-station="1"/, "MindCore station must remain");
 assert.match(html, /data-station="2"/, "GEO station must remain");
 assert.match(html, /data-station="3"/, "Sensor Fabric station must remain");
 assert.match(html, /const show=n===2\?\(id===1\|\|id===4\):\(id<=n\)/, "two-station mode must show MindCore and OSIRIS");
-assert.match(html, /setWorkspaceLayout\(4\)/, "four-station workspace must be the default");
+assert.match(html, /setWorkspaceLayout\(2\)/, "two-station workspace must be the default");
+assert.match(html, /class="btn active" data-layout="2"/, "two-station control must be active by default");
+assert.match(html, /two-station workspace/, "workspace status must reflect the default layout");
 assert.match(html, /data-layout="4"/, "four-station 2×2 workspace must remain selectable");
 
 console.log("osiris-quadrant: verified official-site iframe, independent reload, standalone fallback, and four-station layout");
