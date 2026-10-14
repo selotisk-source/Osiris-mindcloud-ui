@@ -2,7 +2,7 @@ name: MindCloud Runtime Verification
 
 on:
   push:
-    branches: [main, "mindcloud/sensor-fabric-brave-release-fullverify-20261014"]
+    branches: [main, "mindcloud/sensor-fabric-brave-release-fullverify-20261014", "mindcloud/unified-release-readiness-run11-20261014"]
   pull_request:
     branches: [main]
 
