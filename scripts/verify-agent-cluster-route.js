@@ -3,31 +3,22 @@ const assert = require("node:assert/strict");
 const { spawn } = require("node:child_process");
 
 let port;
-let base;
-
-async function freePort() {
-  const net = require("node:net");
-  const probe = net.createServer();
-  await new Promise((resolve, reject) => {
-    probe.once("error", reject);
-    probe.listen(0, "127.0.0.1", resolve);
-  });
-  const assigned = probe.address().port;
-  await new Promise((resolve, reject) => probe.close(error => error ? reject(error) : resolve()));
-  return assigned;
-}
+let base = "";
 const token = "mindcloud-mission-plan-test-token";
 
 async function waitHealthy(child) {
   const deadline = Date.now() + 7000;
   while (Date.now() < deadline) {
-    try {
-      const response = await fetch(base + "/health");
-      if (response.ok) return;
-    } catch {}
+    if (child.exitCode !== null) throw new Error("MindCloud server exited before becoming healthy");
+    if (base) {
+      try {
+        const response = await fetch(base + "/health");
+        if (response.ok) return;
+      } catch {}
+    }
     await new Promise(resolve => setTimeout(resolve, 100));
   }
-  throw new Error("MindCloud server did not become healthy");
+  throw new Error("MindCloud server did not become healthy at " + (base || "an assigned port"));
 }
 
 async function request(path, body, authorized = true, bearer = token, regentToken = "mindcloud-regent-test-token") {
@@ -43,14 +34,12 @@ async function request(path, body, authorized = true, bearer = token, regentToke
 }
 
 (async () => {
-  port = await freePort();
-  base = `http://127.0.0.1:${port}`;
   const child = spawn(process.execPath, ["server.js"], {
     cwd: process.cwd(),
     env: {
       ...process.env,
       NODE_ENV: "test",
-      PORT: String(port),
+      PORT: "0",
       CCTV_SOURCE_URL: "",
       COGNEE_SERVICE_URL: "",
       MINDCLOUD_TOOL_EXECUTION_TOKEN: token,
@@ -65,6 +54,14 @@ async function request(path, body, authorized = true, bearer = token, regentToke
   });
   let stderr = "";
   child.stderr.on("data", chunk => { stderr += chunk; });
+  child.stdout.on("data", chunk => {
+    const output = chunk.toString();
+    const match = output.match(/OSIRIS MindCloud listening on port (\\d+)/);
+    if (match && !base) {
+      port = Number(match[1]);
+      base = `http://127.0.0.1:${port}`;
+    }
+  });
 
   try {
     await waitHealthy(child);
