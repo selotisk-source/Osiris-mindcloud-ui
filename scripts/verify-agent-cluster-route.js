@@ -56,7 +56,7 @@ async function request(path, body, authorized = true, bearer = token, regentToke
   child.stderr.on("data", chunk => { stderr += chunk; });
   child.stdout.on("data", chunk => {
     const output = chunk.toString();
-    const match = output.match(/OSIRIS MindCloud listening on port (\\d+)/);
+    const match = output.match(/OSIRIS MindCloud listening on port (\d+)/);
     if (match && !base) {
       port = Number(match[1]);
       base = `http://127.0.0.1:${port}`;
