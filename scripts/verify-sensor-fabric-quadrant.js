@@ -11,7 +11,9 @@ assert.match(sensor, /id="toggleSensorLive"/, "live media must remain accessible
 assert.match(sensor, /OPEN OSIRIS ↗/, "Sensor Fabric must retain a direct OSIRIS navigation link");
 assert.match(html, /src="https:\/\/osirisai\.live\/" title="OSIRIS live intelligence platform"/, "station four must embed the official OSIRIS app");
 assert.match(html, /id="osirisReload"/, "OSIRIS must have independent reload navigation");
-assert.match(html, /setWorkspaceLayout\(4\)/, "2×2 four-station view must remain the default");
+assert.match(html, /setWorkspaceLayout\(2\)/, "MindCore + OSIRIS two-station view must be the default");
+assert.match(html, /class="btn active" data-layout="2"/, "two-station control must be active by default");
+assert.match(html, /data-layout="4"/, "2×2 four-station view must remain selectable");
 assert.match(html, /fetch\('\/api\/cctv',\{cache:'no-store'\}\)/, "Sensor Fabric must fetch current OSIRIS/CCTV metadata");
 assert.match(html, /tiles\.on\('tileload'/, "map must track actual tile loads");
 assert.match(html, /tiles\.on\('tileerror'/, "map must report tile failures");
