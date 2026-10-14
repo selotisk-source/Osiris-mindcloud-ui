@@ -178,7 +178,7 @@ function setWorkspaceLayout(n){
   const stations=[...ws.children];
   stations.forEach((s,i)=>{
     const id=Number(s.dataset.station);
-    const show=n===2?(id===1||id===2):(id<=n);
+    const show=n===2?(id===1||id===4):(id<=n);
     s.style.display=show?'flex':'none';
     s.style.gridColumn='';
     s.style.gridRow='';
