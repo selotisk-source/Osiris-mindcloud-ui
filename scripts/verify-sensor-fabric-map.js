@@ -9,7 +9,7 @@ assert.match(html, /id="sensorFabricMap" class="sensor-fabric-map"/, "map contai
 assert.match(html, /window\.L\.map\('sensorFabricMap'/, "Leaflet must initialize on the Sensor Fabric map");
 assert.match(html, /tile\.openstreetmap\.org/, "map must load attributed OpenStreetMap tiles");
 assert.match(html, /sensorMapVarna[\s\S]*sensorMapSofia[\s\S]*sensorMapWorld/, "Varna, Sofia and world navigation controls must exist");
-assert.match(html, /fetch\('\/api\/cctv',\{cache:'no-store'\}\)/, "map panel must read current CCTV connector status");
+assert.match(html, /fetch\('\/api\/mindcloud\/osiris\/integration',\{cache:'no-store'\}\)/, "map panel must read current CCTV connector status");
 assert.match(html, /Camera markers are intentionally omitted until trusted coordinates are supplied/, "unverified sensor coordinates must not be fabricated");
 const sensorPanel = html.split("else if(name==='Sensor Fabric'){")[1]?.split("\nelse if(name==='Heritage Map')")[0] || "";
 assert.ok(sensorPanel, "Sensor Fabric panel implementation must be discoverable");
