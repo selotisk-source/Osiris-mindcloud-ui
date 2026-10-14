@@ -118,7 +118,7 @@ body{overflow:hidden}.app{height:100%;display:flex;flex-direction:column}
  }
  async function refreshCctv(){
   try{
-   const response=await fetch('/api/cctv',{cache:'no-store'});
+   const response=await fetch('/api/mindcloud/osiris/integration',{cache:'no-store'});
    if(!response.ok)throw new Error('HTTP '+response.status);
    const data=await response.json();
    const parts=['source: '+(data.status||'unknown'),'stream: '+(data.streamStatus||'unknown'),'proxy: '+(data.proxyStatus||'unknown'),'frame: '+(data.frameStatus||'unverified'),'evidence: '+(data.evidenceStatus||'unverified')];
