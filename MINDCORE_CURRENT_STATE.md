@@ -80,3 +80,14 @@ Establish and verify the real MindCore/MindCloud execution loop across backend a
 - **Not verified:** relevant gaps.
 - **Blocker:** only a concrete obstacle.
 - **Next action:** one executable step.
+
+
+## Article milestone — The Shrine of Saint Paraskevi (2026-10-15)
+
+- Added a standalone editorial article at `/paraskevi` and `/articles/the-shrine-of-saint-paraskevi`, with responsive layout, a locally served original SVG icon illustration, navigation from Workspace and Briefing, and source links to the Bulgarian Patriarchate, Orthodox Church in America, and Greek Orthodox Archdiocese of America.
+- Historical distinction is explicit: Paraskeva/Petka of Epivates is commemorated in Bulgarian Orthodox tradition on 14 October; Paraskevi of Rome is commemorated on 26 July. The article does not conflate the two.
+- Evidence layers are separated: church-calendar/hagiographic tradition, modern symbolic interpretation, and unresolved identification of any specific physical shrine.
+- Added `scripts/verify-paraskevi-article.js` to the standard `npm run verify` sequence. It checks dates, identity distinction, sources, routes and navigation. This test is a regression gate; it is not considered passed until CI runs it.
+- Process correction: previous handover failures were caused by relying on partial context and moving to an answer before retrieving the exact earlier discussion; another risk was treating a tool-specific request as fulfilled without confirming that the tool was available. Prevention: recover prior context first; separate similar entities and facts from interpretations; record the source and confidence for each historical claim; inspect the actual repository route/navigation; add regression checks; and never label work published, tested or deployed until the corresponding observable gate succeeds.
+- Artcraft-specific status: the Artcraft integration was not available in the connected tool catalog at the time of this change. An original SVG illustration was created and included in the site; a separate cinematic concept image was generated in this conversation. Neither is represented as having been created through Artcraft.
+- This change is on a feature branch only until CI, review, merge and production deployment are separately verified.
