@@ -96,8 +96,32 @@ const { chromium } = require("playwright");
     assert.equal(tabMetadata.pageContentRead, false);
     assert.equal(tabMetadata.networkTransfer, false);
 
+    // Open the actual MindCloud index.html in Brave and exercise the real layout controls.
+    const workspacePage = await context.newPage();
+    const workspaceFileUrl = "file://" + path.resolve(__dirname, "..", "..", "index.html");
+    await workspacePage.goto(workspaceFileUrl, { waitUntil: "domcontentloaded" });
+    await workspacePage.waitForFunction(() => document.querySelector(".workspace")?.dataset.layoutMode === "2");
+    assert.match(await workspacePage.locator("#workspaceStatus").innerText(), /two-station workspace/);
+    assert.deepEqual(
+      await workspacePage.locator(".station").evaluateAll(nodes => nodes.map(node => getComputedStyle(node).display !== "none")),
+      [true, false, false, true]
+    );
+    assert.equal(await workspacePage.locator("#osirisFrame").getAttribute("allow"), "fullscreen");
+    await workspacePage.locator('[data-layout="4"]').click();
+    await workspacePage.waitForFunction(() => document.querySelector(".workspace")?.dataset.layoutMode === "4");
+    assert.deepEqual(
+      await workspacePage.locator(".station").evaluateAll(nodes => nodes.map(node => getComputedStyle(node).display !== "none")),
+      [true, true, true, true]
+    );
+    await workspacePage.locator('[data-layout="2"]').click();
+    await workspacePage.waitForFunction(() => document.querySelector(".workspace")?.dataset.layoutMode === "2");
+    assert.deepEqual(
+      await workspacePage.locator(".station").evaluateAll(nodes => nodes.map(node => getComputedStyle(node).display !== "none")),
+      [true, false, false, true]
+    );
+
     assert.deepEqual(pageErrors, []);
-    console.log(`brave-extension: PASS — extension ${extensionId}; two stations rendered; CCTV probe remains blocked on snapshot-only evidence; Open MindCloud action verified; no inline scripts or page errors`);
+    console.log(`brave-runtime: PASS — extension ${extensionId}; extension side panel and main index.html layout verified in Brave; MindCore + OSIRIS default; four-station switch and return`);
   } finally {
     await context.close();
   }
