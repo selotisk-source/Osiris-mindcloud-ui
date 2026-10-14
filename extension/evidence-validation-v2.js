@@ -10,7 +10,7 @@
   function validateCctvEvidence({ source, response, payload, capturedAt } = {}, expectedOrigin = DEFAULT_ORIGIN) {
     let sourceUrl = null;
     try { sourceUrl = new URL(source); } catch {}
-    const mediaProtocol = String(payload?.mediaProtocol || "").toUpperCase();
+    const mediaProtocol = String(payload?.mediaProtocol || (payload?.snapshotStatus === "verified" ? "SNAPSHOT" : "")).toUpperCase();
     const responseChecks = {
       source: !!sourceUrl && sourceUrl.origin === expectedOrigin && sourceUrl.protocol === "https:" &&
         !sourceUrl.username && !sourceUrl.password && sourceUrl.pathname === "/api/cctv" &&

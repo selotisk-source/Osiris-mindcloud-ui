@@ -34,7 +34,7 @@ function renderValidation(result) {
   summary.textContent = result.liveStreamRecordValid
     ? "Live-stream evidence validated."
     : result.snapshotRecordValid
-      ? "Snapshot record validated; live-stream proof remains separate."
+      ? "Snapshot record validated."
       : result.responseRecordValid
         ? "CCTV response received; media evidence is incomplete."
         : "CCTV response failed validation.";
