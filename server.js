@@ -887,6 +887,8 @@ const server = http.createServer(async (req,res)=>{
     if(file.startsWith(root+path.sep)&&fs.existsSync(file)&&fs.statSync(file).isFile()){res.writeHead(200,{"content-type":"application/json; charset=utf-8","cache-control":"public, max-age=60"});res.end(fs.readFileSync(file));return;}
     sendJson(res,{error:"newsletter_not_found"},404);return;
   }
+  if(pathname==="/paraskevi"||pathname==="/paraskevi.html"||pathname==="/articles/the-shrine-of-saint-paraskevi"){res.writeHead(200,{"content-type":"text/html; charset=utf-8","cache-control":"public, max-age=60"});res.end(fs.readFileSync(path.join(__dirname,"paraskevi.html"),"utf8"));return;}
+  if(pathname==="/assets/paraskevi-shrine.svg"){res.writeHead(200,{"content-type":"image/svg+xml; charset=utf-8","cache-control":"public, max-age=86400","x-content-type-options":"nosniff"});res.end(fs.readFileSync(path.join(__dirname,"assets","paraskevi-shrine.svg"),"utf8"));return;}
   if(pathname.startsWith("/api/")){sendJson(res,{error:"api_route_not_found",path:pathname},404);return;}
   if (process.env.MINDCLOUD_API_ONLY === "true") { sendJson(res,{error:"backend_route_not_found",path:pathname},404); return; }
   res.writeHead(200,{"content-type":"text/html; charset=utf-8"});res.end(html);
