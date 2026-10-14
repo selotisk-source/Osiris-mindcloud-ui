@@ -91,3 +91,10 @@ Establish and verify the real MindCore/MindCloud execution loop across backend a
 - Process correction: previous handover failures were caused by relying on partial context and moving to an answer before retrieving the exact earlier discussion; another risk was treating a tool-specific request as fulfilled without confirming that the tool was available. Prevention: recover prior context first; separate similar entities and facts from interpretations; record the source and confidence for each historical claim; inspect the actual repository route/navigation; add regression checks; and never label work published, tested or deployed until the corresponding observable gate succeeds.
 - Artcraft-specific status: the Artcraft integration was not available in the connected tool catalog at the time of this change. An original SVG illustration was created and included in the site; a separate cinematic concept image was generated in this conversation. Neither is represented as having been created through Artcraft.
 - This change is on a feature branch only until CI, review, merge and production deployment are separately verified.
+
+
+## Production route correction — 2026-10-15
+
+- Root cause found during end-to-end deployment inspection: the Railway frontend service starts `frontend-server.js`, while the first article change had added the route only to backend `server.js`. The first pre-deploy test therefore checked the wrong entrypoint and gave a false-positive route guarantee.
+- Corrective change: add the article aliases and SVG asset to the frontend server's explicit `STATIC_FILES` map; update the regression test to inspect `frontend-server.js` (the actual production entrypoint); remove the redundant backend-only article route.
+- Verification policy strengthened: a route test must target the service's configured start command/entrypoint, not merely any source file that contains the route. Production is not considered complete until the new pre-deploy suite passes and the deployed article URL returns the expected HTML and SVG.
