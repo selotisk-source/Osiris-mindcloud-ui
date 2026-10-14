@@ -31,7 +31,13 @@ function renderValidation(result) {
   const summary = byId("evidenceValidation");
   const list = byId("validationChecks");
   const gate = byId("promotionGate");
-  summary.textContent = result.snapshotRecordValid ? "Snapshot record validated." : "Snapshot record failed validation.";
+  summary.textContent = result.liveStreamRecordValid
+    ? "Live-stream evidence validated."
+    : result.snapshotRecordValid
+      ? "Snapshot record validated."
+      : result.responseRecordValid
+        ? "CCTV response received; media evidence is incomplete."
+        : "CCTV response failed validation.";
   list.replaceChildren();
   for (const [name, passed] of Object.entries(result.checks)) {
     const item = document.createElement("li");
