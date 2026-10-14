@@ -1044,7 +1044,7 @@ const server = http.createServer(async (req,res)=>{
   res.writeHead(200,{"content-type":"text/html; charset=utf-8"});res.end(html);
 });
 server.listen(port,"0.0.0.0",()=>{
-  console.log("OSIRIS MindCloud listening on port "+port);
+  console.log("OSIRIS MindCloud listening on port "+server.address().port);
   getMindcloudSelfTest()
     .then(result=>console.log("MINDCLOUD_E2E_SELFTEST "+JSON.stringify(result)))
     .catch(error=>console.error("MINDCLOUD_E2E_SELFTEST_FAILED "+String(error?.message||error)));
