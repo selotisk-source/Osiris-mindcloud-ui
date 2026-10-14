@@ -5,6 +5,8 @@ const html = fs.readFileSync("index.html", "utf8");
 
 assert.match(html, /<section class="station osiris-station" data-station="4">/, "OSIRIS must occupy station four in the 2×2 workspace");
 assert.match(html, /<iframe id="osirisFrame"[^>]*src="https:\/\/osirisai\.live\/"[^>]*title="OSIRIS live intelligence platform"/, "station must load the existing official OSIRIS website");
+assert.match(html, /<iframe id="osirisFrame"[^>]*allow="fullscreen"[^>]*>/, "OSIRIS iframe must request fullscreen only");
+assert.doesNotMatch(html, /allow="[^"]*clipboard-(?:read|write)/, "external OSIRIS iframe must not receive clipboard permissions");
 assert.match(html, /id="osirisReload"/, "OSIRIS panel must expose an independent reload control");
 assert.match(html, /getElementById\("osirisReload"\)\.addEventListener\("click"/, "reload control must be wired");
 assert.match(html, /OPEN STANDALONE/, "standalone fallback must remain available if framing is blocked");
