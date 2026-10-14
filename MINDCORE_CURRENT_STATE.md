@@ -90,7 +90,7 @@ Establish and verify the real MindCore/MindCloud execution loop across backend a
 - Added `scripts/verify-paraskevi-article.js` to the standard `npm run verify` sequence. It checks dates, identity distinction, sources, routes and navigation. This test is a regression gate; it is not considered passed until CI runs it.
 - Process correction: previous handover failures were caused by relying on partial context and moving to an answer before retrieving the exact earlier discussion; another risk was treating a tool-specific request as fulfilled without confirming that the tool was available. Prevention: recover prior context first; separate similar entities and facts from interpretations; record the source and confidence for each historical claim; inspect the actual repository route/navigation; add regression checks; and never label work published, tested or deployed until the corresponding observable gate succeeds.
 - Artcraft-specific status: the Artcraft integration was not available in the connected tool catalog at the time of this change. An original SVG illustration was created and included in the site; a separate cinematic concept image was generated in this conversation. Neither is represented as having been created through Artcraft.
-- This change is on a feature branch only until CI, review, merge and production deployment are separately verified.
+- The article was merged in PR #131; the production-entrypoint correction was merged in PR #132. Railway production deployment `8096d08c-c9be-4f94-abe9-975554ca42f9` succeeded on commit `fc4a8df199252c217bdd7123aa1dc5ed1d7c7c12`. The production pre-deploy verification passed, including assertions against `frontend-server.js`, both article aliases, the SVG asset route, and Workspace/Briefing navigation. Direct browser rendering was not independently inspected in this tool session; do not claim visual browser QA without a real request/render check.
 
 
 ## Production route correction — 2026-10-15
@@ -98,3 +98,12 @@ Establish and verify the real MindCore/MindCloud execution loop across backend a
 - Root cause found during end-to-end deployment inspection: the Railway frontend service starts `frontend-server.js`, while the first article change had added the route only to backend `server.js`. The first pre-deploy test therefore checked the wrong entrypoint and gave a false-positive route guarantee.
 - Corrective change: add the article aliases and SVG asset to the frontend server's explicit `STATIC_FILES` map; update the regression test to inspect `frontend-server.js` (the actual production entrypoint); remove the redundant backend-only article route.
 - Verification policy strengthened: a route test must target the service's configured start command/entrypoint, not merely any source file that contains the route. Production is not considered complete until the new pre-deploy suite passes and the deployed article URL returns the expected HTML and SVG.
+
+
+## Publication status — The Shrine of Saint Paraskevi — 2026-10-15
+
+- Merged article PR #131 and corrective production-route PR #132.
+- Production service `Osiris-mindcloud-ui` deployment `8096d08c-c9be-4f94-abe9-975554ca42f9` reached terminal `SUCCESS` on commit `fc4a8df199252c217bdd7123aa1dc5ed1d7c7c12`.
+- Railway's pre-deploy verification output explicitly passed: article route in the actual frontend `STATIC_FILES` map, SVG route, date distinction, source links, and both navigation links; final line: `MindCloud verification suite passed.`
+- A browser-based visual check of the live route was not possible through the available fetch tool, so this remains a distinct QA item rather than a claimed success.
+- Root cause prevention is now encoded in `scripts/verify-paraskevi-article.js`: the test reads `frontend-server.js`, which matches the configured Railway start command `node frontend-server.js`, rather than relying on a backend-only route.
