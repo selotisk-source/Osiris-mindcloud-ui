@@ -132,3 +132,23 @@ Establish and verify the real MindCore/MindCloud execution loop across backend a
 - Regression coverage was added to `scripts/verify-mission-contract.js`, `scripts/verify-agent-cluster.js`, and `scripts/verify-agent-cluster-route.js`, and the route test is part of `npm run verify`.
 - Security boundary: mission plan/execute routes require `regent_id` to match server-configured `MINDCLOUD_REGENT_ID` and a separate `x-mindcloud-regent-token` matching `MINDCLOUD_REGENT_TOKEN`, in addition to the execution token. Production secret configuration has not been verified. The registry is in-memory with a 30-minute TTL and is not durable across restarts. The single-use server approval ticket authorizes only the exact tool/operation/input. Do not treat the contract alone as trusted authority.
 - The latest mission-execution changes are committed on PR #127. CI for the latest commit must pass before merge; no production deployment or full autonomous Dirigentverket runtime has been verified.
+
+## Recursive build-loop update — 2026-10-14
+
+### Changes made on PR #127 branch
+
+- `server.js`: startup log now reports `server.address().port`, i.e. the actual bound port rather than the requested value. This preserves normal fixed-port logs and enables reliable ephemeral-port tests.
+- `scripts/verify-agent-cluster-route.js`: removed the free-port probe/close/rebind pattern. The test now starts the server with `PORT=0`, reads the actual bound port from the startup line, accumulates stdout in case the line arrives across chunks, and waits for health on that port. This removes the test's check/use port race.
+- `.github/workflows/mindcloud-verification.yml`: added a Node 20 GitHub Actions workflow to run `npm run verify` on pull requests targeting `main`, pushes to `main`, and manual dispatch. The workflow file has been read back from the branch.
+
+### Evidence and limits
+
+- Commits created on the PR branch: `86c7b3f7630f689c3aa8ff94a503604eda2a9bac` (initial route-test port fix), `52ba031a272f814fbef0bd770e74072c15dd1af4` (actual bound-port log), `cead30c97db91d9c5c4a670021a5b70a57bd680c` (use OS-assigned port), `cf92bed5558158bfcaad297c4ce3983bf826926e` (regex correction), `3502eb146b7cb527320fc577cbf565ff957e41a8` (verification workflow), and `1cd959c5ea9b377402707424f27ec7a6997e06b6` (split-output handling).
+- Repository files were read back after the edits. The current route-test implementation no longer allocates a port by probing and releasing it.
+- At the last GitHub status/workflow query, the latest commit had no associated workflow runs or status checks. **The code and workflow are not yet runtime-verified.** Do not merge or deploy until the new workflow runs and the full verification suite passes.
+- Production was not changed by these commits. The five Railway production services remain online according to the latest environment status query, with no pending work or active service issues.
+- Mission registry and approval tickets are still in-memory; production Regent secret configuration and the complete production adapter → durable evidence → frontend transaction remain unverified. These are real remaining integration gaps, not completed work.
+
+### Next executable step
+
+Confirm GitHub Actions starts for the updated PR head, inspect and fix any failures, then run the controlled production self-test concurrency check and the authorized adapter/evidence readback transaction. Only after passing those gates should merge/deploy be considered.
