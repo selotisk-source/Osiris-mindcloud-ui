@@ -107,3 +107,13 @@ Establish and verify the real MindCore/MindCloud execution loop across backend a
 - Railway's pre-deploy verification output explicitly passed: article route in the actual frontend `STATIC_FILES` map, SVG route, date distinction, source links, and both navigation links; final line: `MindCloud verification suite passed.`
 - A browser-based visual check of the live route was not possible through the available fetch tool, so this remains a distinct QA item rather than a claimed success.
 - Root cause prevention is now encoded in `scripts/verify-paraskevi-article.js`: the test reads `frontend-server.js`, which matches the configured Railway start command `node frontend-server.js`, rather than relying on a backend-only route.
+
+
+## OSIRIS station publication — 2026-10-15
+
+- Corrected OSIRIS integration merged in PR #133; superseded/conflicting PR #130 was closed.
+- The primary Workspace remains four stations in a 2×2 grid by default. Station 4 now embeds the existing `https://osirisai.live/` site, with independent reload and an `OPEN STANDALONE` fallback if framing is blocked. Selecting two-station mode shows MindCore + OSIRIS.
+- The production frontend test now verifies the actual OSIRIS iframe, reload control, standalone fallback, four-station default, and two-station selection.
+- Latest Railway production deployment `915d35c4-110e-4d7b-a9d2-9c4878d94270` reached `SUCCESS` on commit `3a764bd981a44e760d5020b519de168324d1c98c`. Its pre-deploy verification passed the article route/source/date checks and OSIRIS quadrant checks; final line was `MindCloud verification suite passed.`
+- Remaining limitation: iframe rendering of `osirisai.live` itself has not been confirmed in a real user browser; the standalone fallback is provided because the external site may restrict framing.
+- Artcraft was not available in the connected plugin catalog for the Paraskevi article. The published page uses an original locally served SVG illustration; a separate concept image was generated in-chat, and neither is mislabelled as Artcraft output.
