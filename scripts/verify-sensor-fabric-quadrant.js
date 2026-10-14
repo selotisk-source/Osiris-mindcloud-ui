@@ -12,7 +12,7 @@ assert.match(sensor, /OPEN OSIRIS ↗/, "Sensor Fabric must retain a direct OSIR
 assert.match(html, /src="https:\/\/osirisai\.live\/" title="OSIRIS live intelligence platform"/, "station four must embed the official OSIRIS app");
 assert.match(html, /id="osirisReload"/, "OSIRIS must have independent reload navigation");
 assert.match(html, /setWorkspaceLayout\(4\)/, "2×2 four-station view must remain the default");
-assert.match(html, /fetch\('\/api\/cctv',\{cache:'no-store'\}\)/, "Sensor Fabric must fetch current OSIRIS/CCTV metadata");
+assert.match(html, /fetch\('\/api\/mindcloud\/osiris\/integration',\{cache:'no-store'\}\)/, "Sensor Fabric must fetch current OSIRIS/CCTV metadata");
 assert.match(html, /tiles\.on\('tileload'/, "map must track actual tile loads");
 assert.match(html, /tiles\.on\('tileerror'/, "map must report tile failures");
 console.log("sensor-fabric-quadrant: PASS — map in station three, OSIRIS navigation in station four, live-media toggle and fresh connector metadata");
