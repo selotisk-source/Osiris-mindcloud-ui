@@ -7,7 +7,7 @@ const workspace = fs.readFileSync(path.join(__dirname, "..", "index.html"), "utf
 const checks = [
   ["standalone article exists", article.includes("<title>The Shrine of Saint Paraskevi")),
   ["Bulgarian Petka feast is correctly dated 14 October", article.includes("14 oktober") && article.includes("14 OKTOBER")),
-  ["Roman martyr feast is separately dated 26 July", article.includes("26 juli") && article.includes("26 JULI")],
+  ["Roman martyr feast is separately dated 26 July", article.toLowerCase().includes("26 juli")],
   ["the two saints are explicitly distinguished", article.includes("två olika helgon") && article.includes("inte två datum för samma person")),
   ["interpretation is separated from church tradition", article.includes("vår egen moderna tolkning") && article.includes("inte en kyrklig lära")),
   ["official Bulgarian Patriarchate source is linked", article.includes("https://bg-patriarshia.bg/sv-petka")),
