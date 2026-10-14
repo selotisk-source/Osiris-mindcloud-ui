@@ -1,0 +1,18 @@
+const assert = require("node:assert/strict");
+const fs = require("node:fs");
+const html = fs.readFileSync("index.html", "utf8");
+const sensorStart = html.indexOf('<section class="station media-station" data-station="3">');
+const osirisStart = html.indexOf('<section class="station osiris-station" data-station="4">');
+assert.ok(sensorStart >= 0 && osirisStart > sensorStart, "Sensor Fabric and OSIRIS must occupy separate quadrants");
+const sensor = html.slice(sensorStart, osirisStart);
+assert.match(sensor, /id="sensorFabricQuadrantMap"/, "station three must show the interactive Sensor Fabric map");
+assert.match(sensor, /id="sensorQuadrantCctvStatus"/, "station three must show OSIRIS/CCTV metadata");
+assert.match(sensor, /id="toggleSensorLive"/, "live media must remain accessible from Sensor Fabric");
+assert.match(sensor, /OPEN OSIRIS ↗/, "Sensor Fabric must retain a direct OSIRIS navigation link");
+assert.match(html, /src="https:\/\/osirisai\.live\/" title="OSIRIS live intelligence platform"/, "station four must embed the official OSIRIS app");
+assert.match(html, /id="osirisReload"/, "OSIRIS must have independent reload navigation");
+assert.match(html, /setWorkspaceLayout\(4\)/, "2×2 four-station view must remain the default");
+assert.match(html, /fetch\('\/api\/cctv',\{cache:'no-store'\}\)/, "Sensor Fabric must fetch current OSIRIS/CCTV metadata");
+assert.match(html, /tiles\.on\('tileload'/, "map must track actual tile loads");
+assert.match(html, /tiles\.on\('tileerror'/, "map must report tile failures");
+console.log("sensor-fabric-quadrant: PASS — map in station three, OSIRIS navigation in station four, live-media toggle and fresh connector metadata");
