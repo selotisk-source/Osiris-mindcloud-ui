@@ -615,6 +615,69 @@ const server = http.createServer(async (req,res)=>{
     }
     return;
   }
+  // OSIRIS -> Sensor Fabric integration contract. Report only runtime fields that the
+  // CCTV service actually exposes; never infer coordinates or a decoded live frame.
+  if(pathname==="/api/mindcloud/osiris/integration" && req.method==="GET"){
+    const cctv = cctvResponse();
+    sendJson(res,{
+      type:"mindcloud_osiris_integration",
+      schemaVersion:1,
+      observedAt:new Date().toISOString(),
+      sourceService:cctv.service,
+      status:cctv.status,
+      sourceConfigured:Boolean(cctv.source),
+      mediaProtocol:cctv.mediaProtocol,
+      streamProtocol:cctv.streamProtocol,
+      transportProtocol:cctv.transportProtocol,
+      streamStatus:cctv.streamStatus,
+      proxyStatus:cctv.proxyStatus,
+      proxyAuthStatus:cctv.proxyAuthStatus,
+      frameStatus:cctv.frameStatus,
+      evidenceStatus:cctv.evidenceStatus,
+      frame:cctv.frame,
+      snapshotStatus:cctv.snapshotStatus,
+      snapshotCheckedAt:cctv.snapshotCheckedAt,
+      snapshotContentType:cctv.snapshotContentType,
+      snapshotByteLength:cctv.snapshotByteLength,
+      snapshotSha256:cctv.snapshotSha256,
+      links:{cctvStatus:"/api/cctv",streamStatus:"/api/cctv/stream-status",osirisConsole:"/osiris"}
+    });
+    return;
+  }
+  if(pathname==="/api/mindcloud/osiris/ingest" && req.method==="POST"){
+    if(!isExecutionAuthorized(req)){sendJson(res,{error:"unauthorized"},401);return;}
+    try {
+      const snapshot = {
+        schemaVersion:1,
+        kind:"osiris-cctv-status",
+        observedAt:new Date().toISOString(),
+        integration:(() => {
+          const cctv=cctvResponse();
+          return {
+            sourceService:cctv.service,status:cctv.status,sourceConfigured:Boolean(cctv.source),
+            mediaProtocol:cctv.mediaProtocol,streamProtocol:cctv.streamProtocol,
+            transportProtocol:cctv.transportProtocol,streamStatus:cctv.streamStatus,
+            proxyStatus:cctv.proxyStatus,proxyAuthStatus:cctv.proxyAuthStatus,
+            frameStatus:cctv.frameStatus,evidenceStatus:cctv.evidenceStatus,
+            frame:cctv.frame,snapshotStatus:cctv.snapshotStatus,
+            snapshotCheckedAt:cctv.snapshotCheckedAt,snapshotContentType:cctv.snapshotContentType,
+            snapshotByteLength:cctv.snapshotByteLength,snapshotSha256:cctv.snapshotSha256
+          };
+        })()
+      };
+      const node=evidenceGraph.addNode({
+        type:"osiris-cctv-status",
+        label:"OSIRIS CCTV status · "+snapshot.observedAt,
+        sourceRef:"/api/mindcloud/osiris/integration",
+        content:snapshot
+      });
+      sendJson(res,{type:"mindcloud_osiris_evidence_ingested",nodeId:node.id,contentHash:node.contentHash,observedAt:snapshot.observedAt,status:snapshot.integration.streamStatus,frameStatus:snapshot.integration.frameStatus},201);
+    } catch(error) {
+      const message=error instanceof Error?error.message:String(error);
+      sendJson(res,{error:message},Number.isInteger(error.statusCode)?error.statusCode:500);
+    }
+    return;
+  }
   if(pathname==="/api/mindcloud/evidence-graph" && req.method==="GET"){
     const expectedToken = process.env.MINDCLOUD_EVIDENCE_READ_TOKEN || "";
     if (!expectedToken) { sendJson(res,{error:"mindcloud_evidence_read_token_not_configured"},503); return; }
