@@ -16,7 +16,7 @@ const checks = [
   ["article route exists in production frontend STATIC_FILES", frontend.includes("STATIC_FILES") && frontend.includes('"/paraskevi": ["paraskevi.html"') && frontend.includes('"/articles/the-shrine-of-saint-paraskevi": ["paraskevi.html"')],
   ["SVG asset route exists in production frontend STATIC_FILES", frontend.includes('"/assets/paraskevi-shrine.svg": ["assets/paraskevi-shrine.svg", "image/svg+xml; charset=utf-8"]') && fs.existsSync(svgPath) && article.includes('/assets/paraskevi-shrine.svg')],
   ["article linked from workspace navigation", workspace.includes('href="/paraskevi">The Shrine')],
-  ["article linked from briefing navigation", newsletter.includes('href="/paraskevi">The Shrine')
+  ["article linked from briefing navigation", newsletter.includes('href="/paraskevi">The Shrine')]
 ];
 const failed = checks.filter(([, ok]) => !ok);
 for (const [name, ok] of checks) console.log((ok ? "PASS" : "FAIL") + " " + name);
