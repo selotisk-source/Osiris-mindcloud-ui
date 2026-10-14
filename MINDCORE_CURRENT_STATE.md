@@ -152,3 +152,11 @@ Establish and verify the real MindCore/MindCloud execution loop across backend a
 ### Next executable step
 
 Confirm GitHub Actions starts for the updated PR head, inspect and fix any failures, then run the controlled production self-test concurrency check and the authorized adapter/evidence readback transaction. Only after passing those gates should merge/deploy be considered.
+
+### Production configuration audit — 2026-10-14
+
+- Inspected the backend Railway variable **names only**; secret values were not retrieved or emitted.
+- Present: `MINDCLOUD_TOOL_EXECUTION_TOKEN`, `MINDCLOUD_APPROVAL_TOKEN`, `MINDCLOUD_EVIDENCE_READ_TOKEN`, `MINDCLOUD_EVIDENCE_WRITE_TOKEN`, `MINDCLOUD_EVIDENCE_GRAPH_STORE`.
+- Missing on the production backend: `MINDCLOUD_REGENT_ID` and `MINDCLOUD_REGENT_TOKEN`. Consequently the new mission-plan/mission-execute Regent authorization gate cannot succeed in production as currently configured. This is a confirmed configuration blocker, not a speculative one.
+- I did **not** mutate production variables or trigger a deployment: the code changes are not CI-verified, and creating a new Regent credential without a confirmed client-side secret-delivery path could leave the service unusable or create an unmanageable credential.
+- Next gate: make the CI suite run and pass; then configure the Regent ID/token through an approved secret handoff and verify a successful authorized request plus rejection of a wrong token, without printing the secret.
