@@ -17,14 +17,14 @@
         !sourceUrl.search && !sourceUrl.hash,
       timestamp: timestampValid(capturedAt),
       httpStatus: Number.isInteger(response?.status) && response.status >= 200 && response.status < 300,
-      contentType: /application\\/json/i.test(response?.headers?.get?.("content-type") || ""),
+      contentType: /application\/json/i.test(response?.headers?.get?.("content-type") || ""),
       payload: !!payload && typeof payload === "object" && !Array.isArray(payload),
       configured: payload?.status === "configured",
       mediaProtocolSupported: ["SNAPSHOT", "HLS", "DASH"].includes(mediaProtocol)
     };
     const snapshotChecks = {
       snapshotVerified: payload?.snapshotStatus === "verified",
-      snapshotContentType: /^image\\/(?:jpeg|png|webp)$/i.test(payload?.snapshotContentType || ""),
+      snapshotContentType: /^image\/(?:jpeg|png|webp)$/i.test(payload?.snapshotContentType || ""),
       snapshotByteLength: Number.isSafeInteger(payload?.snapshotByteLength) && payload.snapshotByteLength > 0,
       snapshotSha256: sha256Valid(payload?.snapshotSha256),
       snapshotTimestamp: timestampValid(payload?.snapshotCheckedAt)
