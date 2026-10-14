@@ -1,6 +1,8 @@
 name: Brave extension runtime test
 
 on:
+  push:
+    branches: ["mindcloud/sensor-fabric-brave-release-ci-20261014"]
   pull_request:
     types: [opened, synchronize, reopened]
     branches: ["main"]
