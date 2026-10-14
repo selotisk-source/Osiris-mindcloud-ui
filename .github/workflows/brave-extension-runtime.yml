@@ -43,7 +43,23 @@ jobs:
         run: |
           test -x /usr/bin/brave-browser
           /usr/bin/brave-browser --version
-      - name: Run extension runtime test in Brave
+      - name: Run Brave extension and Sensor Fabric browser tests
         env:
           BRAVE_EXECUTABLE_PATH: /usr/bin/brave-browser
-        run: xvfb-run -a node tests/extension/brave-extension-runtime.test.js
+        run: |
+          xvfb-run -a node tests/extension/brave-extension-runtime.test.js
+          xvfb-run -a node tests/extension/sensor-fabric-map-browser.test.js
+      - name: Package two-station Brave extension
+        run: |
+          (cd extension && zip -r ../mindcloud-brave-two-station.zip .)
+          unzip -t mindcloud-brave-two-station.zip
+          unzip -Z1 mindcloud-brave-two-station.zip | grep -qx 'manifest.json'
+          unzip -Z1 mindcloud-brave-two-station.zip | grep -qx 'sidepanel.html'
+          sha256sum mindcloud-brave-two-station.zip
+      - name: Publish extension artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: mindcloud-brave-two-station
+          path: mindcloud-brave-two-station.zip
+          if-no-files-found: error
+          retention-days: 14
