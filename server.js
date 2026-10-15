@@ -733,6 +733,12 @@ const server = http.createServer(async (req,res)=>{
     return;
   }
   if(pathname==="/api/neutral-network/personal-power" && req.method==="GET") {
+    // This graph is personal data. Require the existing MindCloud execution authorization
+    // by default; public exposure must be an explicit deployment-level decision.
+    if (process.env.MINDCLOUD_PERSONAL_POWER_PUBLIC !== "true" && !isExecutionAuthorized(req)) {
+      sendJson(res,{error:"personal_power_authorization_required"},401);
+      return;
+    }
     try {
       const { buildPersonalPowerGraph } = require("./mindcloud/neutral-network-personal-power");
       sendJson(res, buildPersonalPowerGraph({ capturedAt: new Date().toISOString() }));
