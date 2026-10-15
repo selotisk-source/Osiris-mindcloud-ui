@@ -228,7 +228,7 @@ function setWorkspaceLayout(n){
   document.querySelectorAll('[data-layout]').forEach(x=>x.classList.toggle('active',Number(x.dataset.layout)===n));
   ws.dataset.layoutMode=String(n);
   const status=document.getElementById('workspaceStatus');
-  if(status)status.innerHTML='<i class="dot"></i> '+n+'-station workspace';
+  if(status)status.innerHTML='<i class="dot"></i> '+(n===2?'two-station':n+'-station')+' workspace';
   ws.style.gridTemplateColumns=n===3?'repeat(3,minmax(0,1fr))':'repeat(2,minmax(0,1fr))';
   ws.style.gridTemplateRows=(n===2||n===3)?'minmax(0,1fr)':'repeat(2,minmax(0,1fr))';
   const stations=[...ws.children];
