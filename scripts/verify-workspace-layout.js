@@ -11,7 +11,7 @@ assert.match(html, /ws\.style\.gridTemplateRows=\(n===2\|\|n===3\)\?\x27minmax\(
 assert.match(html, /\.workspace\[data-layout-mode="4"\] \[data-station="1"\]\{grid-column:1;grid-row:1\}/, "MindCore must occupy top-left");
 assert.match(html, /\.workspace\[data-layout-mode="4"\] \[data-station="2"\]\{grid-column:2;grid-row:1\}/, "GEO / Heritage must occupy top-right");
 assert.match(html, /\.workspace\[data-layout-mode="4"\] \[data-station="3"\]\{grid-column:1;grid-row:2\}/, "Sensor Fabric must occupy bottom-left");
-assert.match(html, /\.workspace\[data-layout-mode="4"\] \[data-station="4"\]\{grid-column:2;grid-row:2\}/, "God’s Eye View must occupy bottom-right");
+assert.match(html, /\.workspace\[data-layout-mode="4"\] \[data-station="4"\]\{grid-column:2;grid-row:2\}/, "OSIRIS must occupy bottom-right");
 assert.match(html, /data-layout="4"/, "four-station layout must remain available");
 assert.match(html, /if\(name==='Heritage Map'\)\{\s*closeAll\(\);\s*const layout4=document\.querySelector\('\[data-layout="4"\]'\)/, "Heritage Map must preserve the four-station workspace");
 assert.match(html, /const geo=document\.querySelector\('\[data-station="2"\]'\)/, "Heritage Map must target the visible GEO / Heritage station");

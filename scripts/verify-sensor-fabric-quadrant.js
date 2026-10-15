@@ -9,8 +9,10 @@ assert.match(sensor, /id="sensorFabricQuadrantMap"/, "station three must show th
 assert.match(sensor, /id="sensorQuadrantCctvStatus"/, "station three must show OSIRIS/CCTV metadata");
 assert.match(sensor, /id="toggleSensorLive"/, "live media must remain accessible from Sensor Fabric");
 assert.match(sensor, /OPEN OSIRIS ↗/, "Sensor Fabric must retain a direct OSIRIS navigation link");
-assert.match(html, /src="https:\/\/osirisai\.live\/" title="OSIRIS live intelligence platform"/, "station four must embed the official OSIRIS app");
-assert.match(html, /id="osirisReload"/, "OSIRIS must have independent reload navigation");
+assert.doesNotMatch(html, /<iframe id="osirisFrame"/, "station four must not embed OSIRIS while its source blocks cross-origin framing");
+assert.match(html, /id="osirisOpenStandalone"/, "station four must provide secure standalone navigation");
+assert.match(html, /id="osirisOpenHere"/, "station four must provide same-tab navigation");
+assert.match(html, /restricts cross-origin framing/, "station four must explain why OSIRIS opens separately");
 assert.match(html, /setWorkspaceLayout\(2\)/, "MindCore + OSIRIS two-station view must be the default");
 assert.match(html, /class="btn active" data-layout="2"/, "two-station control must be active by default");
 assert.match(html, /data-layout="4"/, "2×2 four-station view must remain selectable");
