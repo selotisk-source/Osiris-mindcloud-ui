@@ -107,6 +107,19 @@ const { chromium } = require("playwright");
       [true, false, false, true]
     );
     assert.equal(await workspacePage.locator("#osirisFrame").getAttribute("allow"), "fullscreen");
+
+    // Verify the real external OSIRIS document, not merely the iframe element/load event.
+    const osirisFramePredicate = frame => frame.url().startsWith("https://osirisai.live/");
+    let osirisFrame = workspacePage.frames().find(osirisFramePredicate);
+    if (!osirisFrame) {
+      osirisFrame = await workspacePage.waitForEvent("framenavigated", {
+        predicate: osirisFramePredicate,
+        timeout: 20000
+      });
+    }
+    const osirisBody = await osirisFrame.locator("body").innerText({ timeout: 15000 });
+    assert.match(osirisBody, /OSIRIS|OPEN SOURCE INTELLIGENCE/i,
+      "the external OSIRIS page must render content inside the iframe, not just fire a load event");
     await workspacePage.locator('[data-layout="4"]').click();
     await workspacePage.waitForFunction(() => document.querySelector(".workspace")?.dataset.layoutMode === "4");
     assert.deepEqual(
