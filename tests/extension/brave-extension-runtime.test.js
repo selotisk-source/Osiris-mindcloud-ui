@@ -1,6 +1,7 @@
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
+const http = require("node:http");
 const { chromium } = require("playwright");
 
 (async () => {
@@ -47,6 +48,7 @@ const { chromium } = require("playwright");
     return route.fulfill({ status: 200, contentType: "text/html", body: "<!doctype html><title>Mock MindCloud</title>" });
   });
 
+  let workspaceServer;
   try {
     let serviceWorker = context.serviceWorkers()[0];
     if (!serviceWorker) serviceWorker = await context.waitForEvent("serviceworker", { timeout: 10000 });
@@ -98,8 +100,22 @@ const { chromium } = require("playwright");
 
     // Open the actual MindCloud index.html in Brave and exercise the real layout controls.
     const workspacePage = await context.newPage();
-    const workspaceFileUrl = "file://" + path.resolve(__dirname, "..", "..", "index.html");
-    await workspacePage.goto(workspaceFileUrl, { waitUntil: "domcontentloaded" });
+    const workspaceHtml = fs.readFileSync(path.resolve(__dirname, "..", "..", "index.html"), "utf8");
+    workspaceServer = http.createServer((req, res) => {
+      if (req.url === "/" || req.url.startsWith("/?")) {
+        res.writeHead(200, { "content-type": "text/html; charset=utf-8" });
+        res.end(workspaceHtml);
+      } else {
+        res.writeHead(404);
+        res.end("Not found");
+      }
+    });
+    await new Promise((resolve, reject) => {
+      workspaceServer.once("error", reject);
+      workspaceServer.listen(0, "127.0.0.1", resolve);
+    });
+    const workspaceUrl = `http://127.0.0.1:${workspaceServer.address().port}/`;
+    await workspacePage.goto(workspaceUrl, { waitUntil: "domcontentloaded" });
     await workspacePage.waitForFunction(() => document.querySelector(".workspace")?.dataset.layoutMode === "2");
     assert.match(await workspacePage.locator("#workspaceStatus").innerText(), /two-station workspace/);
     assert.deepEqual(
@@ -137,6 +153,7 @@ const { chromium } = require("playwright");
     console.log(`brave-runtime: PASS — extension ${extensionId}; extension side panel and main index.html layout verified in Brave; MindCore + OSIRIS default; four-station switch and return`);
   } finally {
     await context.close();
+    if (workspaceServer) await new Promise(resolve => workspaceServer.close(resolve));
   }
 })().catch(error => {
   console.error(error);
