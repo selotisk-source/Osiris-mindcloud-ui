@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 560" role="img" aria-labelledby="title desc">
+<title id="title">MindCloud — connected intelligence</title>
+<desc id="desc">An abstract luminous globe and connected nodes representing MindCore, MindCloud, evidence, and specialized capabilities.</desc>
+<defs>
+  <radialGradient id="globe" cx="38%" cy="32%" r="75%"><stop offset="0" stop-color="#214f70"/><stop offset=".58" stop-color="#12273f"/><stop offset="1" stop-color="#0b1020"/></radialGradient>
+  <linearGradient id="arc" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#71e0e0"/><stop offset="1" stop-color="#a8a0ff"/></linearGradient>
+  <filter id="glow"><feGaussianBlur stdDeviation="5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+</defs>
+<rect width="1200" height="560" rx="28" fill="#0b1020"/>
+<circle cx="785" cy="278" r="224" fill="url(#globe)" stroke="#71e0e055"/>
+<circle cx="785" cy="278" r="178" fill="none" stroke="#71e0e044"/>
+<ellipse cx="785" cy="278" rx="94" ry="224" fill="none" stroke="#71e0e055"/>
+<ellipse cx="785" cy="278" rx="174" ry="80" fill="none" stroke="#71e0e055" transform="rotate(-18 785 278)"/>
+<ellipse cx="785" cy="278" rx="174" ry="135" fill="none" stroke="#71e0e033" transform="rotate(28 785 278)"/>
+<g fill="none" stroke="url(#arc)" stroke-width="2" opacity=".9">
+ <path d="M170 280 C310 80 450 90 590 220 S850 440 1045 150"/>
+ <path d="M300 420 C450 330 505 150 700 110 S920 310 1090 390"/>
+ <path d="M420 105 C520 250 550 365 700 440 S920 450 1040 280" opacity=".6"/>
+</g>
+<g stroke="#71e0e077" stroke-width="1.5" fill="#10263c">
+ <path d="M170 280 L300 180 L435 220 L590 220 L700 110 L835 150 L1045 150" fill="none"/>
+ <path d="M300 420 L435 220 L590 350 L785 278 L920 310 L1090 390" fill="none"/>
+ <path d="M590 220 L590 350 L700 440 L920 310" fill="none"/>
+</g>
+<g filter="url(#glow)">
+ <circle cx="785" cy="278" r="22" fill="#71e0e0"/><circle cx="785" cy="278" r="8" fill="#f0ffff"/>
+ <circle cx="590" cy="220" r="8" fill="#71e0e0"/><circle cx="700" cy="110" r="7" fill="#a8a0ff"/>
+ <circle cx="920" cy="310" r="8" fill="#71e0e0"/><circle cx="1045" cy="150" r="7" fill="#a8a0ff"/>
+ <circle cx="300" cy="180" r="6" fill="#a8a0ff"/><circle cx="435" cy="220" r="6" fill="#71e0e0"/>
+ <circle cx="590" cy="350" r="6" fill="#a8a0ff"/><circle cx="700" cy="440" r="6" fill="#71e0e0"/>
+</g>
+<g font-family="Inter, ui-sans-serif, system-ui, sans-serif">
+ <text x="72" y="88" font-size="16" letter-spacing="5" fill="#71e0e0" font-weight="700">MINDCORE × MINDCLOUD</text>
+ <text x="72" y="164" font-size="49" fill="#edf3ff" font-weight="750" letter-spacing="-2">One system.</text>
+ <text x="72" y="220" font-size="49" fill="#71e0e0" font-weight="750" letter-spacing="-2">Many capabilities.</text>
+ <text x="74" y="268" font-size="18" fill="#b7c6db">Adaptive orchestration</text>
+ <text x="74" y="298" font-size="18" fill="#b7c6db">Evidence-first execution</text>
+ <text x="74" y="328" font-size="18" fill="#b7c6db">Human-gated verification</text>
+ <rect x="72" y="375" width="222" height="42" rx="21" fill="#71e0e01a" stroke="#71e0e088"/>
+ <text x="183" y="401" font-size="13" fill="#dffafa" text-anchor="middle" letter-spacing="1.2">PROJECT BRIEF · 2026</text>
+ <text x="785" y="319" font-size="13" fill="#f0ffff" font-weight="700" text-anchor="middle">MINDCORE</text>
+ <text x="590" y="197" font-size="11" fill="#dffafa" text-anchor="middle">EVIDENCE</text>
+ <text x="920" y="287" font-size="11" fill="#dffafa" text-anchor="middle">TOOLS</text>
+</g>
+</svg>
