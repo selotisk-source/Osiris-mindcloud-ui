@@ -122,20 +122,16 @@ const { chromium } = require("playwright");
       await workspacePage.locator(".station").evaluateAll(nodes => nodes.map(node => getComputedStyle(node).display !== "none")),
       [true, false, false, true]
     );
-    assert.equal(await workspacePage.locator("#osirisFrame").getAttribute("allow"), "fullscreen");
+    assert.equal(await workspacePage.locator("#osirisFrame").count(), 0, "OSIRIS must use the standalone launcher while cross-origin framing is blocked");
 
-    // Verify the real external OSIRIS document, not merely the iframe element/load event.
-    const osirisFramePredicate = frame => frame.url().startsWith("https://osirisai.live/");
-    let osirisFrame = workspacePage.frames().find(osirisFramePredicate);
-    if (!osirisFrame) {
-      osirisFrame = await workspacePage.waitForEvent("framenavigated", {
-        predicate: osirisFramePredicate,
-        timeout: 20000
-      });
-    }
-    const osirisBody = await osirisFrame.locator("body").innerText({ timeout: 15000 });
-    assert.match(osirisBody, /OSIRIS|OPEN SOURCE INTELLIGENCE/i,
-      "the external OSIRIS page must render content inside the iframe, not just fire a load event");
+    // OSIRIS configures X-Frame-Options: SAMEORIGIN, so verify the explicit standalone launch path.
+    assert.equal(await workspacePage.locator("#osirisLaunchTitle").innerText(), "Open OSIRIS as a separate platform");
+    assert.match(await workspacePage.locator("#osirisEmbedStatus").innerText(), /restricts cross-origin framing/);
+    const osirisOpen = workspacePage.locator("#osirisOpenStandalone");
+    assert.equal(await osirisOpen.getAttribute("href"), "https://osirisai.live/");
+    assert.equal(await osirisOpen.getAttribute("target"), "_blank");
+    assert.equal(await osirisOpen.getAttribute("rel"), "noopener noreferrer");
+    assert.equal(await workspacePage.locator("#osirisOpenHere").getAttribute("target"), "_self");
     await workspacePage.locator('[data-layout="4"]').click();
     await workspacePage.waitForFunction(() => document.querySelector(".workspace")?.dataset.layoutMode === "4");
     assert.deepEqual(
@@ -150,7 +146,7 @@ const { chromium } = require("playwright");
     );
 
     assert.deepEqual(pageErrors, []);
-    console.log(`brave-runtime: PASS — extension ${extensionId}; extension side panel and main index.html layout verified in Brave; MindCore + OSIRIS default; four-station switch and return`);
+    console.log(`brave-runtime: PASS — extension ${extensionId}; two-station layout and secure OSIRIS standalone launcher verified in Brave; four-station switch and return`);
   } finally {
     await context.close();
     if (workspaceServer) await new Promise(resolve => workspaceServer.close(resolve));
