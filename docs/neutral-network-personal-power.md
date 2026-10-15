@@ -1,36 +1,32 @@
-# Neutral Network: Personal Power ingestion
+# Neutral Network: Personal Power integration
 
-## Purpose
+## User-facing visualization
 
-Import the user-supplied **Personal Power** diagram as a provenance-preserving graph in the Neutral Network. The adapter is a structured transcription layer, not a psychological assessment engine.
+- Frontend route: `/personal-power`
+- MindCloud Workspace navigation: **Personal Power / Neutral Network**
+- Backend graph endpoint: `GET /api/neutral-network/personal-power`
+- Graph schema: `mindcloud.neutral-network.graph.v1`
 
-## Data flow
+The page fetches the typed graph from the MindCore backend and renders interactive category and concept nodes. Selecting a node shows its source ID, type, confidence, epistemic status and provenance. The page also explains the processing pipeline and distinguishes implemented API wiring from persistence and validation.
 
-`image → transcription observations → typed graph nodes/edges → evidence review → Metanoia revalidation → MindCore-approved promotion`
+## Security
 
-The adapter currently implements the transcription-observation and graph-shaping stages. It does not write into a production evidence store, call a model, diagnose, recommend treatment, or promote the graph automatically.
+The graph endpoint is protected by the existing MindCloud execution authorization by default. Anonymous access is only enabled if the deployment explicitly sets `MINDCLOUD_PERSONAL_POWER_PUBLIC=true`. The content is personal, so public exposure must be a deliberate deployment decision. The UI does not store or ask the user to paste an execution token.
 
-## Contract
+## Data contract and epistemic boundaries
 
-- Schema: `mindcloud.neutral-network.graph.v1`
-- Graph ID: `personal-power`
-- Node types: `concept_group`, `diagram_label`
-- Edge relation: `visually_grouped_with`
-- Each node and edge carries source provenance.
-- Labels carry transcription confidence; ambiguous words remain low/medium confidence.
-- Every node is `verified: false`; the graph status is `ingestion_preview`.
-- The epistemic rules explicitly preserve `CLAIM ≠ EVIDENCE ≠ VALIDATION`, prohibit inferred causality, and prevent automatic promotion.
-
-## Safe integration boundary
-
-The graph is suitable for indexing, search and later human review. Any future connection to a persistent Evidence Graph must preserve the original image/source ID, transcription confidence, timestamps and revisions. A reviewer may correct the transcript without erasing the prior version. Any interpretation or recommendation must be a separate, attributed hypothesis node and pass the existing Metanoia/validation and approval gates before promotion.
+- Nodes and edges retain source provenance.
+- Low/medium confidence labels preserve uncertain transcription.
+- Every node remains `verified: false`; graph status is `ingestion_preview`.
+- Visible layout edges are not semantic/causal assertions.
+- Claim is not evidence; evidence is not validation.
+- No psychological/medical assessment or efficacy inference is generated.
+- No automatic promotion or production Evidence Graph write is performed.
 
 ## Verification
 
-Run:
+Run `npm run verify`. The standard suite includes:
+- `scripts/verify-neutral-network-personal-power.js` — graph schema and provenance.
+- `scripts/verify-neutral-network-personal-power-ui.js` — frontend route, backend endpoint, navigation, authorization and graph visualization wiring.
 
-```sh
-node scripts/verify-neutral-network-personal-power.js
-```
-
-The regression test checks schema, provenance, required labels, edge integrity, uncertainty preservation and non-promotion defaults. The full suite includes this check through `npm run verify`.
+CI execution and production browser/API verification are required before describing the integration as deployed and end-to-end verified.
