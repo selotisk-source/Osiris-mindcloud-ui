@@ -732,6 +732,15 @@ const server = http.createServer(async (req,res)=>{
     }
     return;
   }
+  if(pathname==="/api/neutral-network/personal-power" && req.method==="GET") {
+    try {
+      const { buildPersonalPowerGraph } = require("./mindcloud/neutral-network-personal-power");
+      sendJson(res, buildPersonalPowerGraph({ capturedAt: new Date().toISOString() }));
+    } catch(error) {
+      sendJson(res,{error:"neutral_network_graph_unavailable",message:error instanceof Error?error.message:String(error)},500);
+    }
+    return;
+  }
   if(pathname==="/api/agent-tools"){sendJson(res,agentTools);return;}
   if(pathname==="/api/adapters"){sendJson(res,adapters.snapshot());return;}
   if(pathname.startsWith("/api/adapters/") && pathname.endsWith("/discover")){const id=pathname.split("/")[3];sendJson(res,adapters.discover(id));return;}
