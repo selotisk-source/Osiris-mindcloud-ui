@@ -1,0 +1,203 @@
+{
+  "schema_version": "mindcore-node-set.v1",
+  "set_id": "MC-KULIKOVO-ORTHODOX-001",
+  "title": "Kulikovo 1380 — Peresvet, Oslyabya, and Orthodox warrior tradition",
+  "created_at": "2026-10-17",
+  "status": "research_candidate",
+  "write_scope": "repository research artifact; not yet imported into a live MindCore graph",
+  "evidence_policy": {
+    "separate_historical_claims_from_hagiographic_tradition": true,
+    "preserve_conflicting_or_missing_evidence": true,
+    "do_not_infer_historical_certainty_from_modern_visuals": true,
+    "confidence_scale": ["high", "medium", "low", "unassessed"]
+  },
+  "nodes": [
+    {
+      "id": "MC-HIST-KULIKOVO-1380",
+      "type": "historical_event",
+      "source": [
+        {"title": "Primary/medieval source traditions concerning the Battle of Kulikovo", "kind": "source_family", "url": null},
+        {"title": "Orthodox Encyclopedia: Kulikovo Battle (1380)", "kind": "reference", "url": "https://m.pravenc.ru/text/Куликовская битва 1380.html"}
+      ],
+      "content": "Battle fought on 8 September 1380 (Julian calendar date commonly used in the tradition) between forces associated with Dmitry of Moscow and the forces of the Golden Horde under Mamai. Details must be tied to specific source traditions.",
+      "related_nodes": [
+        {"relation": "context_for", "target": "MC-PERESVET"},
+        {"relation": "context_for", "target": "MC-OSLYABYA"},
+        {"relation": "later_represented_by", "target": "MC-KULIKOVO-MODERN-MEDIA"}
+      ],
+      "status": "historical_context",
+      "priority": "medium",
+      "next_action": "Verify calendar convention and event details against a specialist historical reference."
+    },
+    {
+      "id": "MC-PERESVET",
+      "type": "historical_person_and_saint_tradition",
+      "source": [
+        {"title": "Zadonshchina", "kind": "medieval_literary_source", "url": null},
+        {"title": "Chronicle tradition concerning Kulikovo", "kind": "medieval_source_family", "url": null},
+        {"title": "Skazanie o Mamaevom poboishche", "kind": "later_narrative_source", "url": null}
+      ],
+      "content": "Alexander Peresvet is associated with the Kulikovo battle in medieval literary and chronicle traditions and is venerated in Orthodox tradition. The degree of historical detail varies by source.",
+      "related_nodes": [
+        {"relation": "associated_with_event", "target": "MC-HIST-KULIKOVO-1380"},
+        {"relation": "paired_in_tradition_with", "target": "MC-OSLYABYA"},
+        {"relation": "subject_of_claim", "target": "MC-PERESVET-CHELUBEY-DUEL"}
+      ],
+      "status": "tradition_attested_historical_details_require_source_review",
+      "priority": "high",
+      "next_action": "Compare the exact mentions and textual variants across the earliest available editions/translations."
+    },
+    {
+      "id": "MC-OSLYABYA",
+      "type": "historical_person_and_saint_tradition",
+      "source": [
+        {"title": "Zadonshchina", "kind": "medieval_literary_source", "url": null},
+        {"title": "Chronicle tradition concerning Kulikovo", "kind": "medieval_source_family", "url": null},
+        {"title": "Later Orthodox hagiographic tradition", "kind": "hagiography", "url": null}
+      ],
+      "content": "Andrey Oslyabya appears alongside Peresvet in the Kulikovo narrative tradition and is venerated in Orthodox tradition. Claims about his biography, exact military role, and monastic chronology require claim-level sourcing.",
+      "related_nodes": [
+        {"relation": "associated_with_event", "target": "MC-HIST-KULIKOVO-1380"},
+        {"relation": "paired_in_tradition_with", "target": "MC-PERESVET"}
+      ],
+      "status": "tradition_attested_biography_requires_source_review",
+      "priority": "high",
+      "next_action": "Establish the earliest attestations and compare what each source actually says about Oslyabya."
+    },
+    {
+      "id": "MC-PERESVET-CHELUBEY-DUEL",
+      "type": "contested_historical_claim",
+      "source": [
+        {"title": "Skazanie o Mamaevom poboishche", "kind": "later_narrative_source", "url": null},
+        {"title": "Zadonshchina", "kind": "earlier_medieval_literary_source", "url": null},
+        {"title": "Chronicle tradition concerning Kulikovo", "kind": "medieval_source_family", "url": null}
+      ],
+      "content": "The detailed single combat between Peresvet and Chelubey is prominent in a later narrative. It should not be presented as equally attested by all early sources; source-by-source comparison is required.",
+      "related_nodes": [
+        {"relation": "concerns_person", "target": "MC-PERESVET"},
+        {"relation": "concerns_event", "target": "MC-HIST-KULIKOVO-1380"},
+        {"relation": "compared_against", "target": "MC-ZADONSHCHINA"},
+        {"relation": "compared_against", "target": "MC-SKAZANIE"}
+      ],
+      "status": "contested_not_independently_established",
+      "priority": "high",
+      "next_action": "Build a passage-level comparison table with edition, date, wording, and whether the duel is present."
+    },
+    {
+      "id": "MC-ZADONSHCHINA",
+      "type": "medieval_literary_source",
+      "source": [
+        {"title": "Zadonshchina", "kind": "primary_text_family", "url": null}
+      ],
+      "content": "An early literary work about the Battle of Kulikovo, generally placed around the late fourteenth or early fifteenth century, with manuscript and textual-transmission issues that must be acknowledged.",
+      "related_nodes": [
+        {"relation": "source_for", "target": "MC-PERESVET"},
+        {"relation": "source_for", "target": "MC-OSLYABYA"},
+        {"relation": "comparison_source_for", "target": "MC-PERESVET-CHELUBEY-DUEL"}
+      ],
+      "status": "source_to_verify_in_edition",
+      "priority": "high",
+      "next_action": "Identify a reliable scholarly edition/translation and record manuscript/textual caveats."
+    },
+    {
+      "id": "MC-SKAZANIE",
+      "type": "later_narrative_source",
+      "source": [
+        {"title": "Skazanie o Mamaevom poboishche (Tale of the Battle with Mamai)", "kind": "textual_tradition", "url": null}
+      ],
+      "content": "A later and textually complex narrative tradition that contains expanded dramatic details about Kulikovo, including the famous duel account. Its details must be distinguished from earlier attestation.",
+      "related_nodes": [
+        {"relation": "source_for_later_form_of", "target": "MC-PERESVET-CHELUBEY-DUEL"},
+        {"relation": "compared_with", "target": "MC-ZADONSHCHINA"}
+      ],
+      "status": "later_source_requires_critical_edition",
+      "priority": "high",
+      "next_action": "Date the relevant redaction and identify the earliest manuscript witness for the duel passage."
+    },
+    {
+      "id": "MC-ORTHODOX-WARRIOR-MONK-ICONOGRAPHY",
+      "type": "religious_tradition_and_visual_culture",
+      "source": [
+        {"title": "Orthodox hagiographic and iconographic tradition concerning Peresvet and Oslyabya", "kind": "tradition", "url": null},
+        {"title": "User-provided Instagram carousel from one.in.christ.faith", "kind": "modern_social_media", "url": null}
+      ],
+      "content": "Modern depictions combine monastic clothing, crosses, weapons, horses, and battlefield imagery to express an Orthodox warrior-monk ideal. Individual costume details in modern digital art are not automatically evidence for fourteenth-century practice.",
+      "related_nodes": [
+        {"relation": "depicts", "target": "MC-PERESVET"},
+        {"relation": "depicts", "target": "MC-OSLYABYA"},
+        {"relation": "modern_representation_of", "target": "MC-HIST-KULIKOVO-1380"}
+      ],
+      "status": "visual_analysis_candidate",
+      "priority": "medium",
+      "next_action": "Compare dated icons and documented monastic garments with modern social-media artwork; label each observation separately."
+    },
+    {
+      "id": "MC-SCHEMA-MONASTIC-GARMENT",
+      "type": "religious_object_and_practice",
+      "source": [
+        {"title": "Orthodox monastic practice and great schema garment", "kind": "reference_needed", "url": null}
+      ],
+      "content": "The great schema is an advanced ascetic monastic form in Eastern Orthodox Christianity; its garments may bear crosses and liturgical inscriptions. The presence and exact appearance of a schema garment in a particular battle scene is a separate historical claim requiring evidence.",
+      "related_nodes": [
+        {"relation": "symbolically_associated_with", "target": "MC-ORTHODOX-WARRIOR-MONK-ICONOGRAPHY"},
+        {"relation": "depicted_in", "target": "MC-KULIKOVO-MODERN-MEDIA"}
+      ],
+      "status": "general_context_specific_application_unverified",
+      "priority": "medium",
+      "next_action": "Find authoritative Orthodox sources for garment terminology and dated evidence for the specific Peresvet depiction."
+    },
+    {
+      "id": "MC-KULIKOVO-MODERN-MEDIA",
+      "type": "modern_media_artifact",
+      "source": [
+        {"title": "Instagram carousel: “When schema-monks charged into battle against the Mongols”", "kind": "user_provided_screenshot", "url": null}
+      ],
+      "content": "A contemporary social-media post presents the Kulikovo narrative through dramatic composite images and confident narrative captions. Treat the post as evidence for modern reception, not as a primary historical source.",
+      "related_nodes": [
+        {"relation": "modern_representation_of", "target": "MC-HIST-KULIKOVO-1380"},
+        {"relation": "modern_representation_of", "target": "MC-PERESVET"},
+        {"relation": "modern_representation_of", "target": "MC-ORTHODOX-WARRIOR-MONK-ICONOGRAPHY"}
+      ],
+      "status": "observed_user_supplied_artifact",
+      "priority": "medium",
+      "next_action": "Record each caption claim separately and attach source checks without accepting the caption as evidence."
+    },
+    {
+      "id": "MC-VIENNA-1683",
+      "type": "historical_event",
+      "source": [
+        {"title": "Siege of Vienna, 1683", "kind": "historical_reference_needed", "url": null},
+        {"title": "User-provided social-media screenshot captioned “Last thing the Ottomans saw in Vienna”", "kind": "modern_social_media", "url": null}
+      ],
+      "content": "The Ottoman siege of Vienna in 1683 is a distinct event from the Battle of Kulikovo in 1380. The screenshot is a modern media framing of Ottoman-Habsburg/Polish conflict, not evidence about Kulikovo.",
+      "related_nodes": [
+        {"relation": "separate_event_from", "target": "MC-HIST-KULIKOVO-1380"},
+        {"relation": "modern_representation_of", "target": "MC-VIENNA-MODERN-MEDIA"}
+      ],
+      "status": "separate_context_node",
+      "priority": "low",
+      "next_action": "If retained in this project, create a separate Vienna 1683 source set and avoid merging it into the Kulikovo evidence chain."
+    },
+    {
+      "id": "MC-VIENNA-MODERN-MEDIA",
+      "type": "modern_media_artifact",
+      "source": [
+        {"title": "User-provided screenshot with caption “Last thing the Ottomans saw in Vienna”", "kind": "user_provided_screenshot", "url": null}
+      ],
+      "content": "Modern social-media framing of the 1683 siege; exact depicted person, scene provenance, and historical accuracy are unverified from the screenshot alone.",
+      "related_nodes": [
+        {"relation": "depicts_or_references", "target": "MC-VIENNA-1683"}
+      ],
+      "status": "observed_user_supplied_artifact",
+      "priority": "low",
+      "next_action": "Identify the original video/source and verify scene context before attributing it to a specific historical person."
+    }
+  ],
+  "acceptance_checks": [
+    "Every node has a stable ID, type, source, content, related nodes, status, priority, and next action.",
+    "Contested duel claim is not marked as established fact.",
+    "Modern social-media artifacts are not used as primary historical evidence.",
+    "Kulikovo 1380 and Vienna 1683 remain distinct event nodes.",
+    "No claim is marked fully verified without a specific checked source."
+  ]
+}
