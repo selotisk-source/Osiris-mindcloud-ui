@@ -96,7 +96,10 @@ const STATIC_FILES = {
   "/articles/the-shrine-of-saint-paraskevi": ["paraskevi.html", "text/html; charset=utf-8"],
   "/assets/paraskevi-shrine.svg": ["assets/paraskevi-shrine.svg", "image/svg+xml; charset=utf-8"],
   "/osiris": ["osiris.html", "text/html; charset=utf-8"],
-  "/osiris/": ["osiris.html", "text/html; charset=utf-8"]
+  "/osiris/": ["osiris.html", "text/html; charset=utf-8"],
+  "/ipo": ["ipo.html", "text/html; charset=utf-8"],
+  "/ipo/": ["ipo.html", "text/html; charset=utf-8"],
+  "/ipo.html": ["ipo.html", "text/html; charset=utf-8"]
 };
 
 function send(res, status, body, type = "application/json; charset=utf-8") {
