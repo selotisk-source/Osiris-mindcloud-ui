@@ -1,0 +1,452 @@
+{
+  "schema_version": "mindcloud.research-nodes.v1",
+  "title": "European warrior-monks and military-religious traditions",
+  "updated": "2026-10-18",
+  "scope": "European traditions and European-based military-religious orders; distinguishes individual combatant-monks from members of religious military orders and from legendary or disputed figures.",
+  "methodology": {
+    "labels": {
+      "documented-order": "A historically attested religious-military institution; does not mean every member was ordained or a monk.",
+      "individual-attested": "A named individual associated with military action and a religious/monastic identity in historical tradition; degree of contemporary corroboration varies.",
+      "tradition-or-legend": "A figure or episode preserved substantially through later ecclesiastical, literary, or national tradition.",
+      "adjacent-not-warrior-monk": "Relevant military-religious or martial-monastic context, but should not be called a warrior-monk without qualification."
+    },
+    "cautions": [
+      "The modern phrase 'warrior monk' is an imperfect umbrella term. Many Latin military-order members were lay brothers under religious vows, not ordained monks.",
+      "Do not infer direct combat participation from membership in an order.",
+      "Separate contemporary/near-contemporary evidence from later hagiography, chronicles, national memory, and modern social-media claims.",
+      "Eastern Orthodox monasticism generally did not develop the same institutional military-order model as Latin Christendom; Orthodox warrior-saint and monastic-combatant traditions need their own evidence standards.",
+      "The list is an expandable research inventory, not a claim to be exhaustive."
+    ]
+  },
+  "nodes": [
+    {
+      "id": "MC-EU-WM-ORDER-TEMPLAR",
+      "type": "military_religious_order",
+      "name": "Knights Templar",
+      "region": [
+        "Holy Land",
+        "France",
+        "Iberia",
+        "British Isles",
+        "Central Europe"
+      ],
+      "period": "c.1119–1312",
+      "evidence_status": "documented-order",
+      "summary": "Latin religious military order whose brothers lived under a rule and served militarily; members included knights and non-knightly brothers.",
+      "sources": [
+        "Cambridge medieval histories on military orders",
+        "Sam Zeno Conedera, Ecclesiastical Knights (2015)"
+      ],
+      "relations": [
+        "MC-EU-WM-HOSPITALLERS",
+        "MC-EU-WM-TEUTONIC"
+      ],
+      "research_action": "Map European commanderies separately from battle participation."
+    },
+    {
+      "id": "MC-EU-WM-HOSPITALLERS",
+      "type": "military_religious_order",
+      "name": "Hospitallers of St John / Order of St John",
+      "region": [
+        "Jerusalem",
+        "Rhodes",
+        "Malta",
+        "across Europe"
+      ],
+      "period": "11th century–present institutional successors",
+      "evidence_status": "documented-order",
+      "summary": "Originated as a hospital brotherhood and later became a military order; military activity is attested from the 12th century.",
+      "sources": [
+        "Cambridge medieval histories on military orders",
+        "Catholic Encyclopedia, The Military Orders (use critically)"
+      ],
+      "relations": [
+        "MC-EU-WM-TEMPLAR",
+        "MC-EU-WM-TEUTONIC"
+      ],
+      "research_action": "Distinguish hospital function, landholding, naval forces and combatants by period."
+    },
+    {
+      "id": "MC-EU-WM-TEUTONIC",
+      "type": "military_religious_order",
+      "name": "Teutonic Order",
+      "region": [
+        "Holy Land",
+        "Prussia",
+        "Baltic",
+        "Central Europe"
+      ],
+      "period": "1190s–present",
+      "evidence_status": "documented-order",
+      "summary": "German religious military order combining religious life, military service and hospital traditions; later major actor in the Baltic.",
+      "sources": [
+        "Cambridge, The New Cambridge Medieval History: Military Orders in the Baltic"
+      ],
+      "relations": [
+        "MC-EU-WM-SWORD-BROTHERS",
+        "MC-EU-WM-DOBRZYN"
+      ],
+      "research_action": "Separate Holy Land origins from Baltic campaigns and later state-building."
+    },
+    {
+      "id": "MC-EU-WM-HOLY-SEPULCHRE",
+      "type": "military_religious_order",
+      "name": "Order of the Holy Sepulchre",
+      "region": [
+        "Jerusalem",
+        "Italy",
+        "across Latin Europe"
+      ],
+      "period": "medieval origins; later institutional development",
+      "evidence_status": "documented-order",
+      "summary": "Religious order connected with the Holy Sepulchre; its medieval military character and later forms need period-specific treatment.",
+      "sources": [
+        "Scholarly histories of crusading and military orders"
+      ],
+      "relations": [
+        "MC-EU-WM-HOSPITALLERS"
+      ],
+      "research_action": "Verify exact medieval statutes and distinguish later chivalric identity."
+    },
+    {
+      "id": "MC-EU-WM-SANTIAGO",
+      "type": "military_religious_order",
+      "name": "Order of Santiago",
+      "region": [
+        "León-Castile",
+        "Portugal"
+      ],
+      "period": "founded c.1170",
+      "evidence_status": "documented-order",
+      "summary": "Iberian ecclesiastical knighthood associated with frontier warfare, protection and religious life.",
+      "sources": [
+        "Sam Zeno Conedera, Ecclesiastical Knights (2015)"
+      ],
+      "relations": [
+        "MC-EU-WM-CALATRAVA",
+        "MC-EU-WM-ALCANTARA",
+        "MC-EU-WM-AVIZ"
+      ],
+      "research_action": "Capture rules, vows, marriage rules by period, and local branches."
+    },
+    {
+      "id": "MC-EU-WM-CALATRAVA",
+      "type": "military_religious_order",
+      "name": "Order of Calatrava",
+      "region": [
+        "Castile"
+      ],
+      "period": "founded 1158; papal confirmation 1164",
+      "evidence_status": "documented-order",
+      "summary": "Cistercian-influenced military order created to hold the frontier fortress of Calatrava.",
+      "sources": [
+        "Sam Zeno Conedera, Ecclesiastical Knights (2015)",
+        "Scholarly histories of the Reconquista"
+      ],
+      "relations": [
+        "MC-EU-WM-SANTIAGO",
+        "MC-EU-WM-ALCANTARA"
+      ],
+      "research_action": "Trace Cistercian rule influence and institutional links."
+    },
+    {
+      "id": "MC-EU-WM-ALCANTARA",
+      "type": "military_religious_order",
+      "name": "Order of Alcántara (St Julian of Pereiro)",
+      "region": [
+        "León-Castile"
+      ],
+      "period": "12th century onward",
+      "evidence_status": "documented-order",
+      "summary": "Iberian frontier order that developed from the brotherhood of St Julian of Pereiro.",
+      "sources": [
+        "Sam Zeno Conedera, Ecclesiastical Knights (2015)"
+      ],
+      "relations": [
+        "MC-EU-WM-SANTIAGO",
+        "MC-EU-WM-CALATRAVA"
+      ],
+      "research_action": "Verify foundation chronology against primary and scholarly sources."
+    },
+    {
+      "id": "MC-EU-WM-AVIZ",
+      "type": "military_religious_order",
+      "name": "Order of Avis (formerly Évora)",
+      "region": [
+        "Portugal"
+      ],
+      "period": "12th century onward",
+      "evidence_status": "documented-order",
+      "summary": "Portuguese military-religious order associated with frontier defense and Cistercian traditions.",
+      "sources": [
+        "Scholarly histories of Portuguese military orders"
+      ],
+      "relations": [
+        "MC-EU-WM-SANTIAGO",
+        "MC-EU-WM-CALATRAVA"
+      ],
+      "research_action": "Document relationship to Calatrava and changes in rule/status."
+    },
+    {
+      "id": "MC-EU-WM-MONTESA",
+      "type": "military_religious_order",
+      "name": "Order of Montesa",
+      "region": [
+        "Crown of Aragon",
+        "Valencia"
+      ],
+      "period": "founded 1317",
+      "evidence_status": "documented-order",
+      "summary": "Crown of Aragon military order established after the suppression of the Templars and used to assume some of their regional functions.",
+      "sources": [
+        "Scholarly histories of Iberian military orders"
+      ],
+      "relations": [
+        "MC-EU-WM-TEMPLAR",
+        "MC-EU-WM-CALATRAVA"
+      ],
+      "research_action": "Verify institutional transfer of assets and personnel."
+    },
+    {
+      "id": "MC-EU-WM-SWORD-BROTHERS",
+      "type": "military_religious_order",
+      "name": "Livonian Brothers of the Sword",
+      "region": [
+        "Livonia",
+        "Baltic"
+      ],
+      "period": "founded 1202; merged with Teutonic Order 1237",
+      "evidence_status": "documented-order",
+      "summary": "Military order active in the Baltic crusading frontier, later incorporated into the Teutonic Order.",
+      "sources": [
+        "Cambridge, The New Cambridge Medieval History: Military Orders in the Baltic"
+      ],
+      "relations": [
+        "MC-EU-WM-TEUTONIC"
+      ],
+      "research_action": "Track merger and distinguish order members from allied crusaders."
+    },
+    {
+      "id": "MC-EU-WM-DOBRZYN",
+      "type": "military_religious_order",
+      "name": "Order of Dobrzyń",
+      "region": [
+        "Masovia",
+        "Prussia/Baltic frontier"
+      ],
+      "period": "founded 1228; absorbed in 1235",
+      "evidence_status": "documented-order",
+      "summary": "Small religious military order formed on the northeastern European frontier and later absorbed by the Teutonic Order.",
+      "sources": [
+        "Scholarly histories of Baltic military orders"
+      ],
+      "relations": [
+        "MC-EU-WM-TEUTONIC"
+      ],
+      "research_action": "Seek primary evidence for membership, campaigns and short institutional life."
+    },
+    {
+      "id": "MC-EU-WM-LAZARUS",
+      "type": "military_hospitaller_order",
+      "name": "Order of Saint Lazarus",
+      "region": [
+        "Jerusalem",
+        "France",
+        "across Latin Europe"
+      ],
+      "period": "medieval",
+      "evidence_status": "documented-order",
+      "summary": "Leper hospital order with a complex and debated military role; should not be represented as uniformly a combat order.",
+      "sources": [
+        "Scholarly histories of crusading and hospitaller orders"
+      ],
+      "relations": [
+        "MC-EU-WM-HOSPITALLERS"
+      ],
+      "research_action": "Classify by period and distinguish hospital brothers from military contingents."
+    },
+    {
+      "id": "MC-EU-WM-AVEBROTHERHOODS",
+      "type": "military_religious_order",
+      "name": "Other Iberian and regional military-religious brotherhoods",
+      "region": [
+        "Iberia",
+        "France",
+        "Italy",
+        "Central Europe"
+      ],
+      "period": "12th–14th centuries",
+      "evidence_status": "documented-order",
+      "summary": "Research bucket for smaller or short-lived orders including Mountjoy, Monfragüe, Santa María de España, Faith and Peace, Militia of Jesus Christ and other regionally attested bodies; each requires separate verification.",
+      "sources": [
+        "Scholarly catalogues of medieval military orders",
+        "Conedera (2015)"
+      ],
+      "relations": [
+        "MC-EU-WM-SANTIAGO",
+        "MC-EU-WM-CALATRAVA"
+      ],
+      "research_action": "Split each institution into a separate node only after dates, statutes and sources are confirmed."
+    },
+    {
+      "id": "MC-EU-WM-PERESVET",
+      "type": "individual",
+      "name": "Alexander Peresvet",
+      "region": [
+        "Rus'",
+        "Muscovy"
+      ],
+      "period": "died traditionally 1380",
+      "evidence_status": "tradition-or-legend",
+      "summary": "Monastic warrior associated with the Battle of Kulikovo in Orthodox and Russian historical memory; details of the duel with Chelubey are preserved prominently in later narrative tradition.",
+      "sources": [
+        "Zadonshchina",
+        "Skazanie o Mamaevom poboishche; compare critically"
+      ],
+      "relations": [
+        "MC-EU-WM-OSLYABYA",
+        "MC-EU-WM-KULIKOVO"
+      ],
+      "research_action": "Source-by-source chronology and textual comparison; do not label all duel details contemporary fact."
+    },
+    {
+      "id": "MC-EU-WM-OSLYABYA",
+      "type": "individual",
+      "name": "Andrei Oslyabya",
+      "region": [
+        "Rus'",
+        "Muscovy"
+      ],
+      "period": "late 14th–early 15th century tradition",
+      "evidence_status": "tradition-or-legend",
+      "summary": "Monastic figure associated with Peresvet and the Kulikovo tradition; biographical details and precise role require source criticism.",
+      "sources": [
+        "Orthodox hagiographic tradition",
+        "Medieval Rus' chronicles; verify individually"
+      ],
+      "relations": [
+        "MC-EU-WM-PERESVET",
+        "MC-EU-WM-KULIKOVO"
+      ],
+      "research_action": "Find earliest attestations and distinguish later hagiography from contemporary records."
+    },
+    {
+      "id": "MC-EU-WM-KULIKOVO",
+      "type": "event",
+      "name": "Battle of Kulikovo",
+      "region": [
+        "Rus'"
+      ],
+      "period": "1380",
+      "evidence_status": "documented-event",
+      "summary": "Major battle in the formation of Muscovite historical memory; later accounts shape the warrior-monk narrative.",
+      "sources": [
+        "Zadonshchina",
+        "Medieval Rus' chronicles",
+        "Skazanie o Mamaevom poboishche"
+      ],
+      "relations": [
+        "MC-EU-WM-PERESVET",
+        "MC-EU-WM-OSLYABYA"
+      ],
+      "research_action": "Compare chronology and claims across the earliest available texts."
+    },
+    {
+      "id": "MC-EU-WM-JOAN-ARC",
+      "type": "individual",
+      "name": "Joan of Arc",
+      "region": [
+        "France"
+      ],
+      "period": "c.1412–1431",
+      "evidence_status": "adjacent-not-warrior-monk",
+      "summary": "Religious visionary and military leader, but not a monk or member of a military religious order; included as a comparison case, not as a warrior-monk.",
+      "sources": [
+        "Trial records and modern critical biographies"
+      ],
+      "relations": [
+        "MC-EU-WM-COMPARATIVE-FRONTIER"
+      ],
+      "research_action": "Use as a contrast case to prevent category drift."
+    },
+    {
+      "id": "MC-EU-WM-STEPHEN-OF-HUNGARY-ORDER",
+      "type": "historical_tradition",
+      "name": "Hungarian and Central European royal-warrior saints",
+      "region": [
+        "Hungary",
+        "Central Europe"
+      ],
+      "period": "medieval",
+      "evidence_status": "adjacent-not-warrior-monk",
+      "summary": "Comparison category for Christian rulers later venerated as saints; kings and soldier-saints are not automatically monastic combatants.",
+      "sources": [
+        "Regional hagiography and critical biographies"
+      ],
+      "relations": [
+        "MC-EU-WM-COMPARATIVE-FRONTIER"
+      ],
+      "research_action": "Add named individuals only where monastic status and military activity are separately evidenced."
+    },
+    {
+      "id": "MC-EU-WM-COMPARATIVE-FRONTIER",
+      "type": "research-category",
+      "name": "European martial-monastic comparison cases",
+      "region": [
+        "Western",
+        "Central",
+        "Northern",
+        "Eastern and Southeastern Europe"
+      ],
+      "period": "late antiquity–early modern",
+      "evidence_status": "research-pending",
+      "summary": "Research queue for late antique soldier-saints, Orthodox warrior-saints, crusading lay brothers, monastic chroniclers present at sieges, and national heroic traditions. These categories must not be collapsed into a single identity.",
+      "sources": [
+        "Regional primary sources and specialist scholarship required"
+      ],
+      "relations": [
+        "MC-EU-WM-PERESVET",
+        "MC-EU-WM-TEMPLAR"
+      ],
+      "research_action": "Build country-by-country source register; add names only with a traceable attestation."
+    }
+  ],
+  "source_register": [
+    {
+      "id": "SRC-CAMBRIDGE-BALTIC",
+      "title": "The New Cambridge Medieval History: Military Orders in the Baltic",
+      "url": "https://www.cambridge.org/core/books/abs/new-cambridge-medieval-history/military-orders-in-the-baltic/16B23531082EA9A4B9220732C0BCFF97",
+      "use": "Academic overview of Baltic military orders."
+    },
+    {
+      "id": "SRC-CONEDERA-2015",
+      "title": "Sam Zeno Conedera, Ecclesiastical Knights: The Military Orders in Castile, 1150–1330",
+      "url": "https://www.jstor.org/stable/j.ctt14jxrpg",
+      "use": "Academic study of Santiago, Calatrava and Alcántara; argues 'ecclesiastical knights' may be more precise than 'warrior monks'."
+    },
+    {
+      "id": "SRC-FLINDERS-REVIEW",
+      "title": "Review of Conedera, Ecclesiastical Knights",
+      "url": "https://researchnow.flinders.edu.au/en/publications/sam-zeno-conedera-sj-ecclesiastical-knights-the-military-orders-i/",
+      "use": "Scholarly review and terminology caveat."
+    },
+    {
+      "id": "SRC-ZADONSHCHINA",
+      "title": "Zadonshchina",
+      "url": null,
+      "use": "Primary/medieval literary source for Kulikovo tradition; individual manuscript and translation references still to be attached."
+    },
+    {
+      "id": "SRC-SKAZANIE",
+      "title": "Skazanie o Mamaevom poboishche",
+      "url": null,
+      "use": "Later narrative tradition; must be contrasted with earlier witnesses."
+    }
+  ],
+  "next_steps": [
+    "Validate JSON syntax and unique IDs before any graph import.",
+    "Expand the individual-person layer country by country, each entry with source, earliest attestation, identity category and confidence.",
+    "Do not mark this inventory exhaustive; continue with Byzantine, Balkan, Rus', Iberian, Baltic, French, Italian, British, German and Scandinavian sources.",
+    "Keep research artifacts separate from the live MindCore graph until import and validation are observed."
+  ]
+}
