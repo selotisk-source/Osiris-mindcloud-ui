@@ -117,3 +117,14 @@ Establish and verify the real MindCore/MindCloud execution loop across backend a
 - Latest Railway production deployment `915d35c4-110e-4d7b-a9d2-9c4878d94270` reached `SUCCESS` on commit `3a764bd981a44e760d5020b519de168324d1c98c`. Its pre-deploy verification passed the article route/source/date checks and OSIRIS quadrant checks; final line was `MindCloud verification suite passed.`
 - Remaining limitation: iframe rendering of `osirisai.live` itself has not been confirmed in a real user browser; the standalone fallback is provided because the external site may restrict framing.
 - Artcraft was not available in the connected plugin catalog for the Paraskevi article. The published page uses an original locally served SVG illustration; a separate concept image was generated in-chat, and neither is mislabelled as Artcraft output.
+
+
+## CopyQ local ingestion node — 2026-10-17
+
+- Branch: `feat/copyq-ingestion-node`.
+- Added `mindcloud/copyq-ingestion.js`: side-effect-free normalizer for explicitly selected/exported CopyQ items, stable SHA-256 identity, MIME-aware triage classification, capture provenance, 1 MB limit, and a mandatory `unreviewed` human-review gate.
+- Added `scripts/verify-copyq-ingestion.js` with checks for stable IDs, provenance, review gating, blank/unsupported/oversized input and invalid timestamps.
+- Added `integrations/copyq/README.md` documenting the contract, flow and security boundary. Added the regression test to `npm run verify`.
+- **Verified:** files and commits were accepted by GitHub on the feature branch. **Not yet verified:** the Node test and full verification suite have not been executed in a runtime; no PR or deployment has been created.
+- **Integration boundary:** this is the local ingestion contract, not yet a live CopyQ-to-production upload. The authenticated MindCore ingestion endpoint and durable end-to-end readback must be verified before adding network transfer. Clipboard data remains local; no secrets are logged or sent.
+- **Next action:** run the regression test and full suite in CI, then wire the normalized artifact to the existing authenticated ingestion route only after confirming its contract.
