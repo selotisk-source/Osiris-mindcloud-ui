@@ -1,6 +1,6 @@
 # MindCloud R&D: Recursive Capability Engine
 
-**Status:** architecture plus first runtime implementation slice on branch `research/recursive-capability-engine-20261013`; CI and full runtime integration remain to be verified  
+**Status:** bounded persistence and registry-validation code plus targeted tests are present on `main`; a production sandbox runner, automatic tool execution, and end-to-end recursive orchestration are not implemented or verified  
 **Owner:** MindCore  
 **Orchestration:** Dirigentverket  
 **Promotion:** supervised; no autonomous production writes
@@ -9,9 +9,9 @@
 
 Turn research discoveries into reusable, tested MindCloud capabilities through a bounded, recursive loop. The loop may improve its plans, adapters, tests, and capability metadata, but it must not grant itself new permissions or deploy its own changes.
 
-## Implemented first slice (branch)
+## Implemented bounded slice (main)
 
-The first bounded R&D persistence slice now exists as code on the implementation branch:
+The following bounded R&D persistence slice is present in the current `main` tree:
 
 - `mindcloud/rd-run-store.js`: bounded run manifest, checkpoint validation, append-only checkpoint persistence, and Evidence Passport writing with SHA-256 artifact fingerprints.
 - `scripts/verify-capability-registry.js`: registry shape/status checks plus a regression guard against falsely advertising `cookies-viewer` as executable.
@@ -19,7 +19,7 @@ The first bounded R&D persistence slice now exists as code on the implementation
 - `npm run verify` now includes the registry validator and R&D persistence tests.
 - `integrations/agent-tools.json`: `cookies-viewer` is `registered-only`, because the extension currently inspects tab metadata and does not request or use the browser cookies API.
 
-This slice deliberately does **not** execute discovered tools, launch an untrusted-code sandbox, grant permissions, or promote/deploy capabilities. Those are subsequent milestones. The repository's CI result and runtime behavior must be checked before this is described as fully verified.
+This slice deliberately does **not** execute discovered tools, launch an untrusted-code sandbox, grant permissions, or promote/deploy capabilities. Those are subsequent milestones. The targeted unit tests exercise this slice. Do not infer from their presence or a passing repository verification run that the production sandbox, autonomous tool execution, or the entire recursive loop is operational; those remain future milestones.
 
 ## Core loop
 
