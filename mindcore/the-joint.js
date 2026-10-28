@@ -1,7 +1,7 @@
 "use strict";
 
 function invalid(code) { const error = new Error(code); error.code = code; error.statusCode = 400; return error; }
-function normalizeText(value) { return value.normalize("NFKC").toLowerCase().replace(/[^\\p{L}\\p{N}]+/gu, " ").trim(); }
+function normalizeText(value) { return Array.from(value.normalize("NFKC").toLowerCase()).map(char => (char.toUpperCase() !== char.toLowerCase() || /[0-9]/.test(char)) ? char : " ").join("").replace(/\s+/g, " ").trim(); }
 function normalizePartial(partial, slot) {
   if (!partial || typeof partial !== "object" || Array.isArray(partial) || typeof partial.id !== "string" || !partial.id.trim() || !Array.isArray(partial.claims)) throw invalid("the_joint_partial_invalid_" + slot);
   const ids = new Set();
