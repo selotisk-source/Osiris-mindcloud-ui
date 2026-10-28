@@ -149,3 +149,21 @@ Establish and verify the real MindCore/MindCloud execution loop across backend a
 - Added routes `/varna-sofia-cyprus`, `/varna-sofia-cyprus/`, and `/articles/varna-sofia-cyprus` to the actual production frontend entrypoint `frontend-server.js`; linked the series from `sofia-research.html`.
 - GitHub readback confirms the article content, all three route aliases, and the Sofia navigation link are present on `main`. This is repository-level confirmation only: the page has not been deployed or checked in a live browser because Railway deployment is blocked by the expired trial.
 - Next actions: restore Railway billing/plan; deploy the existing frontend and backend services from `main`; inspect build/pre-deploy logs; test the live homepage, `/ready`, `/paraskevi`, `/varna-sofia-cyprus`, and `/ipo`; then continue remaining editorial and end-to-end runtime checks.
+
+## Hosting migration — Cloudflare Pages + Render (2026-10-28)
+
+Repository preparation is committed on `main`:
+
+- `scripts/build-pages.js` and `npm run build:pages`: builds a curated static-site output directory with the current HTML pages, assets, newsletters and route rewrites.
+- `functions/api/[[path]].js`: Cloudflare Pages Function proxies same-origin `/api/*` requests to the Render backend using the server-side Pages environment variable `MINDCLOUD_BACKEND_URL`.
+- `render.yaml`: Render Node web service blueprint running `node server.js`, with `/health` health check and API-only mode.
+- `CLOUDFLARE_RENDER_DEPLOY.md`: deployment configuration and acceptance checklist.
+
+State distinction:
+- Repository deployment configuration: committed; files subsequently read back from GitHub.
+- Cloudflare Pages project: not created or deployed from this session.
+- Render service: not created or deployed from this session.
+- Pages-to-Render API flow: not runtime-tested.
+- Full repository `npm run verify`: not run in a local checkout.
+
+Next operational steps: create/connect the Cloudflare Pages project and Render Web Service in their dashboards, set the Render backend URL in Pages, configure required server-side secrets in Render only, deploy, then test homepage/routes and `/api/mindcloud/status` end-to-end. Do not declare migration complete until these runtime checks pass.
