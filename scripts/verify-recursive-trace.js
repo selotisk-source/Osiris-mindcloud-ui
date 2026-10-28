@@ -2,6 +2,8 @@
 "use strict";
 const assert = require("node:assert/strict");
 const { recursiveTrace } = require("../mindcore/recursive-trace");
+const { toolingCatalog } = require("../mindcore/catalog");
+const { recipes, suggest } = require("../mindcloud/capability-graph");
 
 const graph = {
   nodes:[
@@ -36,4 +38,7 @@ assert.equal(depthBounded.status,"partial");
 assert.throws(()=>recursiveTrace(graph,{rootId:"missing"}),/recursive_trace_root_not_found/);
 assert.throws(()=>recursiveTrace(graph,{rootId:"claim",direction:"sideways"}),/recursive_trace_direction_invalid/);
 assert.throws(()=>recursiveTrace({nodes:[],edges:[{from:"x",to:"y",relation:"bad"}]},{rootId:"x"}),/recursive_trace_edge_invalid/);
+assert.ok(toolingCatalog.some(tool => tool.id === "mindcore-recursive-trace" && tool.status === "runtime"));
+assert.ok(recipes.some(recipe => recipe.id === "recursive-trace-evidence"));
+assert.ok(suggest({goal:"recursive trace evidence"}).recipes.some(recipe => recipe.id === "recursive-trace-evidence"));
 console.log("MindCore Recursive Trace: all assertions passed.");
