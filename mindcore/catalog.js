@@ -16,6 +16,7 @@ const builtInTools = [
   { id: "mindcloud-arena-skill", name: "MindCloud Arena Skill", layer: "Evaluation", status: "runtime", operations: ["evaluate", "revalidate", "propose-promotion"] },
   { id: "mindcore-recursive-trace", name: "MindCore Recursive Trace", layer: "EvidenceIntegrity", status: "runtime", operations: ["trace-backward", "trace-forward", "detect-cycles", "bounded-traversal"] },
   { id: "mindcore-the-joint", name: "MindCore The Joint", layer: "Synthesis", status: "runtime", operations: ["join-partials", "identify-overlap", "surface-tensions", "preserve-provenance"] },
+  { id: "mindcore-mind-cave", name: "MindCore Mind Cave", layer: "Reasoning", status: "prototype", operations: ["structure-question", "compare-hypotheses", "join-partials", "trace-evidence", "surface-unknowns"] },
   { id: "geospatial-capabilities", name: "Geospatial Capabilities", layer: "GeoOSINT", status: "runtime" },
   { id: "live-liveness", name: "Live Liveness", layer: "SituationalAwareness", status: "runtime" },
   { id: "monte-carlo", name: "Monte Carlo", layer: "Reasoning", status: "runtime" },
