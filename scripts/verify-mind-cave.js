@@ -33,7 +33,7 @@ const tracePlan = enterMindCave({
   graph:{nodes:[{id:"source",type:"source",sourceRef:"doc://a"},{id:"claim",type:"claim"}],
     edges:[{id:"e1",from:"source",to:"claim",relation:"supports"}]}
 }, {recursiveTrace});
-assert.equal(tracePlan.trace.rootId, undefined); // recursiveTrace returns a bounded trace object, not a rootId alias
+assert.equal(tracePlan.trace.rootId, "claim");
 assert.ok(tracePlan.trace.nodes.some(n => n.id === "claim"));
 assert.ok(tracePlan.trace.nodes.some(n => n.id === "source"));
 console.log("Mind Cave integration: all assertions passed.");
