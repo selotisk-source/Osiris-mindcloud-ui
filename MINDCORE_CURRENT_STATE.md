@@ -167,3 +167,13 @@ State distinction:
 - Full repository `npm run verify`: not run in a local checkout.
 
 Next operational steps: create/connect the Cloudflare Pages project and Render Web Service in their dashboards, set the Render backend URL in Pages, configure required server-side secrets in Render only, deploy, then test homepage/routes and `/api/mindcloud/status` end-to-end. Do not declare migration complete until these runtime checks pass.
+
+
+## Gateway, synchronicity and Mind Cave research track — 2026-10-28
+
+- Added `research/GATEWAY_SYNCHRONICITY_MINDCAVE.md` as a durable research specification and narrative-development note.
+- The track covers the 1983 *Analysis and Assessment of the Gateway Process*, synchronicity logging, Mind Cave capture/trace/hypothesis review, Metanoia counterfactual testing, and a narrative engine.
+- Evidence categories are explicit: source fact, source attribution, observation, interpretation, hypothesis, alternatives, and fiction/story. The track prohibits treating coincidences as automatic proof of paranormal causation or precognition.
+- Includes a proposed typed research-node JSON contract and a staged next-work sequence.
+- GitHub API returned commit `368a0ab9bc1877e1b4ce8fe37b3b90687bfc73ad` for the new research document. This confirms the repository write succeeded; it does not mean the schema is implemented in MindCore or that any personal synchronicity log has been populated.
+- Not yet done: direct page-by-page extraction of the Gateway PDF, independent source matrix for Bentov/Bohm/Pribram, runtime schema validation, or MindCore graph/Metanoia integration. Those should be done as separate, testable steps.
