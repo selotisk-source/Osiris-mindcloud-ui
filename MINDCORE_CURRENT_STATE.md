@@ -177,3 +177,13 @@ Next operational steps: create/connect the Cloudflare Pages project and Render W
 - Includes a proposed typed research-node JSON contract and a staged next-work sequence.
 - GitHub API returned commit `368a0ab9bc1877e1b4ce8fe37b3b90687bfc73ad` for the new research document. This confirms the repository write succeeded; it does not mean the schema is implemented in MindCore or that any personal synchronicity log has been populated.
 - Not yet done: direct page-by-page extraction of the Gateway PDF, independent source matrix for Bentov/Bohm/Pribram, runtime schema validation, or MindCore graph/Metanoia integration. Those should be done as separate, testable steps.
+
+
+## Article-series alignment with Mind Cave — 2026-10-28
+
+- Reviewed the existing series hub `varna-sofia-cyprus.html` and Sofia research index `sofia-research.html`. The series already distinguishes field observations, historical documentation, hypotheses and remaining research questions.
+- Added a new section, “Samband utan att blanda ihop bevisnivåer”, to the Varna–Sofia–Cyprus hub. It connects the editorial method to the separate Gateway/synchronicity research track without treating Gateway as evidence for any historical or archaeological claim.
+- The section explains how Mind Cave can preserve personal associations and open questions while keeping them distinct from documented observations, historical sources, tradition/symbolism and testable hypotheses. It also records that automatic MindCore execution is not yet implemented.
+- GitHub write returned commit `bbd9319e62ebb083b5ae104dc42ca51aebe8028d`. Repository readback and live rendering check remain to be completed.
+- Article-series progress: hub exists; Sofia research index exists; cross-link between these pages exists; the hub now has an explicit methodological bridge to the Mind Cave track. Live publication remains blocked by the expired Railway trial; Cloudflare Pages/Render migration is not yet deployed.
+- Next article work: inspect each historical assertion and source link; make an evidence ledger with claim, source, locator, confidence and open question; test internal routes and rendering after a host is available. Avoid adding Gateway theory as an explanation for the sites unless independent evidence supports the connection.
