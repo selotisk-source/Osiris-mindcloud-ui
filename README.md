@@ -16,6 +16,7 @@ Start here when continuing work across conversations:
 - [Current verified state, gaps and next actions](MINDCORE_CURRENT_STATE.md)
 - [Claude project instructions](CLAUDE.md)
 - [Gateway, synchronicity and Mind Cave research track](research/GATEWAY_SYNCHRONICITY_MINDCAVE.md)
+- [Article-series evidence ledger — Varna, Sofia and Cyprus](research/ARTICLE_SERIES_EVIDENCE_LEDGER.md)
 
 Keep the master document focused on durable architecture; update the current-state file after real changes and tests. These documents are continuity aids, not evidence that an implementation or deployment works.
 
