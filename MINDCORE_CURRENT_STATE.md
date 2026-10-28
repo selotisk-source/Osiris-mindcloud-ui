@@ -117,3 +117,14 @@ Establish and verify the real MindCore/MindCloud execution loop across backend a
 - Latest Railway production deployment `915d35c4-110e-4d7b-a9d2-9c4878d94270` reached `SUCCESS` on commit `3a764bd981a44e760d5020b519de168324d1c98c`. Its pre-deploy verification passed the article route/source/date checks and OSIRIS quadrant checks; final line was `MindCloud verification suite passed.`
 - Remaining limitation: iframe rendering of `osirisai.live` itself has not been confirmed in a real user browser; the standalone fallback is provided because the external site may restrict framing.
 - Artcraft was not available in the connected plugin catalog for the Paraskevi article. The published page uses an original locally served SVG illustration; a separate concept image was generated in-chat, and neither is mislabelled as Artcraft output.
+
+
+## Recursive Trace Logic — 2026-10-28
+
+- Added `mindcore/recursive-trace.js`: bounded traversal of an EvidenceGraph snapshot in backward, forward or both directions; validates graph structure and root; detects cycles; reports depth/node truncation; collects provenance references without treating them as independently validated evidence.
+- Added `scripts/verify-recursive-trace.js` with coverage for bidirectional/backward/forward traversal, cycle detection, depth/node bounds, invalid roots/directions/edges, provenance collection and catalog/recipe registration.
+- Registered `mindcore-recursive-trace` in `mindcore/catalog.js` and the `recursive-trace-evidence` recipe in `mindcloud/capability-graph.js`.
+- Added the test to the standard `npm run verify` sequence in `package.json`.
+- Commits observed: `dd9d55f4ebddc4e995f44d9adeebfc32883d5374` (engine), `8c75ba24d8cb6b4df7dfcb1e16b026036b90f270` (initial tests), `d82617750505aca494274dc51a16b8a155e1d0c4` (catalog), `4ef4c5d678f0d2a642f13bc07d8dcaa75ddc1b34` (recipe), `52de44842d5045346be171b5b0c68d88c39ef929` (verification command), with a subsequent test-hardening commit.
+- **Not yet tested in a runtime:** GitHub content writes confirm commits were created, but this session has not executed Node tests or observed CI results. The trace is a pure graph-snapshot engine; API wiring, durable trace persistence and frontend rendering remain separate integration work.
+- **Next action:** inspect the resulting main-branch state and CI evidence; fix any regression before wiring the trace into the authorized request → evidence persistence → frontend status path.
