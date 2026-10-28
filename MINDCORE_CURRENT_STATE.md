@@ -187,3 +187,14 @@ Next operational steps: create/connect the Cloudflare Pages project and Render W
 - GitHub write returned commit `bbd9319e62ebb083b5ae104dc42ca51aebe8028d`. Repository readback and live rendering check remain to be completed.
 - Article-series progress: hub exists; Sofia research index exists; cross-link between these pages exists; the hub now has an explicit methodological bridge to the Mind Cave track. Live publication remains blocked by the expired Railway trial; Cloudflare Pages/Render migration is not yet deployed.
 - Next article work: inspect each historical assertion and source link; make an evidence ledger with claim, source, locator, confidence and open question; test internal routes and rendering after a host is available. Avoid adding Gateway theory as an explanation for the sites unless independent evidence supports the connection.
+
+
+## Web source investigation — article series — 2026-10-28
+
+- Conducted a first source-led web review of the existing Varna–Sofia–Cyprus article hub and Sofia research index.
+- Created `research/ARTICLE_SERIES_EVIDENCE_LEDGER.md` with source URLs, supported claims, explicit limitations, open questions and next investigation order. GitHub returned commit `b3e22067d0624c0cafbf6e5dfa30a2d30970b644`.
+- Main confirmed leads: Sofia History Museum records the Eastern Serdica necropolis under Saint Sophia and separately records 11 medieval burials found in the 2014 excavation area at the Tsar Samuel monument; the monument-site excavation does not identify those burials as Samuel's. Official Varna material provides a baseline for the Chalcolithic Necropolis and proposed long-distance exchange. Cyprus Department of Antiquities, Visit Cyprus and UNESCO document the Hellenistic/Roman Tombs of the Kings and architectural parallels with Alexandria.
+- Added the 2026 Cyprus Ministry of Culture announcement of the Tombs of the Kings final excavation volume as a further lead, with the caveat that claims about Tomb 8 and possible royal associations require consulting the full publication.
+- Gateway Process remains a separate methodological/narrative comparison, not archaeological evidence for any of the three locations.
+- GitHub readback and source-led review are complete for this initial research pass; no local build, live page rendering, exhaustive literature review or object identification from the user's personal photographs has been performed.
+- Next actions: match the user's photos/recollections to exact museum records; retrieve excavation plans/full publications; record page/figure/inventory locators; only then build cross-site chronology and comparative map.
