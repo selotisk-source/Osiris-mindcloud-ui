@@ -139,3 +139,13 @@ Establish and verify the real MindCore/MindCloud execution loop across backend a
 - GitHub content commits observed include `39cf56d4cc8a20d720d7e69e56ea41dbbee37891` (module), `8141347ae2df6cf4fc157d8a6fa3ac352d0b16dd` (catalog), `f2e43ac207caca3487b36655e1a705ec34b81d16` (recipe), `5e63d953f9ca5214784fd191a55024eeecb1a6fe` (verification sequence), and `fd5a60a91af05c96ade5540883e1c6111141dc36` (normalization correction).
 - **Not yet tested in a runtime:** this session has not executed Node or observed CI pass results for The Joint. The test script and verification command are present in the repository; test execution remains outstanding.
 - **Next action:** run the focused test, correct any failures, then connect The Joint output to the Evidence Graph and Recursive Trace so each synthesized claim can be traced back to both source partials.
+
+
+## Production recovery and article-series update — 2026-10-28
+
+- Railway production project `lively-nurturing`, environment `production`, was queried directly. The environment reported all five services offline, with no active deployments and no HTTP requests in the frontend telemetry window.
+- Attempting to reconnect the existing frontend and backend services to the existing repository's `main` branch was rejected by Railway with: `Your trial has expired. Please select a plan to continue using Railway.` No deployment or live configuration change was made by that failed request. Production recovery is blocked until the Railway account has an active plan.
+- Added `varna-sofia-cyprus.html`, a Swedish editorial hub with three chapters (Varna, Sofia/Serdika, Cyprus/Paphos), institutional research entry points, and explicit separation of archaeological claims, church tradition, field observations, and personal interpretation.
+- Added routes `/varna-sofia-cyprus`, `/varna-sofia-cyprus/`, and `/articles/varna-sofia-cyprus` to the actual production frontend entrypoint `frontend-server.js`; linked the series from `sofia-research.html`.
+- GitHub readback confirms the article content, all three route aliases, and the Sofia navigation link are present on `main`. This is repository-level confirmation only: the page has not been deployed or checked in a live browser because Railway deployment is blocked by the expired trial.
+- Next actions: restore Railway billing/plan; deploy the existing frontend and backend services from `main`; inspect build/pre-deploy logs; test the live homepage, `/ready`, `/paraskevi`, `/varna-sofia-cyprus`, and `/ipo`; then continue remaining editorial and end-to-end runtime checks.
