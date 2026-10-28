@@ -128,3 +128,14 @@ Establish and verify the real MindCore/MindCloud execution loop across backend a
 - Commits observed: `dd9d55f4ebddc4e995f44d9adeebfc32883d5374` (engine), `8c75ba24d8cb6b4df7dfcb1e16b026036b90f270` (initial tests), `d82617750505aca494274dc51a16b8a155e1d0c4` (catalog), `4ef4c5d678f0d2a642f13bc07d8dcaa75ddc1b34` (recipe), `52de44842d5045346be171b5b0c68d88c39ef929` (verification command), with a subsequent test-hardening commit.
 - **Not yet tested in a runtime:** GitHub content writes confirm commits were created, but this session has not executed Node tests or observed CI results. The trace is a pure graph-snapshot engine; API wiring, durable trace persistence and frontend rendering remain separate integration work.
 - **Next action:** inspect the resulting main-branch state and CI evidence; fix any regression before wiring the trace into the authorized request → evidence persistence → frontend status path.
+
+
+## The Joint — partial synthesis merger (2026-10-28)
+
+- Added `mindcore/the-joint.js`, a deterministic merger for two distinct partial syntheses. It separates exact normalized wording matches from claims unique to either input, detects explicitly modeled opposite-polarity claims when they share a subject, and leaves those tensions unresolved for review.
+- Every claim retains its source partial ID and evidence references. A joined result is marked `joined_pending_validation` or `needs_reconciliation`; neither matching text nor merging itself is treated as independent validation.
+- Registered `mindcore-the-joint` in the MindCore capability catalog and `joint-partial-synthesis` in the MindCloud capability graph. Added `scripts/verify-the-joint.js` to the standard `npm run verify` sequence.
+- The implementation intentionally performs deterministic textual joining, not semantic reasoning. Semantic similarity, temporal alignment, and human/Metanoia reconciliation remain future integration work.
+- GitHub content commits observed include `39cf56d4cc8a20d720d7e69e56ea41dbbee37891` (module), `8141347ae2df6cf4fc157d8a6fa3ac352d0b16dd` (catalog), `f2e43ac207caca3487b36655e1a705ec34b81d16` (recipe), `5e63d953f9ca5214784fd191a55024eeecb1a6fe` (verification sequence), and `fd5a60a91af05c96ade5540883e1c6111141dc36` (normalization correction).
+- **Not yet tested in a runtime:** this session has not executed Node or observed CI pass results for The Joint. The test script and verification command are present in the repository; test execution remains outstanding.
+- **Next action:** run the focused test, correct any failures, then connect The Joint output to the Evidence Graph and Recursive Trace so each synthesized claim can be traced back to both source partials.
