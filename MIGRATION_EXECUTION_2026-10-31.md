@@ -52,6 +52,12 @@ The repository already specifies **Cloudflare Pages for the frontend + Render fo
 - Run `npm run verify`, then production health, authenticated API round-trip, memory persistence, browser execution, evidence readback and frontend display.
 - Switch DNS/public traffic only after all gates pass. Keep Railway intact as rollback until the new path passes end-to-end checks.
 
+## Checks observed on the migration branch
+
+- `sh -n deploy/cognee/portable-entrypoint.sh`: passed in the working shell.
+- GitHub Actions `MindCloud Runtime Verification`: failed on the current PR head at `scripts/verify-the-joint.js:20`. Actual state was `joined_pending_validation`; assertion expected `needs_reconciliation`. The workflow stopped at this first assertion, so the rest of `npm run verify` did not run.
+- The Cognee Docker image has **not** been built or run. Shell syntax alone does not prove compatibility with the upstream image or a Render-mounted volume.
+
 ## Current status
 
 - [x] Existing target decision found in repository: Cloudflare Pages + Render.
