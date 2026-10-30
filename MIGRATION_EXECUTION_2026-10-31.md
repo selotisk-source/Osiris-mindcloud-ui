@@ -36,7 +36,7 @@ The repository already specifies **Cloudflare Pages for the frontend + Render fo
 - Acceptance: `/health` returns HTTP 200; authenticated API calls and authorization-denial paths behave as expected; backend-to-frontend API round-trip succeeds.
 
 ### C. Cognee memory
-- Replace the Railway entrypoint with a platform-neutral container entrypoint.
+- Use the new `deploy/cognee/Dockerfile.portable` and `deploy/cognee/portable-entrypoint.sh`; the Railway-specific image remains untouched for rollback.\n- Build and run the portable image against a test volume before creating the Render Cognee service.
 - Use a dedicated persistent mount for Cognee data and model caches; preserve UID/GID and non-root execution.
 - Back up Railway volume contents, restore to the new mount, then run memory health and write/readback tests against known test records.
 - Acceptance: memory survives service restart and redeploy; no production memory is declared migrated based on health alone.
@@ -59,7 +59,7 @@ The repository already specifies **Cloudflare Pages for the frontend + Render fo
 - [x] Unsafe limitation in current Render blueprint identified: free compute, no persistent disk, only Node API service.
 - [ ] Cloudflare Pages account/project connected and deployed.
 - [ ] Render backend provisioned and health-tested.
-- [ ] Cognee platform-neutral container and persistent data migration.
+- [x] Platform-neutral Cognee Dockerfile and startup entrypoint added; shell syntax check passed. Image build and runtime are not yet tested.\n- [ ] Cognee persistent data migration and restart/readback test.
 - [ ] Browser Use runner and Chromium migrated.
 - [ ] Durable backend state implemented and tested.
 - [ ] Full end-to-end acceptance and public cutover.
