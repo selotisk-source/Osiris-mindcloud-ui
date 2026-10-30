@@ -1,0 +1,24 @@
+# Platform-neutral Cognee image for non-Railway hosts.
+# Build from the repository root:
+#   docker build -f deploy/cognee/Dockerfile.portable -t mindcloud-cognee .
+FROM cognee/cognee:main
+
+USER root
+COPY deploy/cognee/portable-entrypoint.sh /usr/local/bin/mindcloud-cognee-entrypoint
+RUN chmod 0755 /usr/local/bin/mindcloud-cognee-entrypoint
+
+ENV COGNEE_DATA_DIR=/data \
+    EMBEDDING_BATCH_SIZE=1 \
+    GRAPH_EXTRACTOR=llm \
+    GLINER_INFERENCE_THREADS=1 \
+    AUTO_FEEDBACK=false \
+    IMPROVE_AUTO_ENABLED=false \
+    TOKENIZERS_PARALLELISM=false \
+    OMP_NUM_THREADS=1 \
+    MKL_NUM_THREADS=1 \
+    OPENBLAS_NUM_THREADS=1 \
+    NUMEXPR_NUM_THREADS=1 \
+    CHUNK_SIZE=512 \
+    TRIPLET_EMBEDDING=false
+
+ENTRYPOINT ["/usr/local/bin/mindcloud-cognee-entrypoint"]
