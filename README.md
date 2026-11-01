@@ -14,6 +14,7 @@ Start here when continuing work across conversations:
 
 - [Master architecture and operating rules](MINDCORE_MINDCLOUD_MASTER.md)
 - [Current verified state, gaps and next actions](MINDCORE_CURRENT_STATE.md)
+- [Operations snapshot — 2026-11-01](OPERATIONS_STATUS_2026-11-01.md)
 - [Claude project instructions](CLAUDE.md)
 - [Gateway, synchronicity and Mind Cave research track](research/GATEWAY_SYNCHRONICITY_MINDCAVE.md)
 - [Article-series evidence ledger — Varna, Sofia and Cyprus](research/ARTICLE_SERIES_EVIDENCE_LEDGER.md)
