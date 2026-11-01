@@ -4,6 +4,14 @@ on:
   push:
     branches:
       - migration/railway-exit-inventory
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "scripts/**"
+      - "deploy/cognee/**"
+      - "package.json"
+      - ".github/workflows/migration-checks.yml"
 
 jobs:
   verify:
