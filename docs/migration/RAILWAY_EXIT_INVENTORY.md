@@ -38,3 +38,24 @@ The repository's current `render.yaml` defines only one free Node web service ca
 
 ## Safety
 No Railway service, volume, bucket, domain, or production traffic was changed by this inventory. No data was copied or restored. No destination service has been deployed.
+
+
+## Follow-up findings — 2026-11-01
+
+### Frontend pre-deploy failure isolated
+The instrumented verification suite identified the first failing command as scripts/verify-the-joint.js, line 20. The assertion expected needs_reconciliation, but the implementation returned joined_pending_validation. Root cause: mindcore/the-joint.js checked for exact wording matches and continued before checking for contradictory claims about the same subject. An exact matching claim therefore masked a second, opposing claim.
+
+Fix committed on the migration branch: contradiction detection now runs before the exact-match early return, so shared wording and unresolved opposing claims are both retained.
+
+### CI results after fix
+- Migration branch checks run #7: SUCCESS. All project verification commands passed, and both Cognee entrypoint shell syntax checks passed.
+- MindCloud Runtime Verification run #610: SUCCESS.
+- Previous runs before the fix failed on the exact assertion described above.
+- Brave extension and RuFlo smoke tests were still running at the time of this update; no result claimed for those jobs.
+
+### Additional migration preparation
+- Added deploy/cognee/platform-entrypoint.sh and deploy/cognee/Dockerfile.platform. Existing Railway startup files remain unchanged.
+- Added a Render assessment. Render supports Docker services, private networking, and paid persistent disks. Its published disk price is USD $0.25/GB-month; compute and data requirements still need sizing.
+- Draft pull request: https://github.com/selotisk-source/Osiris-mindcloud-ui/pull/148
+
+The fix is validated by GitHub Actions on the migration branch. It has not been merged to main or deployed to Railway. Cognee's live /health failure has not yet been reproduced against the destination container. No production data has been moved.
