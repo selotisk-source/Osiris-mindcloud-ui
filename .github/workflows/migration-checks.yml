@@ -1,0 +1,32 @@
+name: Migration branch checks
+
+on:
+  push:
+    branches:
+      - migration/railway-exit-inventory
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "scripts/**"
+      - "deploy/cognee/**"
+      - "package.json"
+      - ".github/workflows/migration-checks.yml"
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install dependencies
+        run: npm install
+      - name: Verify project contracts
+        run: node scripts/run-verify.js
+      - name: Check Cognee entrypoint syntax
+        run: |
+          sh -n deploy/cognee/platform-entrypoint.sh
+          sh -n deploy/cognee/railway-entrypoint.sh
