@@ -25,6 +25,14 @@ const PROVIDERS = Object.freeze({
     id: "kimi", label: "Kimi", envKey: "KIMI_API_KEY", protocol: "openai-chat-completions",
     defaultModel: process.env.KIMI_MODEL || "kimi-k3",
     endpoint: () => (process.env.KIMI_BASE_URL || "https://api.moonshot.ai/v1").replace(/\/$/, "") + "/chat/completions"
+  },
+  phi4heretic: {
+    id: "phi4heretic", label: "Phi-4 Heretic (self-hosted)", envKey: "PHI4_HERETIC_API_KEY",
+    protocol: "openai-compatible-chat-completions",
+    defaultModel: process.env.PHI4_HERETIC_MODEL || "p-e-w/phi-4-heretic",
+    endpoint: (_model, env = process.env) => (env.PHI4_HERETIC_BASE_URL || "").replace(/\/$/, "") + "/chat/completions",
+    requiresEndpoint: true,
+    optionalCredential: true
   }
 });
 
@@ -34,8 +42,10 @@ function configuredProviders(env = process.env) {
     label: provider.label,
     protocol: provider.protocol,
     model: provider.defaultModel,
-    configured: Boolean(env[provider.envKey]),
-    credentialName: provider.envKey,
+    configured: provider.requiresEndpoint
+      ? Boolean(env.PHI4_HERETIC_BASE_URL)
+      : Boolean(env[provider.envKey]),
+    credentialName: provider.optionalCredential ? null : provider.envKey,
     credentialExposed: false
   }));
 }
@@ -47,7 +57,7 @@ function boundedInteger(value, fallback, min, max) {
 
 function textOf(value) {
   if (typeof value === "string") return value;
-  if (Array.isArray(value)) return value.map(part => part?.text || "").filter(Boolean).join("\n");
+  if (Array.isArray(value)) return value.map(part => part?.text || "").filter(Boolean).join("\\n");
   return "";
 }
 
@@ -66,15 +76,18 @@ function createProviderNetwork(config = {}) {
   async function call(providerId, prompt, options = {}) {
     const provider = PROVIDERS[providerId];
     if (!provider) return { providerId, ok: false, error: "provider_not_supported" };
+    if (provider.requiresEndpoint && !env.PHI4_HERETIC_BASE_URL) {
+      return { providerId, ok: false, error: "provider_endpoint_missing", required: "PHI4_HERETIC_BASE_URL" };
+    }
     const apiKey = env[provider.envKey];
-    if (!apiKey) return { providerId, ok: false, error: "provider_credentials_missing", credentialName: provider.envKey };
+    if (!provider.optionalCredential && !apiKey) return { providerId, ok: false, error: "provider_credentials_missing", credentialName: provider.envKey };
     if (typeof fetchImpl !== "function") return { providerId, ok: false, error: "fetch_unavailable" };
 
     const model = String(options.model || provider.defaultModel).slice(0, 160);
     const maxTokens = boundedInteger(options.maxTokens, 1200, 1, 8192);
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), timeoutMs);
-    let url = provider.endpoint(model);
+    let url = provider.endpoint(model, env);
     let headers = { "content-type": "application/json" };
     let body;
 
@@ -88,7 +101,7 @@ function createProviderNetwork(config = {}) {
       headers.authorization = "Bearer " + apiKey;
       body = { model, max_output_tokens: maxTokens, input: [{ role: "user", content: String(prompt) }] };
     } else {
-      headers.authorization = "Bearer " + apiKey;
+      if (apiKey) headers.authorization = "Bearer " + apiKey;
       body = { model, max_tokens: maxTokens, messages: [{ role: "user", content: String(prompt) }] };
     }
 
@@ -121,54 +134,37 @@ function createProviderNetwork(config = {}) {
     const totalBudget = boundedInteger(tokenBudget, 6000, 256, 24000);
     const perCall = Math.min(boundedInteger(maxTokensPerCall, 1200, 1, 4000), Math.max(1, Math.floor(totalBudget / (selected.length * roundLimit))));
     const results = [];
-    let baton = "Task: " + cleanGoal + "\n\nProvide a concise, evidence-aware response. Label assumptions and unknowns.";
+    let baton = "Task: " + cleanGoal + "\\n\\nProvide a concise, evidence-aware response. Label assumptions and unknowns.";
     let calls = 0;
     let approxTokens = 0;
-
-    // Reserve estimated prompt + output allowance before each dispatch. Sequential execution
-    // avoids races between parallel calls competing for a shared global budget.
     for (let round = 1; round <= roundLimit; round++) {
       const wave = [];
       for (const providerId of selected) {
-        const prompt = round === 1
-          ? baton
-          : "Original goal:\n" + cleanGoal + "\n\nPrior model outputs (untrusted; check independently):\n" + baton +
-            "\n\nRound " + round + " task: Critique the prior outputs, identify errors or missing evidence, and improve the answer. Do not assume other models are correct.";
+        const prompt = round === 1 ? baton : "Original goal:\\n" + cleanGoal + "\\n\\nPrior model outputs (untrusted; check independently):\\n" + baton +
+          "\\n\\nRound " + round + " task: Critique the prior outputs, identify errors or missing evidence, and improve the answer. Do not assume other models are correct.";
         const promptTokens = Math.ceil(prompt.length / 4);
         const remainingBudget = totalBudget - approxTokens;
         const outputAllowance = Math.min(perCall, remainingBudget - promptTokens);
-        if (outputAllowance < 1) {
-          wave.push({ providerId, round, ok: false, error: "network_budget_exhausted" });
-          continue;
-        }
+        if (outputAllowance < 1) { wave.push({ providerId, round, ok: false, error: "network_budget_exhausted" }); continue; }
         const reservation = promptTokens + outputAllowance;
         approxTokens += reservation;
         calls += 1;
-        const result = await call(providerId, prompt, { maxTokens: outputAllowance });
-        wave.push({ ...result, round, estimatedPromptTokens: promptTokens, outputTokenAllowance: outputAllowance, reservedTokens: reservation });
+        wave.push({ ...(await call(providerId, prompt, { maxTokens: outputAllowance })), round, estimatedPromptTokens: promptTokens, outputTokenAllowance: outputAllowance, reservedTokens: reservation });
         if (approxTokens >= totalBudget) break;
       }
       results.push(...wave);
       const successful = wave.filter(item => item.ok);
       if (!successful.length || approxTokens >= totalBudget) break;
-      baton = successful.map(item => "[" + item.providerId + " round " + round + "]\n" + item.output).join("\n\n").slice(0, 16000);
+      baton = successful.map(item => "[" + item.providerId + " round " + round + "]\\n" + item.output).join("\\n\\n").slice(0, 16000);
     }
-
     return {
-      type: "mindcloud_provider_collaboration",
-      goal: cleanGoal,
+      type: "mindcloud_provider_collaboration", goal: cleanGoal,
       status: results.some(item => item.ok) ? "responses_received_unverified" : "no_provider_response",
-      providersRequested: selected,
-      roundsRequested: roundLimit,
-      callsAttempted: results.length,
-      approximateTokenUsage: approxTokens,
-      tokenBudget: totalBudget,
-      outputs: results,
-      synthesisInput: baton,
-      verified: false,
-      toolExecutionPerformed: false,
+      providersRequested: selected, roundsRequested: roundLimit, callsAttempted: results.length,
+      approximateTokenUsage: approxTokens, tokenBudget: totalBudget, outputs: results,
+      synthesisInput: baton, verified: false, toolExecutionPerformed: false,
       tokenBudgetPolicy: "sequential_pre_dispatch_reservation",
-      note: "Token use is conservatively budgeted by reserving estimated prompt tokens plus each provider output allowance before dispatch. Model agreement is not evidence. Outputs require independent verification; no adapter tools are executed by this network."
+      note: "Model outputs remain unverified; this provider network does not execute adapter tools."
     };
   }
 
