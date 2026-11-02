@@ -57,7 +57,7 @@ function boundedInteger(value, fallback, min, max) {
 
 function textOf(value) {
   if (typeof value === "string") return value;
-  if (Array.isArray(value)) return value.map(part => part?.text || "").filter(Boolean).join("\\n");
+  if (Array.isArray(value)) return value.map(part => part?.text || "").filter(Boolean).join("\n");
   return "";
 }
 
@@ -134,14 +134,14 @@ function createProviderNetwork(config = {}) {
     const totalBudget = boundedInteger(tokenBudget, 6000, 256, 24000);
     const perCall = Math.min(boundedInteger(maxTokensPerCall, 1200, 1, 4000), Math.max(1, Math.floor(totalBudget / (selected.length * roundLimit))));
     const results = [];
-    let baton = "Task: " + cleanGoal + "\\n\\nProvide a concise, evidence-aware response. Label assumptions and unknowns.";
+    let baton = "Task: " + cleanGoal + "\n\nProvide a concise, evidence-aware response. Label assumptions and unknowns.";
     let calls = 0;
     let approxTokens = 0;
     for (let round = 1; round <= roundLimit; round++) {
       const wave = [];
       for (const providerId of selected) {
-        const prompt = round === 1 ? baton : "Original goal:\\n" + cleanGoal + "\\n\\nPrior model outputs (untrusted; check independently):\\n" + baton +
-          "\\n\\nRound " + round + " task: Critique the prior outputs, identify errors or missing evidence, and improve the answer. Do not assume other models are correct.";
+        const prompt = round === 1 ? baton : "Original goal:\n" + cleanGoal + "\n\nPrior model outputs (untrusted; check independently):\n" + baton +
+          "\n\nRound " + round + " task: Critique the prior outputs, identify errors or missing evidence, and improve the answer. Do not assume other models are correct.";
         const promptTokens = Math.ceil(prompt.length / 4);
         const remainingBudget = totalBudget - approxTokens;
         const outputAllowance = Math.min(perCall, remainingBudget - promptTokens);
@@ -155,7 +155,7 @@ function createProviderNetwork(config = {}) {
       results.push(...wave);
       const successful = wave.filter(item => item.ok);
       if (!successful.length || approxTokens >= totalBudget) break;
-      baton = successful.map(item => "[" + item.providerId + " round " + round + "]\\n" + item.output).join("\\n\\n").slice(0, 16000);
+      baton = successful.map(item => "[" + item.providerId + " round " + round + "]\n" + item.output).join("\n\n").slice(0, 16000);
     }
     return {
       type: "mindcloud_provider_collaboration", goal: cleanGoal,
