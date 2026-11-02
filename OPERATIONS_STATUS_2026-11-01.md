@@ -71,3 +71,16 @@ The previous state record says the Pages project and Render service had not been
 - Production runtime/API: unavailable for end-to-end checks while services are offline.
 - Cloudflare Pages / Render migration: preparation files exist; live deployment not confirmed.
 - No code was deployed or any service restarted in this session.
+
+
+## Render migration work — 2026-11-02
+
+- Created Render web service `mindcloud-backend` from `main`, Frankfurt, free plan, start command `node server.js`, with `NODE_ENV=production` and `MINDCLOUD_API_ONLY=true`.
+- Backend deploy `dep-dbjv7fajnfac7394t10g` reached Render status `live` on commit `32cf7ca9cda06398a6bd15dbbf062a482ebda693`. Startup log reports `OSIRIS MindCloud listening on port 10000` and Render reports the primary URL `https://mindcloud-backend.onrender.com`.
+- Created Render web service `mindcloud-frontend` from `main`, Frankfurt, free plan, start command `node frontend-server.js`, configured with `MINDCLOUD_BACKEND_URL=https://mindcloud-backend.onrender.com`.
+- Initial frontend deployment failed at process startup because the `STATIC_FILES` object in `frontend-server.js` contained literal escaped newline sequences. Fixed the source block and committed `f42196d4d8a17d9950bc94a32eb45b2a2e663e4e`.
+- Frontend deploy `dep-dbjva867bikc738lqivg` reached Render status `live`; startup log reports `MindCloud frontend listening on port 10000` and Render reports `https://mindcloud-frontend.onrender.com`.
+- Backend startup self-test status was `degraded`, not passed: core routing/catalog checks passed, but durable store paths were not configured, Cognee was not configured, Browser Use lacked `BROWSER_USE_SERVICE_URL` and `BROWSER_USE_API_KEY`, and the Overpass probe timed out. These are separate integration/persistence gaps, not a frontend syntax failure.
+- Direct HTTP checks of the public Render URLs could not be completed from the current execution environment (DNS resolution unavailable). Render deployment status and startup logs are observed; public route responses and frontend-to-backend `/ready` remain unconfirmed.
+- The current main-branch tree contains only three dedicated research/article HTML pages: `sofia-research.html`, `varna-sofia-cyprus.html`, and `paraskevi.html`. `research/ARTICLE_SERIES_EVIDENCE_LEDGER.md` is a research ledger, not an eight-article-per-program catalogue. Do not fabricate missing programs or article entries. Recover the user's full programme/article source before building that portal.
+- Railway has not been shut down or modified. Keep it intact until the Render public routes and critical workflows are tested end-to-end.
