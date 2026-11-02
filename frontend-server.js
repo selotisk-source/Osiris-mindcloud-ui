@@ -72,7 +72,9 @@ function setSecurityHeaders(res) {
 
 const BACKEND_URL = process.env.MINDCLOUD_BACKEND_URL || "";
 const ROOT = __dirname;
-const STATIC_FILES = {\n  "/mindcloud": ["mindcloud.html", "text/html; charset=utf-8"],\n  "/mindcloud/": ["mindcloud.html", "text/html; charset=utf-8"],
+const STATIC_FILES = {
+  "/mindcloud": ["mindcloud.html", "text/html; charset=utf-8"],
+  "/mindcloud/": ["mindcloud.html", "text/html; charset=utf-8"],
   "/": ["planetary.html", "text/html; charset=utf-8"],
   "/planetary": ["planetary.html", "text/html; charset=utf-8"],
   "/planetary/": ["planetary.html", "text/html; charset=utf-8"],
