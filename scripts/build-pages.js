@@ -14,6 +14,7 @@ const pages = [
   "bankkarta.html",
   "newsletter.html",
   "sofia-research.html",
+  "arbor-christi.html",
   "varna-sofia-cyprus.html",
   "paraskevi.html",
   "ipo.html"
@@ -47,6 +48,7 @@ const redirects = [
   "/briefing /newsletter.html 200",
   "/nyheter /newsletter.html 200",
   "/sofia-research /sofia-research.html 200",
+  "/arbor-christi /arbor-christi.html 200",
   "/research/sofia /sofia-research.html 200",
   "/varna-sofia-cyprus /varna-sofia-cyprus.html 200",
   "/articles/varna-sofia-cyprus /varna-sofia-cyprus.html 200",
