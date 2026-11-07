@@ -1,0 +1,477 @@
+{
+  "schemaVersion": "1.0",
+  "atlasId": "arbor-christi-metatron-atlas",
+  "generatedAt": "2026-11-07",
+  "status": "research-seed",
+  "policy": {
+    "christianPrimarySpine": [
+      "Septuagint",
+      "Greek New Testament",
+      "Greek patristic sources",
+      "Byzantine liturgical sources"
+    ],
+    "preserveTraditionBoundaries": true,
+    "similarityDoesNotProveInfluence": true,
+    "unknownBibliographicDetailsMustRemainExplicit": true
+  },
+  "traditions": [
+    {
+      "id": "greek-byzantine-orthodox",
+      "label": "Greek-Byzantine Orthodox",
+      "languages": [
+        "grc"
+      ],
+      "kind": "church-tradition"
+    },
+    {
+      "id": "ethiopian-orthodox-tewahedo",
+      "label": "Ethiopian Orthodox Tewahedo",
+      "languages": [
+        "gez"
+      ],
+      "kind": "church-tradition"
+    },
+    {
+      "id": "coptic-christian",
+      "label": "Coptic Christian",
+      "languages": [
+        "cop"
+      ],
+      "kind": "church-tradition"
+    },
+    {
+      "id": "syriac-christian",
+      "label": "Syriac Christian",
+      "languages": [
+        "syc"
+      ],
+      "kind": "church-tradition"
+    },
+    {
+      "id": "hesychasm",
+      "label": "Hesychasm",
+      "languages": [
+        "grc"
+      ],
+      "kind": "orthodox-theological-stream"
+    },
+    {
+      "id": "jewish-kabbalah",
+      "label": "Jewish Kabbalah",
+      "languages": [
+        "heb",
+        "arc"
+      ],
+      "kind": "distinct-mystical-tradition"
+    },
+    {
+      "id": "gothic-kabbalah",
+      "label": "Gothic Kabbalah",
+      "languages": [
+        "swe",
+        "lat"
+      ],
+      "kind": "early-modern-intellectual-tradition"
+    },
+    {
+      "id": "hermetic-and-western-esoteric",
+      "label": "Hermetic and Western Esoteric",
+      "languages": [
+        "grc",
+        "lat",
+        "en"
+      ],
+      "kind": "distinct-textual-traditions"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "lxx.genesis.2-3",
+      "type": "text",
+      "label": {
+        "en": "Genesis 2–3 (Septuagint)",
+        "sv": "Genesis 2–3 (Septuaginta)",
+        "original": "Γένεσις"
+      },
+      "traditionIds": [
+        "greek-byzantine-orthodox"
+      ],
+      "languageIds": [
+        "grc"
+      ],
+      "sourceIds": [
+        "lxx.genesis.2-3"
+      ],
+      "evidenceStatus": "research-in-progress",
+      "summary": "Greek Septuagint passages concerning Eden and the Tree of Life."
+    },
+    {
+      "id": "lxx.proverbs.3.18",
+      "type": "text",
+      "label": {
+        "en": "Proverbs 3:18 (Septuagint)",
+        "sv": "Ordspråksboken 3:18 (Septuaginta)",
+        "original": "ξύλον ζωῆς"
+      },
+      "traditionIds": [
+        "greek-byzantine-orthodox"
+      ],
+      "languageIds": [
+        "grc"
+      ],
+      "sourceIds": [
+        "lxx.proverbs.3.18"
+      ],
+      "evidenceStatus": "research-in-progress",
+      "summary": "A Greek textual anchor for the Tree of Life image in wisdom literature."
+    },
+    {
+      "id": "nt.john.15",
+      "type": "text",
+      "label": {
+        "en": "John 15 — The Vine",
+        "sv": "Johannes 15 — Vinstocken",
+        "original": "ἡ ἄμπελος"
+      },
+      "traditionIds": [
+        "greek-byzantine-orthodox"
+      ],
+      "languageIds": [
+        "grc"
+      ],
+      "sourceIds": [
+        "nt.john.15"
+      ],
+      "evidenceStatus": "research-in-progress",
+      "summary": "Greek New Testament passage concerning Christ as the vine."
+    },
+    {
+      "id": "nt.revelation.22",
+      "type": "text",
+      "label": {
+        "en": "Revelation 22 — Tree of Life",
+        "sv": "Uppenbarelseboken 22 — Livets träd",
+        "original": "ξύλον τῆς ζωῆς"
+      },
+      "traditionIds": [
+        "greek-byzantine-orthodox"
+      ],
+      "languageIds": [
+        "grc"
+      ],
+      "sourceIds": [
+        "nt.revelation.22"
+      ],
+      "evidenceStatus": "research-in-progress",
+      "summary": "Greek New Testament passage concerning the Tree of Life in the New Jerusalem."
+    },
+    {
+      "id": "lxx.genesis.28",
+      "type": "text",
+      "label": {
+        "en": "Genesis 28 — Jacob's Ladder",
+        "sv": "Genesis 28 — Jakobs stege",
+        "original": "κλῖμαξ"
+      },
+      "traditionIds": [
+        "greek-byzantine-orthodox"
+      ],
+      "languageIds": [
+        "grc"
+      ],
+      "sourceIds": [
+        "lxx.genesis.28"
+      ],
+      "evidenceStatus": "research-in-progress",
+      "summary": "The Septuagint passage describing Jacob's dream and the ladder between earth and heaven."
+    },
+    {
+      "id": "orthodox.ousia-energeia",
+      "type": "concept",
+      "label": {
+        "en": "Divine essence and energies",
+        "sv": "Guds väsen och energier",
+        "original": "οὐσία / ἐνέργειαι"
+      },
+      "traditionIds": [
+        "greek-byzantine-orthodox",
+        "hesychasm"
+      ],
+      "languageIds": [
+        "grc"
+      ],
+      "sourceIds": [
+        "palamas.corpus"
+      ],
+      "evidenceStatus": "research-in-progress",
+      "summary": "The Orthodox theological distinction associated especially with the Palamite tradition; not equivalent to the sefirot."
+    },
+    {
+      "id": "orthodox.theosis",
+      "type": "concept",
+      "label": {
+        "en": "Theosis",
+        "sv": "Theosis",
+        "original": "θέωσις"
+      },
+      "traditionIds": [
+        "greek-byzantine-orthodox",
+        "hesychasm"
+      ],
+      "languageIds": [
+        "grc"
+      ],
+      "sourceIds": [
+        "greek.patristic.theosis"
+      ],
+      "evidenceStatus": "research-in-progress",
+      "summary": "Participation in divine life as described in Orthodox theological sources."
+    },
+    {
+      "id": "tewahedo.1-enoch",
+      "type": "text",
+      "label": {
+        "en": "1 Enoch in the Ge'ez tradition",
+        "sv": "Första Henoksboken i Ge'ez-traditionen",
+        "original": "—"
+      },
+      "traditionIds": [
+        "ethiopian-orthodox-tewahedo"
+      ],
+      "languageIds": [
+        "gez"
+      ],
+      "sourceIds": [
+        "geez.1-enoch.witnesses"
+      ],
+      "evidenceStatus": "research-in-progress",
+      "summary": "Study the Ethiopic textual witnesses and their reception on their own terms."
+    },
+    {
+      "id": "coptic.monastic-sources",
+      "type": "tradition",
+      "label": {
+        "en": "Coptic monastic sources",
+        "sv": "Koptiska klosterkällor",
+        "original": "—"
+      },
+      "traditionIds": [
+        "coptic-christian"
+      ],
+      "languageIds": [
+        "cop"
+      ],
+      "sourceIds": [
+        "coptic.monastic.corpus"
+      ],
+      "evidenceStatus": "research-in-progress",
+      "summary": "A research collection for Sahidic and Bohairic monastic and liturgical sources."
+    },
+    {
+      "id": "syriac.ephrem",
+      "type": "person",
+      "label": {
+        "en": "Ephrem the Syrian",
+        "sv": "Efraim Syriern",
+        "original": "ܡܪܝ ܐܦܪܝܡ"
+      },
+      "traditionIds": [
+        "syriac-christian"
+      ],
+      "languageIds": [
+        "syc"
+      ],
+      "sourceIds": [
+        "syriac.ephrem.works"
+      ],
+      "evidenceStatus": "research-in-progress",
+      "summary": "Syriac poet and theologian; works and attributions require individual cataloguing."
+    },
+    {
+      "id": "jewish.zohar",
+      "type": "text",
+      "label": {
+        "en": "The Zohar",
+        "sv": "Zohar",
+        "original": "זֹהַר"
+      },
+      "traditionIds": [
+        "jewish-kabbalah"
+      ],
+      "languageIds": [
+        "arc",
+        "heb"
+      ],
+      "sourceIds": [
+        "zohar.editions"
+      ],
+      "evidenceStatus": "research-in-progress",
+      "summary": "A Jewish mystical corpus studied in its own historical and textual context."
+    },
+    {
+      "id": "gothic.bureus-adulruna",
+      "type": "model",
+      "label": {
+        "en": "Bureus and Adulruna",
+        "sv": "Bureus och Adulruna",
+        "original": "Adulruna"
+      },
+      "traditionIds": [
+        "gothic-kabbalah"
+      ],
+      "languageIds": [
+        "swe",
+        "lat"
+      ],
+      "sourceIds": [
+        "bureus.primary-works"
+      ],
+      "evidenceStatus": "research-in-progress",
+      "summary": "Johannes Bureus's writings and later interpretations, kept historically distinct."
+    },
+    {
+      "id": "hermetic.corpus-hermeticum",
+      "type": "text",
+      "label": {
+        "en": "Corpus Hermeticum",
+        "sv": "Corpus Hermeticum",
+        "original": "Ἑρμητικὰ"
+      },
+      "traditionIds": [
+        "hermetic-and-western-esoteric"
+      ],
+      "languageIds": [
+        "grc"
+      ],
+      "sourceIds": [
+        "corpus.hermeticum.edition"
+      ],
+      "evidenceStatus": "research-in-progress",
+      "summary": "Greek Hermetic treatises; their dating, transmission and later reception require separate records."
+    }
+  ],
+  "sources": [
+    {
+      "id": "lxx.genesis.2-3",
+      "kind": "primary-text",
+      "title": "Genesis 2–3 (Septuagint)",
+      "originalLanguage": "grc",
+      "witnessOrEdition": null,
+      "evidenceStatus": "bibliographic-record-needed"
+    },
+    {
+      "id": "lxx.proverbs.3.18",
+      "kind": "primary-text",
+      "title": "Proverbs 3:18 (Septuagint)",
+      "originalLanguage": "grc",
+      "witnessOrEdition": null,
+      "evidenceStatus": "bibliographic-record-needed"
+    },
+    {
+      "id": "nt.john.15",
+      "kind": "primary-text",
+      "title": "John 15",
+      "originalLanguage": "grc",
+      "witnessOrEdition": null,
+      "evidenceStatus": "bibliographic-record-needed"
+    },
+    {
+      "id": "nt.revelation.22",
+      "kind": "primary-text",
+      "title": "Revelation 22",
+      "originalLanguage": "grc",
+      "witnessOrEdition": null,
+      "evidenceStatus": "bibliographic-record-needed"
+    },
+    {
+      "id": "lxx.genesis.28",
+      "kind": "primary-text",
+      "title": "Genesis 28 (Septuagint)",
+      "originalLanguage": "grc",
+      "witnessOrEdition": null,
+      "evidenceStatus": "bibliographic-record-needed"
+    },
+    {
+      "id": "palamas.corpus",
+      "kind": "primary-text",
+      "title": "Gregory Palamas — relevant corpus",
+      "originalLanguage": "grc",
+      "witnessOrEdition": null,
+      "evidenceStatus": "passages-to-identify"
+    },
+    {
+      "id": "greek.patristic.theosis",
+      "kind": "primary-text",
+      "title": "Greek patristic sources on theosis",
+      "originalLanguage": "grc",
+      "witnessOrEdition": null,
+      "evidenceStatus": "passages-to-identify"
+    },
+    {
+      "id": "geez.1-enoch.witnesses",
+      "kind": "manuscript-witness",
+      "title": "Ge'ez witnesses of 1 Enoch",
+      "originalLanguage": "gez",
+      "witnessOrEdition": null,
+      "evidenceStatus": "witness-catalogue-needed"
+    },
+    {
+      "id": "coptic.monastic.corpus",
+      "kind": "primary-text",
+      "title": "Coptic monastic corpus",
+      "originalLanguage": "cop",
+      "witnessOrEdition": null,
+      "evidenceStatus": "corpus-scope-needed"
+    },
+    {
+      "id": "syriac.ephrem.works",
+      "kind": "primary-text",
+      "title": "Works attributed to Ephrem the Syrian",
+      "originalLanguage": "syc",
+      "witnessOrEdition": null,
+      "evidenceStatus": "work-level-attribution-review-needed"
+    },
+    {
+      "id": "zohar.editions",
+      "kind": "critical-edition",
+      "title": "Zohar — critical editions",
+      "originalLanguage": "arc",
+      "witnessOrEdition": null,
+      "evidenceStatus": "edition-selection-needed"
+    },
+    {
+      "id": "bureus.primary-works",
+      "kind": "primary-text",
+      "title": "Johannes Bureus — primary works",
+      "originalLanguage": "swe",
+      "witnessOrEdition": null,
+      "evidenceStatus": "work-and-edition-selection-needed"
+    },
+    {
+      "id": "corpus.hermeticum.edition",
+      "kind": "critical-edition",
+      "title": "Corpus Hermeticum — Greek critical edition",
+      "originalLanguage": "grc",
+      "witnessOrEdition": null,
+      "evidenceStatus": "edition-selection-needed"
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge.genesis2-3-tree-life",
+      "from": "lxx.genesis.2-3",
+      "to": "lxx.proverbs.3.18",
+      "type": "PARALLEL_TO",
+      "rationale": "A thematic comparison between Greek biblical passages; not a claim of direct literary dependence.",
+      "evidenceStatus": "comparative-parallel"
+    },
+    {
+      "id": "edge.genesis28-ascent-image",
+      "from": "lxx.genesis.28",
+      "to": "orthodox.theosis",
+      "type": "PARALLEL_TO",
+      "rationale": "A curated comparative route for exploring ascent imagery and Orthodox theological accounts of participation; no direct derivation is asserted.",
+      "evidenceStatus": "comparative-parallel"
+    }
+  ]
+}
