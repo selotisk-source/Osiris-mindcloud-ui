@@ -23,10 +23,14 @@ function createJoint(input = {}) {
   const matchedRight = new Set(); const shared = []; const leftOnly = []; const tensions = [];
   for (const a of left.claims) {
     const match = a.key ? (rightByKey.get(a.key)||[]).find(b=>!matchedRight.has(b.id)) : null;
-    if (match) { matchedRight.add(match.id); shared.push({claimText:a.text,leftClaimId:a.id,rightClaimId:match.id,evidenceRefs:[...new Set([...a.evidenceRefs,...match.evidenceRefs])].sort(),status:"shared_wording_match",independentlyValidated:false}); continue; }
     const opposite = a.subject && a.polarity !== "unspecified" ? right.claims.filter(b=>b.subject===a.subject && b.polarity!=="unspecified" && b.polarity!==a.polarity) : [];
     for (const b of opposite) tensions.push({subject:a.subject,left:{partialId:left.id,claimId:a.id,text:a.text,polarity:a.polarity,evidenceRefs:a.evidenceRefs},right:{partialId:right.id,claimId:b.id,text:b.text,polarity:b.polarity,evidenceRefs:b.evidenceRefs},resolution:"unresolved",requiresReview:true});
-    leftOnly.push({partialId:left.id,claimId:a.id,text:a.text,evidenceRefs:a.evidenceRefs,status:"unique_to_partial"});
+    if (match) {
+      matchedRight.add(match.id);
+      shared.push({claimText:a.text,leftClaimId:a.id,rightClaimId:match.id,evidenceRefs:[...new Set([...a.evidenceRefs,...match.evidenceRefs])].sort(),status:"shared_wording_match",independentlyValidated:false});
+    } else {
+      leftOnly.push({partialId:left.id,claimId:a.id,text:a.text,evidenceRefs:a.evidenceRefs,status:"unique_to_partial"});
+    }
   }
   const rightOnly = right.claims.filter(claim=>!matchedRight.has(claim.id)).map(claim=>({partialId:right.id,claimId:claim.id,text:claim.text,evidenceRefs:claim.evidenceRefs,status:"unique_to_partial"}));
   const evidenceRefs = [...new Set([...left.claims,...right.claims].flatMap(claim=>claim.evidenceRefs))].sort();
