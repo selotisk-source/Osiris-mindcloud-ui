@@ -1,0 +1,5 @@
+FROM cognee/cognee:main
+USER root
+COPY deploy/cognee/platform-entrypoint.sh /platform-entrypoint.sh
+RUN chmod 0755 /platform-entrypoint.sh
+ENTRYPOINT ["/platform-entrypoint.sh"]
