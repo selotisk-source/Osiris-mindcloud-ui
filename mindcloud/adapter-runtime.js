@@ -49,9 +49,10 @@ class AdapterRuntime {
     // Readiness describes the latest observed state; verification is historical
     // evidence that an execution succeeded at least once in this runtime session.
     // A newer failed health probe must therefore override the readiness label.
-    const readiness = latestHealth && (!latestHealth.ok || latestHealth.result?.status !== "healthy") ? "degraded"
+    const healthStatus = latestHealth?.result?.status;
+    const readiness = latestHealth && (!latestHealth.ok || ["offline","degraded","credentials-missing"].includes(healthStatus)) ? "degraded"
       : latestSuccessfulExecution ? "verified"
-      : latestHealth && latestHealth.ok && latestHealth.result?.status === "healthy" ? "healthy"
+      : latestHealth && latestHealth.ok && healthStatus === "healthy" ? "healthy"
       : configured ? "configured" : "registered-only";
     return {
       state:configured?"configured":"registered-only",
