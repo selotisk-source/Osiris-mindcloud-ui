@@ -269,7 +269,7 @@ const IMPLEMENTED_OPERATIONS = Object.freeze({
   "mapillary":["search","image"],
   "agentmemory":["remember","observe","smart_search","context"],
   "ruflo":["discover_tools"],
-  "hermes-agent":["capabilities","submit_run","get_run","stop_run","approve_run"]
+  "hermes-agent":["health","capabilities","submit_run","get_run","stop_run","approve_run"]
 });
 function operationsFor(id) {
   return IMPLEMENTED_OPERATIONS[id] ? [...IMPLEMENTED_OPERATIONS[id]] : null;
