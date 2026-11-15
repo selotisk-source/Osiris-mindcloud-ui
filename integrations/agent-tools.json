@@ -402,6 +402,7 @@
       "layer": "ExternalAgent",
       "integration": "Dedicated Hermes Agent runtime reached over Railway private HTTP; MindCore retains task routing, approval, audit and evidence authority.",
       "operations": [
+        "health",
         "capabilities",
         "submit_run",
         "get_run",
