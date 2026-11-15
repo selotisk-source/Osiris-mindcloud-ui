@@ -59,6 +59,7 @@ const { validateAdapterInput } = require("../mindcloud/adapter-contracts");
     assert.equal(calls.find(call => call.url.endsWith("/v1/runs")).options.headers["idempotency-key"], "mc-test-1");
 
     const runtime = new AdapterRuntime(registry);
+    assert.equal(runtime.list().find(item => item.id === "hermes-agent").runtime.operations.includes("health"), true);
     const denied = await runtime.execute({ id: "hermes-agent", operation: "submit_run", input: { input: "Run task" }, approved: false });
     assert.equal(denied.error, "human_approval_required");
     const allowed = await runtime.execute({ id: "hermes-agent", operation: "submit_run", input: { input: "Run task" }, approved: true });
