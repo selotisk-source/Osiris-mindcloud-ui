@@ -28,7 +28,14 @@ const {validateAdapterInput}=require("../mindcloud/adapter-contracts");
     assert.equal(calls[1].options.method,"GET");
     const invalid=await native.execute({id:"krea",operation:"get_job",input:{job_id:"../secret"},requestId:"krea-invalid-job"});
     assert.equal(invalid.error,"valid_job_id_required");
-    console.log("krea-adapter: contract, credential gate, image job submission, bearer isolation and job retrieval passed");
+  
+    const fs=require("node:fs");
+    const serverSource=fs.readFileSync(require("node:path").join(__dirname,"../server.js"),"utf8");
+    assert.match(serverSource,/pathname==="\\/api\\/krea\\/generate"/);
+    assert.match(serverSource,/pathname\\.startsWith\\("\\/api\\/krea\\/jobs\\/"/);
+    assert.match(serverSource,/pathname==="\\/api\\/krea\\/generate"\\) \\{/);
+    assert.match(serverSource,/MINDCLOUD_TOOL_EXECUTION_TOKEN/);
+  console.log("krea-adapter: contract, credential gate, image job submission, bearer isolation and job retrieval passed");
   } finally {
     global.fetch=originalFetch;
     if(savedKey===undefined)delete process.env.KREA_API_KEY;else process.env.KREA_API_KEY=savedKey;
