@@ -52,7 +52,7 @@ function isExecutionAuthorized(req) {
   return tokenMatches(bearerToken(req), process.env.MINDCLOUD_TOOL_EXECUTION_TOKEN || "");
 }
 function requiresToolApproval(tool, operation) {
-  return tool?.security === true || (Array.isArray(tool?.security) && tool.security.includes(operation));
+  return Array.isArray(tool?.security) ? tool.security.includes(operation) : Boolean(tool?.security);
 }
 function isApprovalAuthorized(req) {
   return tokenMatches(bearerToken(req), process.env.MINDCLOUD_APPROVAL_TOKEN || "");
