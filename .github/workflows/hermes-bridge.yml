@@ -1,0 +1,38 @@
+name: Hermes Bridge Contract
+
+on:
+  push:
+    branches:
+      - main
+      - feat/hermes-agent-railway-bridge
+    paths:
+      - "mindcloud/hermes-bridge.js"
+      - "mindcloud/native-adapters.js"
+      - "mindcloud/adapter-runtime.js"
+      - "mindcloud/adapter-contracts.js"
+      - "integrations/agent-tools.json"
+      - "scripts/verify-hermes-bridge.js"
+      - ".github/workflows/hermes-bridge.yml"
+  pull_request:
+    paths:
+      - "mindcloud/hermes-bridge.js"
+      - "mindcloud/native-adapters.js"
+      - "mindcloud/adapter-runtime.js"
+      - "mindcloud/adapter-contracts.js"
+      - "integrations/agent-tools.json"
+      - "scripts/verify-hermes-bridge.js"
+      - ".github/workflows/hermes-bridge.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  hermes-bridge:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Run Hermes bridge contract tests
+        run: node scripts/verify-hermes-bridge.js
