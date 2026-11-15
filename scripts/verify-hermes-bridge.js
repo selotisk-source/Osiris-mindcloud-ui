@@ -22,7 +22,7 @@ const { validateAdapterInput } = require("../mindcloud/adapter-contracts");
     process.env.HERMES_API_KEY = "test-only-key";
     assert.equal(native.supports("hermes-agent"), true);
     assert.equal(bridge.state().configured, true);
-    assert.deepEqual(native.operationsFor("hermes-agent"), ["capabilities", "submit_run", "get_run", "stop_run", "approve_run"]);
+    assert.deepEqual(native.operationsFor("hermes-agent"), ["health", "capabilities", "submit_run", "get_run", "stop_run", "approve_run"]);
 
     assert.equal(validateAdapterInput("hermes-agent", "submit_run", { input: "Inspect MindCloud" }).ok, true);
     assert.equal(validateAdapterInput("hermes-agent", "submit_run", {}).ok, false);
