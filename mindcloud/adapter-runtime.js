@@ -116,7 +116,8 @@ class AdapterRuntime {
       const result=await this.health(id);
       return this.record(requestId,{ok:Boolean(result?.ok),id,operation,result,execution:{contractVersion:"1.0",inputContractVersion:inputContract.version,inputValidation:inputContract.mode,attempts:1,retries:0,retryPolicy:"health-probe",recovered:false}});
     }
-    if(tool.security&&!approved)return this.record(requestId,{ok:false,error:"human_approval_required",id,operation});
+    const requiresApproval = tool.security === true || (Array.isArray(tool.security) && tool.security.includes(operation));
+    if(requiresApproval&&!approved)return this.record(requestId,{ok:false,error:"human_approval_required",id,operation});
     if(native.supports(id)) {
       try {
         const run = await require("./adapter-policy").executeWithRetry(operation, () => native.execute({id,operation,input,requestId}));
