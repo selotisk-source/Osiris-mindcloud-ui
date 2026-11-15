@@ -198,3 +198,14 @@ Next operational steps: create/connect the Cloudflare Pages project and Render W
 - Gateway Process remains a separate methodological/narrative comparison, not archaeological evidence for any of the three locations.
 - GitHub readback and source-led review are complete for this initial research pass; no local build, live page rendering, exhaustive literature review or object identification from the user's personal photographs has been performed.
 - Next actions: match the user's photos/recollections to exact museum records; retrieve excavation plans/full publications; record page/figure/inventory locators; only then build cross-site chronology and comparative map.
+
+
+## Krea visual adapter — 2026-11-16
+
+- Created draft PR #152: https://github.com/selotisk-source/Osiris-mindcloud-ui/pull/152 from `feature/krea-visual-adapter` into `main`.
+- Added a supervised native Krea adapter with typed `generate_image` and `get_job` operations. API credentials are read only from server-side `KREA_API_KEY`; no token is committed or exposed to the frontend.
+- Added a typed input contract, a mocked regression script, and included that script in `npm run verify`.
+- Official Krea documentation confirms the K2 Medium image endpoint pattern, job retrieval via `/jobs/{job_id}`, Bearer token authentication, and separate pay-as-you-go API billing. The adapter health check does not make a provider request or incur generation cost.
+- No live Krea API request, paid generation, local Node test, CI pass, merge or deployment has been observed yet. PR remains Draft; do not promote the adapter or claim runtime verification until CI passes and a separately authorized live test is completed.
+- Video generation, upscaling, LoRA training, result asset persistence and frontend production UI remain unimplemented follow-on work.
+- Railway project `lively-nurturing` and its five services are visible in the connected account. This session did not change Railway configuration or deploy; the older state record reports a Railway trial-expiration blocker, which requires a fresh billing/plan check before deployment.
