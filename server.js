@@ -51,6 +51,9 @@ function bearerToken(req) { return (req.headers.authorization || "").replace(/^B
 function isExecutionAuthorized(req) {
   return tokenMatches(bearerToken(req), process.env.MINDCLOUD_TOOL_EXECUTION_TOKEN || "");
 }
+function requiresToolApproval(tool, operation) {
+  return Array.isArray(tool?.security) ? tool.security.includes(operation) : Boolean(tool?.security);
+}
 function isApprovalAuthorized(req) {
   return tokenMatches(bearerToken(req), process.env.MINDCLOUD_APPROVAL_TOKEN || "");
 }
@@ -747,7 +750,7 @@ const server = http.createServer(async (req,res)=>{
       const task=await readJson(req);
       const tool=agentTools.tools.find(item=>item.id===task?.id);
       if (!tool || !tool.operations?.includes(task.operation)) { sendJson(res,{error:"operation_not_allowed"},400); return; }
-      if (!tool.security) { sendJson(res,{error:"approval_not_required"},400); return; }
+      if (!requiresToolApproval(tool,task.operation)) { sendJson(res,{error:"approval_not_required"},400); return; }
       sendJson(res,{type:"mindcloud_approval_request",request:createApprovalRequest(tool,task.operation,task.input)},201);
     } catch(error) { sendJson(res,{error:error instanceof Error?error.message:String(error)},400); }
     return;
@@ -781,8 +784,9 @@ const server = http.createServer(async (req,res)=>{
       // Client-provided approval is never trusted. Passive subdomain lookups are allowed
       // only when the requested root is covered by the server-owned domain allowlist.
       const passiveScopeApproved = tool.id === "subdomain-finder" && isAuthorizedSubdomainScope(task.input?.domain);
-      const ticketApproved = Boolean(tool.security && consumeApproval(task.approvalId,tool.id,task.operation,task.input));
-      const approved = !tool.security || passiveScopeApproved || ticketApproved;
+      const requiresApproval = requiresToolApproval(tool,task.operation);
+      const ticketApproved = Boolean(requiresApproval && consumeApproval(task.approvalId,tool.id,task.operation,task.input));
+      const approved = !requiresApproval || passiveScopeApproved || ticketApproved;
       const execution = await adapters.execute({...task,approved});
       if (execution.ok && execution.evidence && typeof execution.evidence === "object") {
         const capturedAt = new Date().toISOString();

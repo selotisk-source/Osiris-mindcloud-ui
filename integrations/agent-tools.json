@@ -395,6 +395,31 @@
       "license": "PolyForm Noncommercial 1.0.0; commercial use requires permission from the author",
       "security": "microphone explicit opt-in; camera optional; transcript forwarding off by default; verify network egress and cleanup before promotion",
       "promotion_gate": "isolated-runtime-test-and-license-clearance"
+    },
+    {
+      "id": "hermes-agent",
+      "source": "NousResearch/hermes-agent",
+      "layer": "ExternalAgent",
+      "integration": "Dedicated Hermes Agent runtime reached over Railway private HTTP; MindCore retains task routing, approval, audit and evidence authority.",
+      "operations": [
+        "health",
+        "capabilities",
+        "submit_run",
+        "get_run",
+        "stop_run",
+        "approve_run"
+      ],
+      "status": "adapter-ready",
+      "transport": "railway-private-http",
+      "env": "HERMES_SERVICE_URL",
+      "authentication": "HERMES_API_KEY (matches Hermes API_SERVER_KEY)",
+      "security": [
+        "submit_run",
+        "stop_run",
+        "approve_run"
+      ],
+      "security_policy": "Private service only; task submission, stop and approval require a MindCloud human approval ticket. Status and capability reads are read-only.",
+      "evidence_status": "Adapter code and mocked contract tests are included; live Railway service and end-to-end execution remain pending."
     }
   ]
 }

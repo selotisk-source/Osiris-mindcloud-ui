@@ -47,6 +47,13 @@ const CONTRACTS = Object.freeze({
   },
   ruflo: {
     discover_tools: { properties: {} }
+  },
+  "hermes-agent": {
+    capabilities: { properties: {} },
+    submit_run: { required: ["input"], properties: { input: "string", session_id: "string", instructions: "string", previous_response_id: "string", idempotency_key: "string" }, maxBytes: 128 * 1024 },
+    get_run: { required: ["run_id"], properties: { run_id: "string" } },
+    stop_run: { required: ["run_id"], properties: { run_id: "string" } },
+    approve_run: { required: ["run_id", "request_id", "execution_generation", "choice"], properties: { run_id: "string", request_id: "string", execution_generation: "number", choice: "string" } }
   }
 });
 
