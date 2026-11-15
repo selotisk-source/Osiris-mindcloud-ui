@@ -1,5 +1,5 @@
 const rufloMcp = require("./ruflo-mcp");
-const NATIVE = new Set(["overpass-turbo","google-street-view","shodan","opensanctions","subdomain-finder","mapillary","agentmemory","ruflo"]);
+const NATIVE = new Set(["krea","overpass-turbo","google-street-view","shodan","opensanctions","subdomain-finder","mapillary","agentmemory","ruflo"]);
 
 function authorizedDomains() {
   return (process.env.MINDCLOUD_AUTHORIZED_DOMAINS || "").split(",").map(value => value.trim().toLowerCase().replace(/^[*.]+/, "").replace(/[.]$/, "")).filter(value => /^(?=.{1,253}$)(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?[.])+[a-z]{2,63}$/.test(value));
@@ -9,6 +9,7 @@ function isAuthorizedDomain(domain) {
 }
 
 function state(id) {
+  if (id === "krea") return {configured:Boolean(process.env.KREA_API_KEY),required:process.env.KREA_API_KEY?undefined:"KREA_API_KEY",mode:"native-http",provider:"Krea"};
   if (id === "ruflo") return {configured:process.env.RUFLO_MCP_ENABLED === "true",required:process.env.RUFLO_MCP_ENABLED === "true"?undefined:"RUFLO_MCP_ENABLED=true",mode:"stdio-mcp-readonly",operations:["health","discover_tools"]};
   if (id === "overpass-turbo") return {configured:true,mode:"native-http"};
   if (id === "subdomain-finder") return {configured:authorizedDomains().length > 0,required:authorizedDomains().length ? undefined : "MINDCLOUD_AUTHORIZED_DOMAINS",mode:"passive-public-data"};
@@ -25,6 +26,7 @@ async function health(id) {
   const s=state(id);
   if (!s) return null;
   if (!s.configured) return {ok:false,status:id === "ruflo" ? "disabled" : id === "subdomain-finder" ? "authorization-scope-missing" : "credentials-missing",required:s.required};
+  if (id === "krea") return {ok:Boolean(process.env.KREA_API_KEY),status:process.env.KREA_API_KEY?"configured":"credentials-missing",mode:"native-http",provider:"Krea",remoteProbe:false,billingProbe:false,required:process.env.KREA_API_KEY?undefined:"KREA_API_KEY"};
   if (id === "ruflo") {
     try { const result=await rufloMcp.discoverTools(); return {ok:true,status:"healthy",mode:"stdio-mcp-readonly",server:result.server,protocolVersion:result.protocolVersion,toolCount:result.toolCount,executionEnabled:false}; }
     catch(error) { return {ok:false,status:"offline",mode:"stdio-mcp-readonly",error:error instanceof Error?error.message:String(error),executionEnabled:false}; }
@@ -117,6 +119,32 @@ async function execute({id,operation,input={},requestId}) {
     if (operation !== "discover_tools" && operation !== "health") return {ok:false,id,operation,error:"operation_not_supported",supportedOperations:["health","discover_tools"],executionEnabled:false};
     try { const result=await rufloMcp.discoverTools(); return {ok:true,id,operation,result,evidence:{source:"stdio://ruflo-mcp/tools/list",retrievedAt:new Date().toISOString(),requestId,toolCount:result.toolCount,executionEnabled:false}}; }
     catch(error) { return {ok:false,id,operation,error:error instanceof Error?error.message:String(error),executionEnabled:false}; }
+  }
+  if(id==="krea") {
+    const token=process.env.KREA_API_KEY;
+    if(!token)return {ok:false,id,operation,error:"adapter_credentials_missing",required:"KREA_API_KEY"};
+    let endpoint, options={headers:{accept:"application/json",authorization:"Bearer "+token},signal:AbortSignal.timeout(30000)};
+    if(operation==="generate_image") {
+      const prompt=String(input.prompt||"").trim();
+      if(!prompt)return {ok:false,id,operation,error:"prompt_required"};
+      const model=String(input.model||"krea/krea-2/medium");
+      if(!/^[a-z0-9][a-z0-9/_-]{1,120}$/i.test(model))return {ok:false,id,operation,error:"invalid_model_id"};
+      const payload={prompt};
+      if(input.aspect_ratio!==undefined)payload.aspect_ratio=String(input.aspect_ratio);
+      if(input.resolution!==undefined)payload.resolution=String(input.resolution);
+      if(input.seed!==undefined)payload.seed=Number(input.seed);
+      if(input.creativity!==undefined)payload.creativity=String(input.creativity);
+      endpoint="https://api.krea.ai/generate/image/"+model.split("/").map(encodeURIComponent).join("/");
+      options={...options,method:"POST",headers:{...options.headers,"content-type":"application/json"},body:JSON.stringify(payload)};
+    } else if(operation==="get_job") {
+      const jobId=String(input.job_id||"");
+      if(!/^[a-z0-9-]{8,100}$/i.test(jobId))return {ok:false,id,operation,error:"valid_job_id_required"};
+      endpoint="https://api.krea.ai/jobs/"+encodeURIComponent(jobId);
+      options.method="GET";
+    } else return {ok:false,id,operation,error:"operation_not_supported",supportedOperations:["generate_image","get_job"]};
+    response=await fetch(endpoint,options);
+    const result=await readResponse(response);
+    return {ok:response.ok,id,operation,status:response.status,result,evidence:{source:endpoint,retrievedAt:new Date().toISOString(),requestId,provider:"Krea",billing:"provider-pay-as-you-go"}};
   }
   const timeout={signal:AbortSignal.timeout(15000)};
   let endpoint, response, headers={"accept":"application/json"};
@@ -257,6 +285,7 @@ async function execute({id,operation,input={},requestId}) {
   return {ok:response.ok,id,operation,status:response.status,result,evidence:{source:endpoint.split("?")[0],retrievedAt:new Date().toISOString(),requestId}};
 }
 const IMPLEMENTED_OPERATIONS = Object.freeze({
+  "krea":["generate_image","get_job"],
   "overpass-turbo":["query","export_geojson"],
   "google-street-view":["metadata","image"],
   "shodan":["host","search","dns"],
