@@ -28,14 +28,14 @@ Set on the separate `hermes-agent` Railway service:
 - `API_SERVER_HOST=0.0.0.0`
 - `API_SERVER_PORT=8642`
 - `API_SERVER_KEY=<strong randomly generated secret>`
-- `HERMES_HOME=/data/.hermes` (persistent volume mounted at `/data`)
+- `HERMES_HOME=/opt/data` (persistent volume mounted at `/opt/data`, matching the official image)
 - `PYTHONUNBUFFERED=1`
 
 Hermes also needs an explicitly configured model provider and any required tool backends. Provider credentials belong only on the Hermes service. The API server exposes powerful agent tools, including terminal and file operations; keep it private and configure a restricted toolset and sandbox before enabling task execution.
 
 ## Adapter contract
 
-- `health`: authenticated liveness probe
+- `health`: liveness probe (`/health` is public in Hermes; the adapter still sends its bearer key)
 - `capabilities`: read-only feature discovery
 - `submit_run`: create a Hermes run; approval required; uses an idempotency key
 - `get_run`: read run status
