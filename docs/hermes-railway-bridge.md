@@ -31,7 +31,7 @@ Set on the separate `hermes-agent` Railway service:
 - `HERMES_HOME=/opt/data` (persistent volume mounted at `/opt/data`, matching the official image)
 - `PYTHONUNBUFFERED=1`
 
-Hermes also needs an explicitly configured model provider and any required tool backends. Provider credentials belong only on the Hermes service. The API server exposes powerful agent tools, including terminal and file operations; keep it private and configure a restricted toolset and sandbox before enabling task execution.
+Hermes also needs an explicitly configured model provider and any required tool backends. Provider credentials belong only on the Hermes service. The API server can expose powerful agent tools, including terminal and file operations. Before enabling task execution, disable terminal and file toolsets for the `api_server` platform (for example, as Railway pre-deploy commands: `hermes tools disable terminal --platform api_server` and `hermes tools disable file --platform api_server`). Keep the service private, then selectively enable only the toolsets MindCloud needs. Do not expose a public domain or broad CORS origins.
 
 ## Adapter contract
 
