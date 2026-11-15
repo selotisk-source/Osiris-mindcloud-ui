@@ -21,4 +21,4 @@ jobs:
         with:
           node-version: "22"
       - name: Run end-to-end runtime checks
-        run: npm run verify
+        run: node scripts/verify-hermes-bridge.js && npm run verify
