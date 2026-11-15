@@ -33,7 +33,7 @@ const {validateAdapterInput}=require("../mindcloud/adapter-contracts");
     const serverSource=fs.readFileSync(require("node:path").join(__dirname,"../server.js"),"utf8");
     assert.ok(serverSource.includes('pathname==="/api/krea/generate"'),"POST Krea generate route must be wired");
     assert.ok(serverSource.includes('pathname.startsWith("/api/krea/jobs/")'),"Krea job retrieval route must be wired");
-    assert.ok(serverSource.includes('pathname==="/api/krea/generate" || /^\\/api\\/krea\\/jobs\\/'),"Krea routes must share the authenticated adapter dispatch");
+    assert.ok(serverSource.includes("adapters.execute({...task,approved})"),"Krea routes must use the shared adapter runtime");
     assert.ok(serverSource.includes("MINDCLOUD_TOOL_EXECUTION_TOKEN"),"Krea routes must require the MindCloud execution token");
   console.log("krea-adapter: contract, credential gate, image job submission, bearer isolation and job retrieval passed");
   } finally {
