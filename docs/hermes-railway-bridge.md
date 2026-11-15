@@ -44,7 +44,7 @@ Hermes also needs an explicitly configured model provider and any required tool 
 
 ## Rollout and acceptance
 
-1. Deploy Hermes as a separate Railway service with a persistent `/data` volume.
+1. Deploy the official `nousresearch/hermes-agent` image as a separate Railway service, with start command `gateway` and a persistent volume mounted at `/opt/data`.
 2. Configure a model provider and a restricted toolset; keep API_SERVER_KEY private.
 3. Configure the two matching secrets/URLs on the backend and Hermes services.
 4. Confirm the Hermes `/health` endpoint over Railway private networking.
