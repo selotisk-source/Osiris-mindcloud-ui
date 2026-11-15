@@ -69,6 +69,8 @@ MindCore now has typed supervised adapter contracts for ten external capabilitie
 
 The integrations are execution-surface adapters: MindCore keeps routing, approval, audit and promotion authority. External credentials, browser sessions, filesystem/process access and third-party runtimes remain outside agent identity and behind explicit execution domains.
 
+Krea is registered as a supervised visual-production adapter for image generation and asynchronous job retrieval. Its API token remains server-side as `KREA_API_KEY`; API usage is separately metered, and health checks do not spend credits. Video generation, upscaling and LoRA workflows remain later milestones until their contracts are implemented and tested.
+
 Cognee remains the knowledge-memory adapter and is registered when `COGNEE_ENDPOINT` is configured.
 
 ## ARGOS ATLAS GeoOSINT

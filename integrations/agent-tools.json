@@ -395,6 +395,25 @@
       "license": "PolyForm Noncommercial 1.0.0; commercial use requires permission from the author",
       "security": "microphone explicit opt-in; camera optional; transcript forwarding off by default; verify network egress and cleanup before promotion",
       "promotion_gate": "isolated-runtime-test-and-license-clearance"
+    },
+    {
+      "id": "krea",
+      "source": "Krea AI API",
+      "source_url": "https://www.krea.ai/app/api",
+      "api_docs": "https://www.krea.ai/app/api",
+      "layer": "MediaPipeline",
+      "integration": "Supervised native HTTP adapter for Krea image generation and asynchronous job retrieval. MindCore retains routing, approval, audit and evidence ownership.",
+      "operations": [
+        "generate_image",
+        "get_job"
+      ],
+      "status": "registered-only",
+      "transport": "native-http",
+      "env": "KREA_API_KEY",
+      "cost_model": "pay-as-you-go; API billing is separate from Krea consumer subscriptions; no spend without an explicit generation request",
+      "authentication": "Bearer API token",
+      "security": "server-side credential only; prompt and model inputs are bounded; no automatic publishing",
+      "evidence_status": "Code and mocked regression coverage added on PR #152; CI and live provider execution not yet observed. Keep registration distinct from runtime verification."
     }
   ]
 }

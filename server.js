@@ -764,7 +764,7 @@ const server = http.createServer(async (req,res)=>{
     return;
   }
   // Both public entry points share the same authenticated adapter runtime, approval gate, audit, and evidence capture.
-  if((pathname==="/api/adapters/execute" || pathname==="/api/mindcloud/dispatch") && req.method==="POST"){
+  if((pathname==="/api/adapters/execute" || pathname==="/api/mindcloud/dispatch" || pathname==="/api/krea/generate" || /^\/api\/krea\/jobs\/[a-z0-9-]+$/i.test(pathname)) && (req.method==="POST" || (req.method==="GET" && pathname.startsWith("/api/krea/jobs/")))){
     const expectedToken = process.env.MINDCLOUD_TOOL_EXECUTION_TOKEN || "";
     const suppliedToken = (req.headers.authorization || "").replace(/^Bearer\s+/i, "");
     if (!expectedToken || !suppliedToken || suppliedToken.length !== expectedToken.length ||
@@ -772,7 +772,15 @@ const server = http.createServer(async (req,res)=>{
       sendJson(res,{ok:false,error:"unauthorized"},401); return;
     }
     try {
-      const task = await readJson(req);
+      let task;
+      if(pathname==="/api/krea/generate") {
+        const body=await readJson(req);
+        task={id:"krea",operation:"generate_image",input:body?.input && typeof body.input==="object"?body.input:body};
+      } else if(pathname.startsWith("/api/krea/jobs/")) {
+        task={id:"krea",operation:"get_job",input:{job_id:decodeURIComponent(pathname.split("/").pop())}};
+      } else {
+        task=await readJson(req);
+      }
       if (!task || typeof task.id !== "string" || typeof task.operation !== "string") {
         sendJson(res,{ok:false,error:"invalid_adapter_request"},400); return;
       }
