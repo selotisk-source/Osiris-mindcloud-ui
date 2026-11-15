@@ -209,3 +209,12 @@ Next operational steps: create/connect the Cloudflare Pages project and Render W
 - No live Krea API request, paid generation, local Node test, CI pass, merge or deployment has been observed yet. PR remains Draft; do not promote the adapter or claim runtime verification until CI passes and a separately authorized live test is completed.
 - Video generation, upscaling, LoRA training, result asset persistence and frontend production UI remain unimplemented follow-on work.
 - Railway project `lively-nurturing` and its five services are visible in the connected account. This session did not change Railway configuration or deploy; the older state record reports a Railway trial-expiration blocker, which requires a fresh billing/plan check before deployment.
+
+
+## Krea API endpoints — implementation continuation (2026-11-16)
+
+- Added `POST /api/krea/generate` and `GET /api/krea/jobs/{job_id}` to `server.js` on `feature/krea-visual-adapter`.
+- Both endpoints share the existing bearer-authenticated MindCloud adapter execution path, approval handling, audit, and Evidence Graph capture.
+- Added static regression assertions for both routes, shared adapter execution, and the MindCloud execution-token gate to `scripts/verify-krea-adapter.js`.
+- PR #152 now includes 13 commits and 9 changed files; GitHub reports it open, Draft, and mergeable. No Actions workflow run is associated with the current head, so tests are not yet confirmed as executed.
+- Railway production service `mindcloud-osiris` does not currently have a `KREA_API_KEY` variable. No variable was created, no secret was requested in chat, and no deployment was triggered.
