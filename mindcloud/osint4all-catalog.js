@@ -65,7 +65,7 @@ async function fetchCatalogue(sourceUrl = process.env.OSINT4ALL_CATALOG_URL || D
   const response = await fetch(url, {
     headers: { accept: "text/html,application/xhtml+xml", "user-agent": "MindCloud-OSINT4ALL-Registry/1.0" },
     signal: AbortSignal.timeout(8000),
-    redirect: "follow"
+    redirect: "error"
   });
   if (!response.ok) throw new Error("osint4all_http_" + response.status);
   const text = await response.text();
