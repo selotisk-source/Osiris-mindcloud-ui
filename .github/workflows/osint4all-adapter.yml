@@ -1,0 +1,21 @@
+name: OSINT4ALL adapter
+on:
+  pull_request:
+    paths:
+      - "mindcloud/**"
+      - "integrations/**"
+      - "scripts/verify-osint4all-adapter.js"
+      - "package.json"
+  push:
+    branches:
+      - "feat/osint4all-oefa-adapter"
+jobs:
+  adapter-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: node scripts/verify-osint4all-adapter.js
+      - run: node scripts/verify-native-adapters.js
