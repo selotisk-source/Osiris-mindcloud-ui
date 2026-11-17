@@ -27,6 +27,10 @@ async function health(id) {
   const s=state(id);
   if (!s) return null;
   if (!s.configured) return {ok:false,status:id === "ruflo" ? "disabled" : id === "subdomain-finder" ? "authorization-scope-missing" : "credentials-missing",required:s.required};
+  if (id === "osint4all") {
+    try { const result=await osint4allCatalog.fetchCatalogue(); return {ok:true,status:"healthy",mode:"read-only-catalogue-discovery",source:result.source,itemCount:result.count,executionEnabled:false}; }
+    catch(error) { const fallback=osint4allCatalog.loadOefaFallback(); return {ok:false,status:"degraded",mode:"read-only-catalogue-discovery",source:fallback.source,fallbackItemCount:fallback.count,error:error instanceof Error?error.message:String(error),executionEnabled:false}; }
+  }
   if (id === "ruflo") {
     try { const result=await rufloMcp.discoverTools(); return {ok:true,status:"healthy",mode:"stdio-mcp-readonly",server:result.server,protocolVersion:result.protocolVersion,toolCount:result.toolCount,executionEnabled:false}; }
     catch(error) { return {ok:false,status:"offline",mode:"stdio-mcp-readonly",error:error instanceof Error?error.message:String(error),executionEnabled:false}; }
@@ -114,7 +118,15 @@ async function readResponse(response) {
   return {contentType,raw:(await response.text()).slice(0,20000)};
 }
 async function execute({id,operation,input={},requestId}) {
-  if (id === "osint4all") {\n    if (!["refresh","search"].includes(operation)) return {ok:false,id,operation,error:"operation_not_supported",supportedOperations:["refresh","search"],executionEnabled:false};\n    try {\n      const catalogue=await osint4allCatalog.fetchCatalogue();\n      const result=operation==="search"?osint4allCatalog.searchCatalogue(catalogue,input.query,input.limit):catalogue;\n      return {ok:true,id,operation,result,evidence:{source:catalogue.source,retrievedAt:catalogue.retrievedAt,requestId,sourceName:"OSINT4ALL",executionEnabled:false,discoveryOnly:true}};\n    } catch(error) { return {ok:false,id,operation,error:error instanceof Error?error.message:String(error),executionEnabled:false}; }\n  }\n  if (id === "ruflo") {
+  if (id === "osint4all") {
+    if (!["refresh","search"].includes(operation)) return {ok:false,id,operation,error:"operation_not_supported",supportedOperations:["refresh","search"],executionEnabled:false};
+    let catalogue, upstreamError=null;
+    try { catalogue=await osint4allCatalog.fetchCatalogue(); }
+    catch(error) { upstreamError=error instanceof Error?error.message:String(error); catalogue=osint4allCatalog.loadOefaFallback(); }
+    const result=operation==="search"?osint4allCatalog.searchCatalogue(catalogue,input.query,input.limit):catalogue;
+    return {ok:true,id,operation,result,evidence:{source:catalogue.source,retrievedAt:catalogue.retrievedAt,requestId,sourceName:catalogue.fallback?"OEFA":"OSINT4ALL",executionEnabled:false,discoveryOnly:true,fallback:catalogue.fallback===true,...(upstreamError?{upstreamError}:{})}};
+  }
+  if (id === "ruflo") {
     if (process.env.RUFLO_MCP_ENABLED !== "true") return {ok:false,id,operation,error:"adapter_disabled",required:"RUFLO_MCP_ENABLED=true",executionEnabled:false};
     if (operation !== "discover_tools" && operation !== "health") return {ok:false,id,operation,error:"operation_not_supported",supportedOperations:["health","discover_tools"],executionEnabled:false};
     try { const result=await rufloMcp.discoverTools(); return {ok:true,id,operation,result,evidence:{source:"stdio://ruflo-mcp/tools/list",retrievedAt:new Date().toISOString(),requestId,toolCount:result.toolCount,executionEnabled:false}}; }
