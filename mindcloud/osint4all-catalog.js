@@ -1,5 +1,8 @@
 "use strict";
 
+const fs = require("node:fs");
+const path = require("node:path");
+
 const DEFAULT_SOURCE_URL = "https://start.me/p/L1rEYQ/osint4all";
 const MAX_RESPONSE_BYTES = 2 * 1024 * 1024;
 const MAX_ITEMS = 500;
@@ -69,6 +72,17 @@ async function fetchCatalogue(sourceUrl = process.env.OSINT4ALL_CATALOG_URL || D
   if (Buffer.byteLength(text, "utf8") > MAX_RESPONSE_BYTES) throw new Error("osint4all_response_too_large");
   return parseCatalogue(text, url);
 }
+function loadOefaFallback() {
+  const file = path.join(__dirname, "..", "integrations", "oefa-registry.json");
+  const registry = JSON.parse(fs.readFileSync(file, "utf8"));
+  const tools = registry.entries.map(entry => ({
+    id: entry.id, name: entry.name, url: null, category: entry.category,
+    source: "oefa://internal-registry", sourceName: "OEFA",
+    access: entry.execution_enabled ? "mindcloud-adapter" : "reference-only",
+    adapter: entry.adapter, executionEnabled: entry.execution_enabled === true
+  }));
+  return { source: "oefa://internal-registry", title: "OEFA internal capability register", description: registry.role, retrievedAt: new Date().toISOString(), count: tools.length, tools, fallback: true };
+}
 function searchCatalogue(catalogue, query = "", limit = 50) {
   const terms = String(query || "").toLowerCase().split(/\s+/).filter(Boolean);
   const boundedLimit = Math.max(1, Math.min(Number(limit) || 50, 100));
@@ -78,4 +92,4 @@ function searchCatalogue(catalogue, query = "", limit = 50) {
   }).slice(0, boundedLimit);
   return { ...catalogue, count: tools.length, totalAvailable: catalogue.tools.length, tools };
 }
-module.exports = { DEFAULT_SOURCE_URL, parseCatalogue, fetchCatalogue, searchCatalogue };
+module.exports = { DEFAULT_SOURCE_URL, parseCatalogue, fetchCatalogue, searchCatalogue, loadOefaFallback };
