@@ -70,7 +70,9 @@ async function fetchCatalogue(sourceUrl = process.env.OSINT4ALL_CATALOG_URL || D
   if (!response.ok) throw new Error("osint4all_http_" + response.status);
   const text = await response.text();
   if (Buffer.byteLength(text, "utf8") > MAX_RESPONSE_BYTES) throw new Error("osint4all_response_too_large");
-  return parseCatalogue(text, url);
+  const catalogue = parseCatalogue(text, url);
+  if (!catalogue.count) throw new Error("osint4all_catalogue_empty");
+  return catalogue;
 }
 function loadOefaFallback() {
   const file = path.join(__dirname, "..", "integrations", "oefa-registry.json");
