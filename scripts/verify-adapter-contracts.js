@@ -14,6 +14,7 @@ const fixtures = {
   mapillary: { search: { bbox: "27.8,43.1,28.0,43.3", limit: 10 }, image: { id: "123456" } },
   agentmemory: { remember: { content: "test observation" }, observe: { observation: "test observation" }, smart_search: { query: "test" }, context: { context: "test" } },
   ruflo: { discover_tools: {} },
+  osint4all: { refresh: {}, search: { query: "maps", limit: 10 } },
   "speech-figure": {
     inspect: {},
     start_session: { locale: "sv-SE", camera_enabled: false, model_profile: "local-whisper", session_id: "session-test" },

@@ -1,0 +1,84 @@
+{
+  "schema_version": "1.0",
+  "name": "OEFA",
+  "role": "MindCloud internal capability register and fallback index",
+  "policy": {
+    "source": "curated MindCloud integrations",
+    "execution": "Only capabilities with their own implemented and policy-gated adapter may execute; imported OSINT4ALL links are discovery-only.",
+    "promotion": "External catalogue entries require review before promotion into executable capabilities."
+  },
+  "sources": [
+    {
+      "id": "osint4all",
+      "name": "OSINT4ALL",
+      "url": "https://start.me/p/L1rEYQ/osint4all",
+      "mode": "read-only-discovery",
+      "execution_enabled": false
+    }
+  ],
+  "entries": [
+    {
+      "id": "overpass-turbo",
+      "name": "Overpass Turbo",
+      "category": "GeoOSINT",
+      "adapter": "overpass-turbo",
+      "execution_enabled": true
+    },
+    {
+      "id": "geohints",
+      "name": "GeoHints",
+      "category": "GeoOSINT",
+      "adapter": null,
+      "execution_enabled": false
+    },
+    {
+      "id": "mapillary",
+      "name": "Mapillary",
+      "category": "GeoOSINT",
+      "adapter": "mapillary",
+      "execution_enabled": true
+    },
+    {
+      "id": "google-street-view",
+      "name": "Google Street View",
+      "category": "GeoOSINT",
+      "adapter": "google-street-view",
+      "execution_enabled": true
+    },
+    {
+      "id": "shodan",
+      "name": "Shodan",
+      "category": "SecurityResearch",
+      "adapter": "shodan",
+      "execution_enabled": true
+    },
+    {
+      "id": "subdomain-finder",
+      "name": "Passive Subdomain Finder",
+      "category": "SecurityResearch",
+      "adapter": "subdomain-finder",
+      "execution_enabled": true
+    },
+    {
+      "id": "opensanctions",
+      "name": "OpenSanctions",
+      "category": "EntityIntelligence",
+      "adapter": "opensanctions",
+      "execution_enabled": true
+    },
+    {
+      "id": "agentmemory",
+      "name": "AgentMemory / Cognee",
+      "category": "AgentMemory",
+      "adapter": "agentmemory",
+      "execution_enabled": true
+    },
+    {
+      "id": "ruflo",
+      "name": "RuFlo MCP discovery",
+      "category": "Orchestration",
+      "adapter": "ruflo",
+      "execution_enabled": false
+    }
+  ]
+}

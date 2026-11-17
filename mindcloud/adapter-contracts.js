@@ -6,6 +6,10 @@ const DANGEROUS_KEYS = new Set(["__proto__", "prototype", "constructor"]);
 // validation still runs in the adapter handler; this layer rejects malformed payloads
 // before any network request or side effect can begin.
 const CONTRACTS = Object.freeze({
+  osint4all: {
+    refresh: { properties: {} },
+    search: { properties: { query: "string", limit: "number" } }
+  },
   "overpass-turbo": {
     query: { required: ["query"], properties: { query: "string" }, maxBytes: 128 * 1024 },
     export_geojson: { required: ["query"], properties: { query: "string" }, maxBytes: 128 * 1024 }

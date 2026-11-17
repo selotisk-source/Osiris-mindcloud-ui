@@ -395,6 +395,23 @@
       "license": "PolyForm Noncommercial 1.0.0; commercial use requires permission from the author",
       "security": "microphone explicit opt-in; camera optional; transcript forwarding off by default; verify network egress and cleanup before promotion",
       "promotion_gate": "isolated-runtime-test-and-license-clearance"
+    },
+    {
+      "id": "osint4all",
+      "source": "OSINT4ALL / Start.me",
+      "source_url": "https://start.me/p/L1rEYQ/osint4all",
+      "layer": "OSINTToolDiscovery",
+      "integration": "Read-only discovery adapter imports public OSINT4ALL links into the internal OEFA catalogue contract. Discovered links remain references only; MindCloud never executes third-party tools through this adapter.",
+      "operations": [
+        "refresh",
+        "search",
+        "health"
+      ],
+      "status": "adapter-ready",
+      "transport": "native-http-readonly",
+      "cost_model": "free-public-catalogue; upstream availability and rate limits apply",
+      "authentication": "none",
+      "security": "HTTPS source allowlisted to start.me; bounded response size and timeout; discovery-only; no third-party tool execution"
     }
   ]
 }
