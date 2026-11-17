@@ -278,7 +278,8 @@ const IMPLEMENTED_OPERATIONS = Object.freeze({
   "subdomain-finder":["discover","resolve"],
   "mapillary":["search","image"],
   "agentmemory":["remember","observe","smart_search","context"],
-  "ruflo":["discover_tools"]
+  "ruflo":["discover_tools"],
+  "osint4all":["refresh","search"]
 });
 function operationsFor(id) {
   return IMPLEMENTED_OPERATIONS[id] ? [...IMPLEMENTED_OPERATIONS[id]] : null;
