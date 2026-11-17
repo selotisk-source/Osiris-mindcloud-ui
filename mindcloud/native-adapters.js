@@ -1,5 +1,6 @@
 const rufloMcp = require("./ruflo-mcp");
-const NATIVE = new Set(["overpass-turbo","google-street-view","shodan","opensanctions","subdomain-finder","mapillary","agentmemory","ruflo"]);
+const osint4allCatalog = require("./osint4all-catalog");
+const NATIVE = new Set(["overpass-turbo","google-street-view","shodan","opensanctions","subdomain-finder","mapillary","agentmemory","ruflo","osint4all"]);
 
 function authorizedDomains() {
   return (process.env.MINDCLOUD_AUTHORIZED_DOMAINS || "").split(",").map(value => value.trim().toLowerCase().replace(/^[*.]+/, "").replace(/[.]$/, "")).filter(value => /^(?=.{1,253}$)(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?[.])+[a-z]{2,63}$/.test(value));
@@ -9,6 +10,7 @@ function isAuthorizedDomain(domain) {
 }
 
 function state(id) {
+  if (id === "osint4all") return {configured:true,mode:"read-only-catalogue-discovery",operations:["refresh","search"],executionEnabled:false};
   if (id === "ruflo") return {configured:process.env.RUFLO_MCP_ENABLED === "true",required:process.env.RUFLO_MCP_ENABLED === "true"?undefined:"RUFLO_MCP_ENABLED=true",mode:"stdio-mcp-readonly",operations:["health","discover_tools"]};
   if (id === "overpass-turbo") return {configured:true,mode:"native-http"};
   if (id === "subdomain-finder") return {configured:authorizedDomains().length > 0,required:authorizedDomains().length ? undefined : "MINDCLOUD_AUTHORIZED_DOMAINS",mode:"passive-public-data"};
@@ -112,7 +114,7 @@ async function readResponse(response) {
   return {contentType,raw:(await response.text()).slice(0,20000)};
 }
 async function execute({id,operation,input={},requestId}) {
-  if (id === "ruflo") {
+  if (id === "osint4all") {\n    if (!["refresh","search"].includes(operation)) return {ok:false,id,operation,error:"operation_not_supported",supportedOperations:["refresh","search"],executionEnabled:false};\n    try {\n      const catalogue=await osint4allCatalog.fetchCatalogue();\n      const result=operation==="search"?osint4allCatalog.searchCatalogue(catalogue,input.query,input.limit):catalogue;\n      return {ok:true,id,operation,result,evidence:{source:catalogue.source,retrievedAt:catalogue.retrievedAt,requestId,sourceName:"OSINT4ALL",executionEnabled:false,discoveryOnly:true}};\n    } catch(error) { return {ok:false,id,operation,error:error instanceof Error?error.message:String(error),executionEnabled:false}; }\n  }\n  if (id === "ruflo") {
     if (process.env.RUFLO_MCP_ENABLED !== "true") return {ok:false,id,operation,error:"adapter_disabled",required:"RUFLO_MCP_ENABLED=true",executionEnabled:false};
     if (operation !== "discover_tools" && operation !== "health") return {ok:false,id,operation,error:"operation_not_supported",supportedOperations:["health","discover_tools"],executionEnabled:false};
     try { const result=await rufloMcp.discoverTools(); return {ok:true,id,operation,result,evidence:{source:"stdio://ruflo-mcp/tools/list",retrievedAt:new Date().toISOString(),requestId,toolCount:result.toolCount,executionEnabled:false}}; }
