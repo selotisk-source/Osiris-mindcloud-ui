@@ -47,6 +47,13 @@ const CONTRACTS = Object.freeze({
   },
   ruflo: {
     discover_tools: { properties: {} }
+  },
+  "ui-tars": {
+    capabilities: { properties: {} },
+    run: { required: ["task"], properties: { task: "string", session_id: "string", max_steps: "number", metadata: "object" }, maxBytes: 64 * 1024 },
+    status: { required: ["run_id"], properties: { run_id: "string" } },
+    cancel: { required: ["run_id"], properties: { run_id: "string" } },
+    screenshot: { required: ["session_id"], properties: { session_id: "string" } }
   }
 });
 
@@ -86,7 +93,7 @@ function matchesType(value, type) {
     case "boolean": return typeof value === "boolean";
     case "numberOrString": return (typeof value === "number" && Number.isFinite(value)) || (typeof value === "string" && value.trim().length > 0);
     case "stringOrNumber": return (typeof value === "string" && value.trim().length > 0) || (typeof value === "number" && Number.isFinite(value));
-    case "stringOrStringArray": return (typeof value === "string" && value.trim().length > 0) || (Array.isArray(value) && value.length > 0 && value.every(item => typeof item === "string" && item.trim().length > 0));
+    case "object": return isPlainObject(value);\n    case "stringOrStringArray": return (typeof value === "string" && value.trim().length > 0) || (Array.isArray(value) && value.length > 0 && value.every(item => typeof item === "string" && item.trim().length > 0));
     default: return false;
   }
 }
