@@ -15,7 +15,8 @@ class AdapterRuntime {
       "cognee-memory":["COGNEE_SERVICE_URL"], "overpass-turbo":["OVERPASS_API_URL"],
       "geohints":["GEOHINTS_URL"], "google-street-view":["GOOGLE_STREET_VIEW_URL"],
       "shodan":["SHODAN_API_BASE_URL"], "subdomain-finder":["SUBDOMAIN_FINDER_URL"],
-      "opensanctions":["OPENSANCTIONS_API_BASE_URL"], "cookies-viewer":["COOKIES_VIEWER_URL"]
+      "opensanctions":["OPENSANCTIONS_API_BASE_URL"], "cookies-viewer":["COOKIES_VIEWER_URL"],
+      "ui-tars":["UI_TARS_SERVICE_URL"]
     };
     return (process.env[envName] || (aliases[id]||[]).map(k=>process.env[k]).find(Boolean) || "").replace(/\/$/,"");
   }
@@ -28,11 +29,13 @@ class AdapterRuntime {
       "browser-use":"BROWSER_USE_SERVICE_URL",
       "cognee-memory":"COGNEE_SERVICE_URL",
       "geohints":"GEOHINTS_URL",
-      "cookies-viewer":"COOKIES_VIEWER_URL"
+      "cookies-viewer":"COOKIES_VIEWER_URL",
+      "ui-tars":"UI_TARS_SERVICE_URL"
     };
     const missingConfiguration = [];
     if (!nativeState && !endpoint) missingConfiguration.push(endpointAliases[tool.id] || envName);
     if (tool.id === "browser-use" && !process.env.BROWSER_USE_API_KEY) missingConfiguration.push("BROWSER_USE_API_KEY");
+    if (tool.id === "ui-tars" && !process.env.UI_TARS_API_KEY) missingConfiguration.push("UI_TARS_API_KEY");
     const configured = nativeState ? nativeState.configured : missingConfiguration.length === 0;
     const nativeOperations = native.supports(tool.id) ? native.operationsFor(tool.id) : null;
     const operations = nativeOperations
@@ -89,12 +92,14 @@ class AdapterRuntime {
     const missingConfiguration = [];
     if(!endpoint) missingConfiguration.push(id==="browser-use"?"BROWSER_USE_SERVICE_URL":`ADAPTER_${String(id).toUpperCase().replace(/[^A-Z0-9]/g,"_")}_URL`);
     if(id==="browser-use"&&!process.env.BROWSER_USE_API_KEY) missingConfiguration.push("BROWSER_USE_API_KEY");
+    if(id==="ui-tars"&&!process.env.UI_TARS_API_KEY) missingConfiguration.push("UI_TARS_API_KEY");
     if(missingConfiguration.length) {
-      const credentialsMissing = Boolean(endpoint) && id==="browser-use" && !process.env.BROWSER_USE_API_KEY;
+      const credentialsMissing = Boolean(endpoint) && ((id==="browser-use" && !process.env.BROWSER_USE_API_KEY) || (id==="ui-tars" && !process.env.UI_TARS_API_KEY));
       return {ok:false,status:credentialsMissing?"credentials-missing":"registered-only",endpoint:endpoint||null,missingConfiguration};
     }
     try {
-      const response=await fetch(endpoint+"/health",{signal:AbortSignal.timeout(2500)});
+      const healthHeaders = id==="ui-tars" ? {authorization:"Bearer "+process.env.UI_TARS_API_KEY} : {};
+      const response=await fetch(endpoint+"/health",{headers:healthHeaders,signal:AbortSignal.timeout(2500)});
       let details={}; try{details=await response.json();}catch{}
       const browserReady=id!=="browser-use"||details.browserEngine==="browserless-chromium";
       const healthy=response.ok&&browserReady;
@@ -127,10 +132,11 @@ class AdapterRuntime {
     }
     const endpoint=this.endpointFor(id);
     if(!endpoint)return this.record(requestId,{ok:false,error:"adapter_not_configured",id,operation});
-    const isBrowserUse=id==="browser-use", token=process.env.BROWSER_USE_API_KEY||"";
-    if(isBrowserUse&&!token)return this.record(requestId,{ok:false,error:"adapter_credentials_missing",id,operation});
+    const isBrowserUse=id==="browser-use", isUiTars=id==="ui-tars";
+    const token=isBrowserUse?(process.env.BROWSER_USE_API_KEY||""):(isUiTars?(process.env.UI_TARS_API_KEY||""):"");
+    if((isBrowserUse||isUiTars)&&!token)return this.record(requestId,{ok:false,error:"adapter_credentials_missing",id,operation});
     const headers={"content-type":"application/json"};
-    if(isBrowserUse)headers.authorization="Bearer "+token;
+    if(isBrowserUse||isUiTars)headers.authorization="Bearer "+token;
     try {
       const run = await require("./adapter-policy").executeWithRetry(operation, async () => {
         const response=await fetch(endpoint+(isBrowserUse?"/v1/run":"/execute"),{method:"POST",headers,body:JSON.stringify({requestId,operation,input}),signal:AbortSignal.timeout(30000)});
