@@ -68,6 +68,27 @@
       "status": "adapter-ready"
     },
     {
+      "id": "ui-tars",
+      "source": "bytedance/UI-TARS-desktop",
+      "source_url": "https://github.com/bytedance/UI-TARS-desktop",
+      "layer": "ComputerAgent",
+      "integration": "Supervised remote GUI execution bridge. MindCore submits typed tasks to an isolated UI-TARS SDK/CLI worker; screenshots, run status and cancellation return through the same audited adapter contract.",
+      "operations": [
+        "health",
+        "capabilities",
+        "run",
+        "status",
+        "cancel",
+        "screenshot"
+      ],
+      "status": "adapter-ready",
+      "transport": "railway-http-bridge",
+      "env": "UI_TARS_SERVICE_URL",
+      "authentication": "Bearer token via UI_TARS_API_KEY",
+      "security": "all GUI operations require a server-issued human approval ticket; worker is isolated from MindCore credentials and restricted to an explicit desktop/browser profile",
+      "cost_model": "open-source Apache-2.0; model inference may incur separate provider costs and must be configured explicitly"
+    },
+    {
       "id": "agentmemory",
       "source": "rohitg00/agentmemory",
       "layer": "AgentMemory",
