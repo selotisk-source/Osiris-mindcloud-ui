@@ -60,6 +60,7 @@ MindCore now has typed supervised adapter contracts for ten external capabilitie
 - **Codebase Memory MCP** — local structural code intelligence and knowledge-graph queries.
 - **OpenMontage** — supervised agentic video production.
 - **Browser Use** — controlled browser/computer-agent execution.
+- **UI-TARS** — supervised GUI execution through an authenticated remote bridge; all GUI actions require the MindCore approval gate.
 - **AgentMemory** — persistent cross-agent coding memory.
 - **Scientific Agent Skills** — reusable scientific/research Agent Skills.
 - **Diagram Design** — editorial architecture and evidence diagrams.
@@ -89,3 +90,7 @@ MindCore now registers a supervised **Grounded API / GroundedSLAM** adapter in t
 - **Subdomain discovery** uses passive Certificate Transparency via crt.sh and Cloudflare DNS-over-HTTPS; no paid scanning or active probing is performed. Set the server-side `MINDCLOUD_AUTHORIZED_DOMAINS` comma-separated allowlist before execution; client-supplied approval is not trusted.
 - **Cookie inspection** is local to the browser extension, user-initiated, scoped to the active tab, metadata-only, and never transmits cookie values.
 - Google Street View imagery, Shodan features requiring paid credits/plans, and the hosted OpenSanctions screening API remain parked pending a cost/licensing review. OpenSanctions bulk data is only a candidate for non-commercial use under its stated license; do not assume it is cleared for commercial use.
+
+## UI-TARS bridge
+
+The `ui-tars` adapter exposes a typed, approval-gated bridge to an isolated UI-TARS worker. See [`docs/UI_TARS_MINDCLOUD_BRIDGE.md`](docs/UI_TARS_MINDCLOUD_BRIDGE.md) for the HTTP contract, Railway configuration and security boundaries. The adapter remains `registered-only` until `UI_TARS_SERVICE_URL` and `UI_TARS_API_KEY` are configured and the worker health/run lifecycle is tested.
