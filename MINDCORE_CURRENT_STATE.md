@@ -198,3 +198,15 @@ Next operational steps: create/connect the Cloudflare Pages project and Render W
 - Gateway Process remains a separate methodological/narrative comparison, not archaeological evidence for any of the three locations.
 - GitHub readback and source-led review are complete for this initial research pass; no local build, live page rendering, exhaustive literature review or object identification from the user's personal photographs has been performed.
 - Next actions: match the user's photos/recollections to exact museum records; retrieve excavation plans/full publications; record page/figure/inventory locators; only then build cross-site chronology and comparative map.
+
+
+## UI-TARS bridge integration — 2026-11-19
+
+- Created branch `feat/ui-tars-mindcloud-bridge` from `main` and opened draft PR #154: https://github.com/selotisk-source/Osiris-mindcloud-ui/pull/154.
+- Added the `ui-tars` supervised adapter registry entry, typed contracts for capabilities/run/status/cancel/screenshot, authenticated HTTP transport using `UI_TARS_SERVICE_URL` + `UI_TARS_API_KEY`, and approval gating before GUI operations.
+- Added `scripts/verify-ui-tars-bridge.js`, wired it into `npm run verify`, extended adapter-contract fixtures, and documented the worker contract in `docs/UI_TARS_MINDCLOUD_BRIDGE.md`.
+- The adapter intentionally remains `registered-only` until a real worker endpoint and secret are configured. The remote worker must own the actual desktop/browser session; Railway is only the bridge/control layer.
+- GitHub compare observed 9 commits ahead of main and 0 behind at PR creation. GitHub commit status and workflow-run queries returned no checks. Local execution of the Node tests was blocked because the runtime could not resolve github.com for cloning; do not mark tests passed.
+- Railway project `lively-nurturing` was inspected. The production environment has no UI-TARS service or staged changes. The environment status query currently reports the existing five services as offline; no UI-TARS service, volume, variable, secret or deployment was created.
+- Upstream UI-TARS Desktop repository is archived (2026-11-09). Before worker packaging, pin a reviewed release/commit or maintain a reviewed fork; do not auto-install moving `main`.
+- **Next:** review PR #154 and obtain CI results; then build/pin the isolated worker and exercise authenticated health → approved run → status/cancel/screenshot end-to-end before configuring Railway.
